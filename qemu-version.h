@@ -1,1 +1,1 @@
-#define QEMU_PKGVERSION ""
+#define QEMU_PKGVERSION " (-dirty)"

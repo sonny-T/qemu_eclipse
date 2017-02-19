@@ -642,7 +642,7 @@ int cpu_exec(CPUState *cpu)
 #if SAFE_INSTRUCTIONS
 				if(tb->SafeFlag == 1)
 				{
-					printf("%x  %d  %d\n\n",tb->pc,tb->Mod67Flag,tb->RMFlag);
+					printf("%lx  %d  %d\n\n",tb->pc,tb->Mod67Flag,tb->RMFlag);
 				}
 #endif
 

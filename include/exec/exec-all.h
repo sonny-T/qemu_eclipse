@@ -289,6 +289,11 @@ struct TranslationBlock {
     int Mod67Flag;
     int RMFlag;
 #endif
+
+#if SHADOW_STACK
+    int CALLFlag;
+    target_ulong next_insn;
+#endif
 };
 
 void tb_free(TranslationBlock *tb);

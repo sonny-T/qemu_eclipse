@@ -343,6 +343,9 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
        always be the same before a given translated block
        is executed. */
     cpu_get_tb_cpu_state(env, &pc, &cs_base, &flags);
+
+    printf("tb_find_fast pc: %x\n",pc);
+
     tb_lock();
 
     tb = cpu->tb_jmp_cache[tb_jmp_cache_hash_func(pc)];
@@ -541,6 +544,12 @@ static inline void cpu_loop_exec_tb(CPUState *cpu, TranslationBlock *tb,
     trace_exec_tb(tb, tb->pc);
     ret = cpu_tb_exec(cpu, tb);
     *last_tb = (TranslationBlock *)(ret & ~TB_EXIT_MASK);
+
+    if(ret != 0)
+    {
+    	printf("cpu_loop_exec_tb : %x\n",(*last_tb)->pc);
+    }
+
     *tb_exit = ret & TB_EXIT_MASK;
     switch (*tb_exit) {
     case TB_EXIT_REQUESTED:
@@ -711,6 +720,5 @@ int cpu_exec(CPUState *cpu)
     /* Does not need atomic_mb_set because a spurious wakeup is okay.  */
     atomic_set(&tcg_current_cpu, NULL);
 
-    printf("$$$$$$$$$$$$$$$$$$$$$$$$$    %d\n",ret);
     return ret;
 }

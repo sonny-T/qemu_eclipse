@@ -5016,15 +5016,14 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
                 tcg_gen_ext16u_tl(cpu_T0, cpu_T0);
             }
             next_eip = s->pc - s->cs_base;
-
+//#if ddddd  when return
+//            buf.var = pc_start;
+//            buf = next_eip;
+ //           next_eip = 0xffff;
             printf("call Ev next_eip :   %x\n",next_eip);
-            if(next_eip == 0x400acb)
-            {
-            	//next_eip = 0xffffff;
-            }
+//#endif
 
             tcg_gen_movi_tl(cpu_T1, next_eip);
-            printf("cpu_T1  :   %x\n",cpu_T1);
 
             gen_push_v(s, cpu_T1);
             gen_op_jmp_v(cpu_T0);
@@ -6476,7 +6475,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         gen_stack_update(s, val + (1 << ot));
         /* Note that gen_pop_T0 uses a zero-extending load.  */
         gen_op_jmp_v(cpu_T0);
-        printf("ret im pc :   %x\n",s->pc);
+
+        //printf("ret im pc :   %x\n",s->pc);
+
         gen_bnd_jmp(s);
         gen_eob(s);
         break;
@@ -6489,7 +6490,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         gen_pop_update(s, ot);
         /* Note that gen_pop_T0 uses a zero-extending load.  */
         gen_op_jmp_v(cpu_T0);
-        printf("ret pc :   %x\n",s->pc);
+
+        //printf("ret pc :   %x\n",s->pc);
+
         gen_bnd_jmp(s);
         gen_eob(s);
         break;
@@ -6500,7 +6503,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 #endif
         val = cpu_ldsw_code(env, s->pc);
         s->pc += 2;
-        printf("lret im pc :   %x\n",s->pc);
+
+        //printf("lret im pc :   %x\n",s->pc);
+
     do_lret:
         if (s->pe && !s->vm86) {
             gen_update_cc_op(s);
@@ -6529,11 +6534,15 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     	indirect_insn = 1;
 #endif
         val = 0;
-        printf("lret pc :   %x\n",s->pc);
+
+        //printf("lret pc :   %x\n",s->pc);
+
         goto do_lret;
     case 0xcf: /* iret */
         gen_svm_check_intercept(s, pc_start, SVM_EXIT_IRET);
-        printf("iret pc :   %x\n",s->pc);
+
+        //printf("iret pc :   %x\n",s->pc);
+
         if (!s->pe) {
             /* real mode */
             gen_helper_iret_real(cpu_env, tcg_const_i32(dflag - 1));
@@ -6560,20 +6569,20 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
                 tval = (int16_t)insn_get(env, s, MO_16);
             }
             next_eip = s->pc - s->cs_base;
-
-            printf("call im next_eip :   %x\n",next_eip);
-            if(next_eip == 0x4005cf)
-            {
-            	next_eip = 0x4005cf;
-            }
             tval += next_eip;
-            printf("tval :   %x\n",tval);
+
             if (dflag == MO_16) {
                 tval &= 0xffff;
             } else if (!CODE64(s)) {
                 tval &= 0xffffffff;
             }
+#ifdef SHADOW_STACK
+            //printf("call im next_eip :   %x\n",next_eip);
+            call_insn = 1;
+            tcg_gen_movi_tl(cpu_T0, 0);
+#else
             tcg_gen_movi_tl(cpu_T0, next_eip);
+#endif
             gen_push_v(s, cpu_T0);
             gen_bnd_jmp(s);
             gen_jmp(s, tval);
@@ -8451,6 +8460,12 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
     tb->RMFlag = 0;
 #endif
 
+#if SHADOW_STACK
+    tb->CALLFlag = 0;
+    tb->next_insn = 0;
+#endif
+
+
     /* generate intermediate code */
     pc_start = tb->pc;
     cs_base = tb->cs_base;
@@ -8559,6 +8574,15 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
 #endif
         insn_star = pc_ptr;
         pc_ptr = disas_insn(env, dc, pc_ptr);
+#if SHADOW_STACK
+        if(call_insn)
+        {
+        	tb->CALLFlag = 1;
+        	tb->next_insn = pc_ptr;
+        }
+        call_insn = 0;
+#endif
+
 #if SYSCALLTEST
         insn_end = pc_ptr;
         p = (char *)malloc(6);

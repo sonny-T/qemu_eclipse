@@ -5016,14 +5016,17 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
                 tcg_gen_ext16u_tl(cpu_T0, cpu_T0);
             }
             next_eip = s->pc - s->cs_base;
-//#if ddddd  when return
-//            buf.var = pc_start;
-//            buf = next_eip;
- //           next_eip = 0xffff;
-            printf("call Ev next_eip :   %x\n",next_eip);
-//#endif
 
+#if SHADOW_STACK
+            //printf("call Ev next_eip :   %x\n",next_eip);
+            call_insn = 1;
+            tcg_gen_movi_tl(cpu_T1, 0);
+#else
+            printf("call Ev next_eip :   %x\n",next_eip);
             tcg_gen_movi_tl(cpu_T1, next_eip);
+#endif
+
+           //tcg_gen_movi_tl(cpu_T1, next_eip);
 
             gen_push_v(s, cpu_T1);
             gen_op_jmp_v(cpu_T0);
@@ -5035,6 +5038,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         	/**** judge gadget type ****/
         	indirect_insn = 1;
 #endif
+        	printf("lcall Ev \n");
             gen_op_ld_v(s, ot, cpu_T1, cpu_A0);
             gen_add_A0_im(s, 1 << ot);
             gen_op_ld_v(s, MO_16, cpu_T0, cpu_A0);
@@ -6576,11 +6580,12 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             } else if (!CODE64(s)) {
                 tval &= 0xffffffff;
             }
-#ifdef SHADOW_STACK
+#if SHADOW_STACK
             //printf("call im next_eip :   %x\n",next_eip);
             call_insn = 1;
             tcg_gen_movi_tl(cpu_T0, 0);
 #else
+            printf("call im next_eip :   %x\n",next_eip);
             tcg_gen_movi_tl(cpu_T0, next_eip);
 #endif
             gen_push_v(s, cpu_T0);
@@ -6599,6 +6604,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 
             tcg_gen_movi_tl(cpu_T0, selector);
             tcg_gen_movi_tl(cpu_T1, offset);
+            printf("lcall im \n");
         }
         goto do_lcall;
     case 0xe9: /* jmp im */

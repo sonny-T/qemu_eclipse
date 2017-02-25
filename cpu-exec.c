@@ -51,6 +51,11 @@ static target_ulong TRACEPC_Buf[TBN];
 long RealGadgetLen = 0;
 #endif
 
+#if SHADOW_STACK
+    ShadowStack sstack1;
+    bool CPUEXECFlag = 1;
+#endif
+
 #if !defined(CONFIG_USER_ONLY)
 /* Allow the guest to have a max 3ms advance.
  * The difference between the 2 clocks could therefore
@@ -330,6 +335,56 @@ found:
     return tb;
 }
 
+#if SHADOW_STACK
+void ShadowStackInit()
+{
+    ShadowStack *ss;
+    ss = &sstack1;
+	ss->top = 0;
+	ss->MaxSize = 50;
+	ss->stack = (target_ulong *)malloc(50*sizeof(target_ulong));
+	if(!ss->stack){
+		printf("Shadow stack inital failed!\n");
+	}
+}
+
+target_ulong ShadowStackPop()
+{
+	target_ulong x;
+    ShadowStack *ss;
+    ss = &sstack1;
+
+    printf("Pop top head:+++++++++++++++++++++++++++++ %d\n",ss->top);
+	if(ss->top == 0){
+		printf("Pop shadow stack failed!\n");
+	}
+	x = ss->stack[ss->top];
+	ss->top--;
+	if(ss->top == 0){
+		free(ss->stack);
+	}
+
+	printf("Pop top tail:+++++++++++++++++++++++++++++ %d\n",ss->top);
+	return x;
+}
+
+void ShadowStackPush(target_ulong x)
+{
+    ShadowStack *ss;
+    ss = &sstack1;
+	if(ss->top >= ss->MaxSize)
+	{
+		ss->stack = realloc(ss->stack,2*ss->MaxSize*sizeof(target_ulong));
+		ss->MaxSize = 2*ss->MaxSize;
+	}
+	ss->top++;
+	ss->stack[ss->top] = x;
+
+	printf("Push top:+++++++++++++++++++++++++++++ %d\n",ss->top);
+
+}
+#endif
+
 static inline TranslationBlock *tb_find_fast(CPUState *cpu,
                                              TranslationBlock **last_tb,
                                              int tb_exit)
@@ -345,6 +400,13 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     cpu_get_tb_cpu_state(env, &pc, &cs_base, &flags);
 
     printf("tb_find_fast pc: %x\n",pc);
+#if SHADOW_STACK
+    if(pc == 0)
+    {
+    	pc = ShadowStackPop();
+    	printf("Pop stack---------------------------- %x\n",pc);
+    }
+#endif
 
     tb_lock();
 
@@ -374,6 +436,13 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
         tb_add_jump(*last_tb, tb_exit, tb);
     }
     tb_unlock();
+
+#if SHADOW_STACK
+  	if(tb->CALLFlag == 1){
+  		ShadowStackPush(tb->next_insn);
+  		printf("Push stack****************************** %x\n",tb->next_insn);
+  	}
+#endif
     return tb;
 }
 
@@ -545,11 +614,6 @@ static inline void cpu_loop_exec_tb(CPUState *cpu, TranslationBlock *tb,
     ret = cpu_tb_exec(cpu, tb);
     *last_tb = (TranslationBlock *)(ret & ~TB_EXIT_MASK);
 
-    if(ret != 0)
-    {
-    	printf("cpu_loop_exec_tb : %x\n",(*last_tb)->pc);
-    }
-
     *tb_exit = ret & TB_EXIT_MASK;
     switch (*tb_exit) {
     case TB_EXIT_REQUESTED:
@@ -606,6 +670,15 @@ int cpu_exec(CPUState *cpu)
     SyncClocks sc;
 #if SYSCALLTEST
     target_ulong CURRPC;
+#endif
+
+#if SHADOW_STACK
+    if(CPUEXECFlag)
+    {
+    ShadowStackInit();
+    CPUEXECFlag = 0;
+    }
+    printf("LLLLLLLLLLUUUUUUUUUUUU\n");
 #endif
     /* replay_interrupt may need current_cpu */
     current_cpu = cpu;

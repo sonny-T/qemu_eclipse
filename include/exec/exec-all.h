@@ -223,6 +223,17 @@ struct TB_Code{
 void gadget_track(target_ulong p,long RealGadgetLen);
 #endif
 
+#if SHADOW_STACK
+struct shadow_stack{
+	target_ulong *stack;
+	int top;
+	int MaxSize;
+};
+target_ulong ShadowStackPop();
+void ShadowStackPush(target_ulong x);
+void ShadowStackInit();
+#endif
+
 struct TranslationBlock {
     target_ulong pc;   /* simulated PC corresponding to this block (EIP + CS base) */
     target_ulong cs_base; /* CS base for this block */

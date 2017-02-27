@@ -5020,7 +5020,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 #if SHADOW_STACK
             //printf("call Ev next_eip :   %x\n",next_eip);
             call_insn = 1;
-            tcg_gen_movi_tl(cpu_T1, 0);
+            tcg_gen_movi_tl(cpu_T1, next_eip);
 #else
             printf("call Ev next_eip :   %x\n",next_eip);
             tcg_gen_movi_tl(cpu_T1, next_eip);
@@ -6583,7 +6583,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 #if SHADOW_STACK
             //printf("call im next_eip :   %x\n",next_eip);
             call_insn = 1;
-            tcg_gen_movi_tl(cpu_T0, 0);
+            tcg_gen_movi_tl(cpu_T0, next_eip);
 #else
             printf("call im next_eip :   %x\n",next_eip);
             tcg_gen_movi_tl(cpu_T0, next_eip);
@@ -8581,7 +8581,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         insn_star = pc_ptr;
         pc_ptr = disas_insn(env, dc, pc_ptr);
 #if SHADOW_STACK
-        if(call_insn)
+        if(call_insn == 1)
         {
         	tb->CALLFlag = 1;
         	tb->next_insn = pc_ptr;

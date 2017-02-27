@@ -401,11 +401,11 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
 
     printf("tb_find_fast pc: %x\n",pc);
 #if SHADOW_STACK
-    if(pc == 0)
-    {
-    	pc = ShadowStackPop();
-    	printf("Pop stack---------------------------- %x\n",pc);
-    }
+//    if(pc == 0)
+//    {
+ //   	pc = ShadowStackPop();
+ //   	printf("Pop stack---------------------------- %x\n",pc);
+ //   }
 #endif
 
     tb_lock();
@@ -612,6 +612,9 @@ static inline void cpu_loop_exec_tb(CPUState *cpu, TranslationBlock *tb,
 
     trace_exec_tb(tb, tb->pc);
     ret = cpu_tb_exec(cpu, tb);
+
+    printf("cpu_loop_exec_tb ret %ld\n",ret);
+
     *last_tb = (TranslationBlock *)(ret & ~TB_EXIT_MASK);
 
     *tb_exit = ret & TB_EXIT_MASK;
@@ -762,6 +765,7 @@ int cpu_exec(CPUState *cpu)
                 }
 #endif
                 cpu_loop_exec_tb(cpu, tb, &last_tb, &tb_exit, &sc);
+
                 /* Try to align the host and virtual clocks
                    if the guest is in advance */
                 align_clocks(&sc, cpu);

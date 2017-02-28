@@ -354,17 +354,15 @@ target_ulong ShadowStackPop()
     ShadowStack *ss;
     ss = &sstack1;
 
-    printf("Pop top head:+++++++++++++++++++++++++++++ %d\n",ss->top);
 	if(ss->top == 0){
 		printf("Pop shadow stack failed!\n");
 	}
 	x = ss->stack[ss->top];
 	ss->top--;
 	if(ss->top == 0){
-		free(ss->stack);
+		//free(ss->stack);
 	}
 
-	printf("Pop top tail:+++++++++++++++++++++++++++++ %d\n",ss->top);
 	return x;
 }
 
@@ -379,8 +377,6 @@ void ShadowStackPush(target_ulong x)
 	}
 	ss->top++;
 	ss->stack[ss->top] = x;
-
-	printf("Push top:+++++++++++++++++++++++++++++ %d\n",ss->top);
 
 }
 #endif
@@ -399,13 +395,12 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
        is executed. */
     cpu_get_tb_cpu_state(env, &pc, &cs_base, &flags);
 
-    printf("tb_find_fast pc: %x\n",pc);
 #if SHADOW_STACK
-//    if(pc == 0)
-//    {
- //   	pc = ShadowStackPop();
- //   	printf("Pop stack---------------------------- %x\n",pc);
- //   }
+    if(pc == 0)
+    {
+    	pc = ShadowStackPop();
+    	//printf("Pop stack---------------------------- %x\n",pc);
+    }
 #endif
 
     tb_lock();
@@ -433,16 +428,24 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
 #endif
     /* See if we can patch the calling TB. */
     if (*last_tb && !qemu_loglevel_mask(CPU_LOG_TB_NOCHAIN)) {
-        tb_add_jump(*last_tb, tb_exit, tb);
+#if SHADOW_STACK
+    	if(tb->CALLFlag != 1)
+    	{
+    		tb_add_jump(*last_tb, tb_exit, tb);
+    	}
+#else
+    	tb_add_jump(*last_tb, tb_exit, tb);
+#endif
     }
     tb_unlock();
 
 #if SHADOW_STACK
   	if(tb->CALLFlag == 1){
   		ShadowStackPush(tb->next_insn);
-  		printf("Push stack****************************** %x\n",tb->next_insn);
+  		//printf("Push stack****************************** %x\n",tb->next_insn);
   	}
 #endif
+  	*last_tb = NULL;
     return tb;
 }
 
@@ -613,8 +616,6 @@ static inline void cpu_loop_exec_tb(CPUState *cpu, TranslationBlock *tb,
     trace_exec_tb(tb, tb->pc);
     ret = cpu_tb_exec(cpu, tb);
 
-    printf("cpu_loop_exec_tb ret %ld\n",ret);
-
     *last_tb = (TranslationBlock *)(ret & ~TB_EXIT_MASK);
 
     *tb_exit = ret & TB_EXIT_MASK;
@@ -681,7 +682,6 @@ int cpu_exec(CPUState *cpu)
     ShadowStackInit();
     CPUEXECFlag = 0;
     }
-    printf("LLLLLLLLLLUUUUUUUUUUUU\n");
 #endif
     /* replay_interrupt may need current_cpu */
     current_cpu = cpu;

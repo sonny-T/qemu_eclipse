@@ -229,9 +229,9 @@ struct shadow_stack{
 	int top;
 	int MaxSize;
 };
-target_ulong ShadowStackPop();
+target_ulong ShadowStackPop(void);
 void ShadowStackPush(target_ulong x);
-void ShadowStackInit();
+void ShadowStackInit(void);
 #endif
 
 struct TranslationBlock {

@@ -336,7 +336,7 @@ found:
 }
 
 #if SHADOW_STACK
-void ShadowStackInit()
+void ShadowStackInit(void)
 {
     ShadowStack *ss;
     ss = &sstack1;
@@ -348,7 +348,7 @@ void ShadowStackInit()
 	}
 }
 
-target_ulong ShadowStackPop()
+target_ulong ShadowStackPop(void)
 {
 	target_ulong x;
     ShadowStack *ss;
@@ -445,7 +445,7 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
   		//printf("Push stack****************************** %x\n",tb->next_insn);
   	}
 #endif
-  	*last_tb = NULL;
+
     return tb;
 }
 

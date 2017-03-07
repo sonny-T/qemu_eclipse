@@ -6,6 +6,7 @@ bool safe_insn = 0;
 bool mod_insn = 0;
 bool rm_insn = 0;
 bool call_insn = 0;
+bool ret_insn = 0;
 
 enum index {
 x80848a2=      0x848a2,

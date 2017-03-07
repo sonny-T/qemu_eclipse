@@ -305,6 +305,9 @@ struct TranslationBlock {
     int CALLFlag;
     target_ulong next_insn;
 #endif
+#if TRA_SHADOW_STACK
+    int RETFlag;
+#endif
 };
 
 void tb_free(TranslationBlock *tb);

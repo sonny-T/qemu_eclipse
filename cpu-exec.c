@@ -55,6 +55,9 @@ long RealGadgetLen = 0;
     ShadowStack sstack1;
     bool CPUEXECFlag = 1;
 #endif
+#if TRA_SHADOW_STACK
+    bool TraditionalStackFlag = 0;
+#endif
 
 #if !defined(CONFIG_USER_ONLY)
 /* Allow the guest to have a max 3ms advance.
@@ -390,17 +393,31 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     target_ulong cs_base, pc;
     uint32_t flags;
 
+#if TRA_SHADOW_STACK
+    target_ulong pc_var;
+#endif
+
     /* we record a subset of the CPU state. It will
        always be the same before a given translated block
        is executed. */
     cpu_get_tb_cpu_state(env, &pc, &cs_base, &flags);
 
 #if SHADOW_STACK
+#if TRA_SHADOW_STACK
+    if(TraditionalStackFlag){
+    	pc_var = ShadowStackPop();
+    	if(pc != pc_var){
+    		printf("failed\n");
+    	}
+    }
+    TraditionalStackFlag = 0;
+#else
     if(pc == 0)
     {
     	pc = ShadowStackPop();
     	//printf("Pop stack---------------------------- %x\n",pc);
     }
+#endif
 #endif
 
     tb_lock();
@@ -429,10 +446,17 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     /* See if we can patch the calling TB. */
     if (*last_tb && !qemu_loglevel_mask(CPU_LOG_TB_NOCHAIN)) {
 #if SHADOW_STACK
+#if TRA_SHADOW_STACK
+    	if((tb->CALLFlag != 1) && (tb->RETFlag != 1))
+    	{
+    		tb_add_jump(*last_tb, tb_exit, tb);
+    	}
+#else
     	if(tb->CALLFlag != 1)
     	{
     		tb_add_jump(*last_tb, tb_exit, tb);
     	}
+#endif
 #else
     	tb_add_jump(*last_tb, tb_exit, tb);
 #endif
@@ -443,6 +467,11 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
   	if(tb->CALLFlag == 1){
   		ShadowStackPush(tb->next_insn);
   		//printf("Push stack****************************** %x\n",tb->next_insn);
+  	}
+#endif
+#if TRA_SHADOW_STACK
+  	if(tb->RETFlag == 1){
+  		TraditionalStackFlag = 1;
   	}
 #endif
 

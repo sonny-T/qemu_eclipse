@@ -4812,6 +4812,7 @@ int main(int argc, char **argv, char **envp)
     }
     trace_init_vcpu_events();
     cpu_loop(env);
+
     /* never exits */
     return 0;
 }

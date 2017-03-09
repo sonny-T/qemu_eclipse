@@ -406,8 +406,8 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
 #if TRA_SHADOW_STACK
     if(TraditionalStackFlag){
     	pc_var = ShadowStackPop();
-    	if(pc != pc_var){
-    		printf("failed\n");
+    	if(pc == pc_var){
+    		fprintf(stderr,"TSS p: %#x  s: %#x\n",pc,pc_var);
     	}
     }
     TraditionalStackFlag = 0;
@@ -712,6 +712,7 @@ int cpu_exec(CPUState *cpu)
     CPUEXECFlag = 0;
     }
 #endif
+
     /* replay_interrupt may need current_cpu */
     current_cpu = cpu;
 
@@ -825,6 +826,5 @@ int cpu_exec(CPUState *cpu)
 
     /* Does not need atomic_mb_set because a spurious wakeup is okay.  */
     atomic_set(&tcg_current_cpu, NULL);
-
     return ret;
 }

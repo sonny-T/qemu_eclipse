@@ -6476,6 +6476,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     	/**** judge gadget type ****/
     	indirect_insn = 1;
 #endif
+
 #if TRA_SHADOW_STACK
     	ret_insn = 1;
 #endif
@@ -6485,9 +6486,6 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         gen_stack_update(s, val + (1 << ot));
         /* Note that gen_pop_T0 uses a zero-extending load.  */
         gen_op_jmp_v(cpu_T0);
-
-        //printf("ret im pc :   %x\n",s->pc);
-
         gen_bnd_jmp(s);
         gen_eob(s);
         break;
@@ -6496,6 +6494,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     	/**** judge gadget type ****/
     	indirect_insn = 1;
 #endif
+
 #if TRA_SHADOW_STACK
     	ret_insn = 1;
 #endif

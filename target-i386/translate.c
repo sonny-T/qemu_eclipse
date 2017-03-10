@@ -5068,16 +5068,14 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 #if SAFE_INSTRUCTIONS
         	/**** SAFE INSTRUCTIONS ****/
         	safe_insn = 1;
-        	if(mod == 3)
+        	if(mod == 3) //mod = 3
         	{
         		mod_insn = 1;
         	}
-        	if(((modrm & 7)==5) && (mod == 0))
+        	if(((modrm & 7)==5) && (mod == 0)) //mod = 0 rm = 5
         	{
         		rm_insn = 1;
         	}
-        	printf("mod: %d  rm: %d\n",mod,rm);
-        	printf("****   jmp  ****\n");
 #endif
             if (dflag == MO_16) {
                 tcg_gen_ext16u_tl(cpu_T0, cpu_T0);
@@ -5095,11 +5093,14 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 #if SAFE_INSTRUCTIONS
         	/**** SAFE INSTRUCTIONS ****/
         	safe_insn = 1;
+        	if(mod == 3)
+        	{
+        		mod_insn = 1;
+        	}
         	if(((modrm & 7)==5) && (mod == 0))
         	{
         		rm_insn = 1;
         	}
-        	printf("mod: %d  rm: %d\n",mod,rm);
         	printf("****   ljmp  ****\n");
 #endif
             gen_op_ld_v(s, ot, cpu_T1, cpu_A0);
@@ -8644,14 +8645,14 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         if(safe_insn == 1)
         {
         	tb->SafeFlag = 1;
-        	if(mod_insn == 1)
-        	{
+        	if(mod_insn == 1){
+        		//Mod67Flag is mod = 3
         		tb->Mod67Flag = 1;
         	}
         	mod_insn = 0;
 
-        	if(rm_insn == 1)
-        	{
+        	if(rm_insn == 1){
+        		//RMFlag is mod = 0 rm = 5
         		tb->RMFlag = 1;
         	}
         	rm_insn = 0;

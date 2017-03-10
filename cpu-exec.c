@@ -47,6 +47,12 @@ static int PCI = 0;
 static target_ulong TRACEPC_Buf[TBN];
 #endif
 
+#if SAFE_INSTRUCTIONS
+bool RFlag = 0;
+bool MFlag = 0;
+static target_ulong var_pc = 0;
+#endif
+
 #if GADGET
 long RealGadgetLen = 0;
 #endif
@@ -401,6 +407,20 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
        always be the same before a given translated block
        is executed. */
     cpu_get_tb_cpu_state(env, &pc, &cs_base, &flags);
+#if SAFE_INSTRUCTIONS
+#if RJMP
+    if(RFlag){
+    	fprintf(stderr,"INRJMP d: %#x  s: %#x\n",pc,var_pc);
+    }
+#endif
+    RFlag = 0;
+#if MJMP
+    if(MFlag){
+    	fprintf(stderr,"INMJMP d: %#x  s: %#x\n",pc,var_pc);
+    }
+#endif
+    MFlag = 0;
+#endif
 
 #if SHADOW_STACK
 #if TRA_SHADOW_STACK
@@ -447,18 +467,22 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     if (*last_tb && !qemu_loglevel_mask(CPU_LOG_TB_NOCHAIN)) {
 #if SHADOW_STACK
 #if TRA_SHADOW_STACK
-    	if((tb->CALLFlag != 1) && (tb->RETFlag != 1))
-    	{
+    	if((tb->CALLFlag != 1) && (tb->RETFlag != 1)){
     		tb_add_jump(*last_tb, tb_exit, tb);
     	}
 #else
-    	if(tb->CALLFlag != 1)
-    	{
+    	if(tb->CALLFlag != 1){
     		tb_add_jump(*last_tb, tb_exit, tb);
     	}
 #endif
 #else
+#if SAFE_INSTRUCTIONS
+    	if(tb->SafeFlag != 1){
+    		tb_add_jump(*last_tb, tb_exit, tb);
+    	}
+#else
     	tb_add_jump(*last_tb, tb_exit, tb);
+#endif
 #endif
     }
     tb_unlock();
@@ -755,10 +779,19 @@ int cpu_exec(CPUState *cpu)
                 cpu_handle_interrupt(cpu, &last_tb);
                 tb = tb_find_fast(cpu, &last_tb, tb_exit);
 #if SAFE_INSTRUCTIONS
-				if(tb->SafeFlag == 1)
-				{
-					printf("%lx  %d  %d\n\n",tb->pc,tb->Mod67Flag,tb->RMFlag);
+        		//Mod67Flag is mod = 3
+        		//RMFlag is mod = 0 rm = 5
+				if(tb->SafeFlag == 1){
+					if(tb->Mod67Flag){
+						RFlag = 1;
+						var_pc = tb->pc;
+					}
+					if(!tb->RMFlag){
+						MFlag = 1;
+						var_pc = tb->pc;
+					}
 				}
+
 #endif
 
 #if GADGET

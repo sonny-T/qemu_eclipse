@@ -2,8 +2,8 @@
 
 #define GADGET 0
 
-#define SAFE_INSTRUCTIONS 1
-#define RJMP 1
+#define SAFE_INSTRUCTIONS 0
+#define RJMP 0
 #define MJMP 0
 
 #define SHADOW_STACK 0

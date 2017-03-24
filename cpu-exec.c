@@ -407,6 +407,7 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
        always be the same before a given translated block
        is executed. */
     cpu_get_tb_cpu_state(env, &pc, &cs_base, &flags);
+
 #if SAFE_INSTRUCTIONS
 #if RJMP
     if(RFlag){
@@ -426,7 +427,7 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
 #if TRA_SHADOW_STACK
     if(TraditionalStackFlag){
     	pc_var = ShadowStackPop();
-    	if(pc == pc_var){
+    	if(pc != pc_var){
     		fprintf(stderr,"TSS p: %#x  s: %#x\n",pc,pc_var);
     	}
     }

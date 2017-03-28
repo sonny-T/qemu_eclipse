@@ -5020,7 +5020,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 #if SHADOW_STACK
             //printf("call Ev next_eip :   %x\n",next_eip);
             call_insn = 1;
-#if TRA_SHADOW_STACK
+#if TRA_SHADOW_STACK | NO_OPTIMIZE
             tcg_gen_movi_tl(cpu_T1, next_eip);
 #else
             tcg_gen_movi_tl(cpu_T1, 0);
@@ -6592,7 +6592,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 #if SHADOW_STACK
             //printf("call im next_eip :   %x\n",next_eip);
             call_insn = 1;
-#if TRA_SHADOW_STACK
+#if TRA_SHADOW_STACK | NO_OPTIMIZE
             tcg_gen_movi_tl(cpu_T0, next_eip);
 #else
             tcg_gen_movi_tl(cpu_T0, 0);

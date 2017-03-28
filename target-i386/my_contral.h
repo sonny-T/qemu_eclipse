@@ -6,8 +6,9 @@
 #define RJMP 0
 #define MJMP 0
 
-#define SHADOW_STACK 0
-#define TRA_SHADOW_STACK 0
+#define SHADOW_STACK 1
+#define TRA_SHADOW_STACK 0  /*First setting SHADOW_STACK = 1 then setting TRA = 1*/
+#define NO_OPTIMIZE 1  /*First setting SHADOW_STACK = 1 then setting  = 1*/
 
 #define TBN 5
 

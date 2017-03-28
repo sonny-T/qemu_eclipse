@@ -433,6 +433,7 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     }
     TraditionalStackFlag = 0;
 #else
+#if !NO_OPTIMIZE
     if(pc == 0)
     {
     	pc = ShadowStackPop();
@@ -440,9 +441,9 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     }
 #endif
 #endif
+#endif
 
     tb_lock();
-
     tb = cpu->tb_jmp_cache[tb_jmp_cache_hash_func(pc)];
     if (unlikely(!tb || tb->pc != pc || tb->cs_base != cs_base ||
                  tb->flags != flags)) {
@@ -489,10 +490,12 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     tb_unlock();
 
 #if SHADOW_STACK
+#if !NO_OPTIMIZE
   	if(tb->CALLFlag == 1){
   		ShadowStackPush(tb->next_insn);
   		//printf("Push stack****************************** %x\n",tb->next_insn);
   	}
+#endif
 #endif
 #if TRA_SHADOW_STACK
   	if(tb->RETFlag == 1){

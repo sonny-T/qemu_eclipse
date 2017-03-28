@@ -433,13 +433,11 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     }
     TraditionalStackFlag = 0;
 #else
-#if !NO_OPTIMIZE | !NO2OPTIMIZE
     if(pc == 0)
     {
     	pc = ShadowStackPop();
     	//printf("Pop stack---------------------------- %x\n",pc);
     }
-#endif
 #endif
 #endif
 
@@ -467,8 +465,8 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
 #endif
     /* See if we can patch the calling TB. */
     if (*last_tb && !qemu_loglevel_mask(CPU_LOG_TB_NOCHAIN)) {
-#if SHADOW_STACK
-#if TRA_SHADOW_STACK | NO2OPTIMIZE
+#if SHADOW_STACK | NO_OPTIMIZE_NOSTACK | NO2OPTIMIZE_NOSTACK
+#if TRA_SHADOW_STACK | NO2OPTIMIZE | NO2OPTIMIZE_NOSTACK
     	if((tb->CALLFlag != 1) && (tb->RETFlag != 1)){
     		tb_add_jump(*last_tb, tb_exit, tb);
     	}
@@ -490,12 +488,10 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     tb_unlock();
 
 #if SHADOW_STACK
-#if !NO_OPTIMIZE | !NO2OPTIMIZE
   	if(tb->CALLFlag == 1){
   		ShadowStackPush(tb->next_insn);
   		//printf("Push stack****************************** %x\n",tb->next_insn);
   	}
-#endif
 #endif
 #if TRA_SHADOW_STACK
   	if(tb->RETFlag == 1){

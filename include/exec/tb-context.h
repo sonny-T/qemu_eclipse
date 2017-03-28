@@ -32,7 +32,7 @@
 typedef struct TB_Code TB_Code;
 #endif
 
-#if SHADOW_STACK
+#if SHADOW_STACK | NO_OPTIMIZE_NOSTACK | NO2OPTIMIZE_NOSTACK
 typedef struct shadow_stack ShadowStack;
 #endif
 

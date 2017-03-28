@@ -5017,10 +5017,10 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             }
             next_eip = s->pc - s->cs_base;
 
-#if SHADOW_STACK
+#if SHADOW_STACK | NO_OPTIMIZE_NOSTACK | NO2OPTIMIZE_NOSTACK
             //printf("call Ev next_eip :   %x\n",next_eip);
             call_insn = 1;
-#if TRA_SHADOW_STACK | NO_OPTIMIZE | NO2OPTIMIZE
+#if TRA_SHADOW_STACK | NO_OPTIMIZE_NOSTACK | NO2OPTIMIZE_NOSTACK
             tcg_gen_movi_tl(cpu_T1, next_eip);
 #else
             tcg_gen_movi_tl(cpu_T1, 0);
@@ -6478,7 +6478,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     	indirect_insn = 1;
 #endif
 
-#if TRA_SHADOW_STACK | NO2OPTIMIZE
+#if TRA_SHADOW_STACK | NO2OPTIMIZE | NO2OPTIMIZE_NOSTACK
     	ret_insn = 1;
 #endif
         val = cpu_ldsw_code(env, s->pc);
@@ -6496,7 +6496,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     	indirect_insn = 1;
 #endif
 
-#if TRA_SHADOW_STACK | NO2OPTIMIZE
+#if TRA_SHADOW_STACK | NO2OPTIMIZE | NO2OPTIMIZE_NOSTACK
     	ret_insn = 1;
 #endif
         ot = gen_pop_T0(s);
@@ -6589,10 +6589,10 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             } else if (!CODE64(s)) {
                 tval &= 0xffffffff;
             }
-#if SHADOW_STACK
+#if SHADOW_STACK | NO_OPTIMIZE_NOSTACK | NO2OPTIMIZE_NOSTACK
             //printf("call im next_eip :   %x\n",next_eip);
             call_insn = 1;
-#if TRA_SHADOW_STACK | NO_OPTIMIZE | NO2OPTIMIZE
+#if TRA_SHADOW_STACK | NO_OPTIMIZE_NOSTACK | NO2OPTIMIZE_NOSTACK
             tcg_gen_movi_tl(cpu_T0, next_eip);
 #else
             tcg_gen_movi_tl(cpu_T0, 0);
@@ -8478,11 +8478,11 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
     tb->RMFlag = 0;
 #endif
 
-#if SHADOW_STACK
+#if SHADOW_STACK | NO_OPTIMIZE_NOSTACK | NO2OPTIMIZE_NOSTACK
     tb->CALLFlag = 0;
     tb->next_insn = 0;
 #endif
-#if TRA_SHADOW_STACK | NO2OPTIMIZE
+#if TRA_SHADOW_STACK | NO2OPTIMIZE | NO2OPTIMIZE_NOSTACK
     tb->RETFlag = 0;
 #endif
 
@@ -8595,7 +8595,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
 #endif
         insn_star = pc_ptr;
         pc_ptr = disas_insn(env, dc, pc_ptr);
-#if SHADOW_STACK
+#if SHADOW_STACK | NO_OPTIMIZE_NOSTACK | NO2OPTIMIZE_NOSTACK
         if(call_insn == 1)
         {
         	tb->CALLFlag = 1;
@@ -8603,7 +8603,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         }
         call_insn = 0;
 #endif
-#if TRA_SHADOW_STACK | NO2OPTIMIZE
+#if TRA_SHADOW_STACK | NO2OPTIMIZE | NO2OPTIMIZE_NOSTACK
         if(ret_insn == 1){
         	tb->RETFlag = 1;
         }

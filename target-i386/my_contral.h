@@ -8,7 +8,8 @@
 
 #define SHADOW_STACK 1
 #define TRA_SHADOW_STACK 0  /*First setting SHADOW_STACK = 1 then setting TRA = 1*/
-#define NO_OPTIMIZE 1  /*First setting SHADOW_STACK = 1 then setting  = 1*/
+#define NO_OPTIMIZE 0  /*First setting SHADOW_STACK = 1 then setting  = 1*/
+#define NO2OPTIMIZE 1  /*First setting SHADOW_STACK = 1 then setting  = 1*/
 
 #define TBN 5
 

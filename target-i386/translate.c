@@ -5020,7 +5020,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 #if SHADOW_STACK
             //printf("call Ev next_eip :   %x\n",next_eip);
             call_insn = 1;
-#if TRA_SHADOW_STACK | NO_OPTIMIZE
+#if TRA_SHADOW_STACK | NO_OPTIMIZE | NO2OPTIMIZE
             tcg_gen_movi_tl(cpu_T1, next_eip);
 #else
             tcg_gen_movi_tl(cpu_T1, 0);
@@ -6478,7 +6478,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     	indirect_insn = 1;
 #endif
 
-#if TRA_SHADOW_STACK
+#if TRA_SHADOW_STACK | NO2OPTIMIZE
     	ret_insn = 1;
 #endif
         val = cpu_ldsw_code(env, s->pc);
@@ -6496,7 +6496,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     	indirect_insn = 1;
 #endif
 
-#if TRA_SHADOW_STACK
+#if TRA_SHADOW_STACK | NO2OPTIMIZE
     	ret_insn = 1;
 #endif
         ot = gen_pop_T0(s);
@@ -6517,7 +6517,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         val = cpu_ldsw_code(env, s->pc);
         s->pc += 2;
 
-        //printf("lret im pc :   %x\n",s->pc);
+        printf("lret im pc :   %x\n",s->pc);
 
     do_lret:
         if (s->pe && !s->vm86) {
@@ -6548,7 +6548,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 #endif
         val = 0;
 
-        //printf("lret pc :   %x\n",s->pc);
+        printf("lret pc :   %x\n",s->pc);
 
         goto do_lret;
     case 0xcf: /* iret */
@@ -6592,7 +6592,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 #if SHADOW_STACK
             //printf("call im next_eip :   %x\n",next_eip);
             call_insn = 1;
-#if TRA_SHADOW_STACK | NO_OPTIMIZE
+#if TRA_SHADOW_STACK | NO_OPTIMIZE | NO2OPTIMIZE
             tcg_gen_movi_tl(cpu_T0, next_eip);
 #else
             tcg_gen_movi_tl(cpu_T0, 0);
@@ -8482,7 +8482,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
     tb->CALLFlag = 0;
     tb->next_insn = 0;
 #endif
-#if TRA_SHADOW_STACK
+#if TRA_SHADOW_STACK | NO2OPTIMIZE
     tb->RETFlag = 0;
 #endif
 
@@ -8603,7 +8603,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         }
         call_insn = 0;
 #endif
-#if TRA_SHADOW_STACK
+#if TRA_SHADOW_STACK | NO2OPTIMIZE
         if(ret_insn == 1){
         	tb->RETFlag = 1;
         }

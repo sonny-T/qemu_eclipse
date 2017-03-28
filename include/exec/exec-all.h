@@ -305,7 +305,7 @@ struct TranslationBlock {
     int CALLFlag;
     target_ulong next_insn;
 #endif
-#if TRA_SHADOW_STACK
+#if TRA_SHADOW_STACK | NO2OPTIMIZE
     int RETFlag;
 #endif
 };

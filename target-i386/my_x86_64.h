@@ -1,3 +1,6 @@
+#ifndef _MY_X86_X64_H
+#define _MY_X86_X64_H
+
 #define cat(OP,P) OP = P
 
 bool syscall_insn = 0;
@@ -8,6 +11,10 @@ bool rm_insn = 0;
 bool call_insn = 0;
 bool ret_insn = 0;
 
+int PREVENTFlag = 0;
+int ENTERFlag = 0;
+
+/*
 enum index {
 x80848a2=      0x848a2,
 x806b217=      0x6b217,
@@ -3294,3 +3301,6 @@ char array[][30]={
 [x807f931]="	Functional  	3	7",
 [x808aa93]="	Functional  	3	0",
 };
+*/
+
+#endif

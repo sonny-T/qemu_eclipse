@@ -4658,12 +4658,72 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 
         /**************************/
         /* arith & logic */
-    case 0x00 ... 0x05:
+    case 0x00 ... 0x03:
+    case 0x28 ... 0x2b:
+    case 0x20 ... 0x23:
+    {
+#if PREVENT_UNINTEND
+        PREVENTFlag = 1;
+#endif
+        int op, f, val;
+
+        op = (b >> 3) & 7;
+        f = (b >> 1) & 3;
+
+        ot = mo_b_d(b, dflag);
+
+        switch(f) {
+        case 0: /* OP Ev, Gv */
+            modrm = cpu_ldub_code(env, s->pc++);
+            reg = ((modrm >> 3) & 7) | rex_r;
+            mod = (modrm >> 6) & 3;
+            rm = (modrm & 7) | REX_B(s);
+            if (mod != 3) {
+                gen_lea_modrm(env, s, modrm);
+                opreg = OR_TMP0;
+            } else if (op == OP_XORL && rm == reg) {
+            xor_zero1:
+                /* xor reg, reg optimisation */
+                set_cc_op(s, CC_OP_CLR);
+                tcg_gen_movi_tl(cpu_T0, 0);
+                gen_op_mov_reg_v(ot, reg, cpu_T0);
+                break;
+            } else {
+                opreg = rm;
+            }
+            gen_op_mov_v_reg(ot, cpu_T1, reg);
+            gen_op(s, op, ot, opreg);
+            break;
+        case 1: /* OP Gv, Ev */
+            modrm = cpu_ldub_code(env, s->pc++);
+            mod = (modrm >> 6) & 3;
+            reg = ((modrm >> 3) & 7) | rex_r;
+            rm = (modrm & 7) | REX_B(s);
+            if (mod != 3) {
+                gen_lea_modrm(env, s, modrm);
+                gen_op_ld_v(s, ot, cpu_T1, cpu_A0);
+            } else if (op == OP_XORL && rm == reg) {
+                goto xor_zero1;
+            } else {
+                gen_op_mov_v_reg(ot, cpu_T1, rm);
+            }
+            gen_op(s, op, ot, reg);
+            break;
+        case 2: /* OP A, Iv */
+            val = insn_get(env, s, ot);
+            tcg_gen_movi_tl(cpu_T1, val);
+            gen_op(s, op, ot, OR_EAX);
+            break;
+        }
+    }
+    break;
+
+    case 0x04 ... 0x05:
     case 0x08 ... 0x0d:
     case 0x10 ... 0x15:
     case 0x18 ... 0x1d:
-    case 0x20 ... 0x25:
-    case 0x28 ... 0x2d:
+    case 0x24 ... 0x25:
+    case 0x2c ... 0x2d:
     case 0x30 ... 0x35:
     case 0x38 ... 0x3d:
         {
@@ -4727,6 +4787,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     case 0x81:
     case 0x83:
         {
+#if PREVENT_UNINTEND
+        	PREVENTFlag = 1;
+#endif
             int val;
 
             ot = mo_b_d(b, dflag);
@@ -5008,6 +5071,10 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             break;
         case 2: /* call Ev */
             /* XXX: optimize if memory (no 'and' is necessary) */
+#if PREVENT_UNINTEND
+        	PREVENTFlag = 1;
+#endif
+
 #if GADGET
         	/**** judge gadget type ****/
         	indirect_insn = 1;
@@ -5118,6 +5185,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             gen_eob(s);
             break;
         case 6: /* push Ev */
+#if PREVENT_UNINTEND
+        	PREVENTFlag = 1;
+#endif
             gen_push_v(s, cpu_T0);
             break;
         default:
@@ -5355,10 +5425,16 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         /**************************/
         /* push/pop */
     case 0x50 ... 0x57: /* push */
+#if PREVENT_UNINTEND
+        PREVENTFlag = 1;
+#endif
         gen_op_mov_v_reg(MO_32, cpu_T0, (b & 7) | REX_B(s));
         gen_push_v(s, cpu_T0);
         break;
     case 0x58 ... 0x5f: /* pop */
+#if PREVENT_UNINTEND
+        PREVENTFlag = 1;
+#endif
         ot = gen_pop_T0(s);
         /* NOTE: order is important for pop %sp */
         gen_pop_update(s, ot);
@@ -5376,6 +5452,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         break;
     case 0x68: /* push Iv */
     case 0x6a:
+#if PREVENT_UNINTEND
+        PREVENTFlag = 1;
+#endif
         ot = mo_pushpop(s, dflag);
         if (b == 0x68)
             val = insn_get(env, s, ot);
@@ -5385,6 +5464,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         gen_push_v(s, cpu_T0);
         break;
     case 0x8f: /* pop Ev */
+#if PREVENT_UNINTEND
+        PREVENTFlag = 1;
+#endif
         modrm = cpu_ldub_code(env, s->pc++);
         mod = (modrm >> 6) & 3;
         ot = gen_pop_T0(s);
@@ -5411,12 +5493,18 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         }
         break;
     case 0xc9: /* leave */
+#if PREVENT_UNINTEND
+        PREVENTFlag = 1;
+#endif
         gen_leave(s);
         break;
     case 0x06: /* push es */
     case 0x0e: /* push cs */
     case 0x16: /* push ss */
     case 0x1e: /* push ds */
+#if PREVENT_UNINTEND
+        PREVENTFlag = 1;
+#endif
         if (CODE64(s))
             goto illegal_op;
         gen_op_movl_T0_seg(b >> 3);
@@ -5424,12 +5512,18 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         break;
     case 0x1a0: /* push fs */
     case 0x1a8: /* push gs */
+#if PREVENT_UNINTEND
+        PREVENTFlag = 1;
+#endif
         gen_op_movl_T0_seg((b >> 3) & 7);
         gen_push_v(s, cpu_T0);
         break;
     case 0x07: /* pop es */
     case 0x17: /* pop ss */
     case 0x1f: /* pop ds */
+#if PREVENT_UNINTEND
+        PREVENTFlag = 1;
+#endif
         if (CODE64(s))
             goto illegal_op;
         reg = b >> 3;
@@ -5449,6 +5543,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         break;
     case 0x1a1: /* pop fs */
     case 0x1a9: /* pop gs */
+#if PREVENT_UNINTEND
+        PREVENTFlag = 1;
+#endif
         ot = gen_pop_T0(s);
         gen_movl_seg_T0(s, (b >> 3) & 7);
         gen_pop_update(s, ot);
@@ -5462,6 +5559,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         /* mov */
     case 0x88:
     case 0x89: /* mov Gv, Ev */
+#if PREVENT_UNINTEND
+        PREVENTFlag = 1;
+#endif
         ot = mo_b_d(b, dflag);
         modrm = cpu_ldub_code(env, s->pc++);
         reg = ((modrm >> 3) & 7) | rex_r;
@@ -5471,6 +5571,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         break;
     case 0xc6:
     case 0xc7: /* mov Ev, Iv */
+#if PREVENT_UNINTEND
+        PREVENTFlag = 1;
+#endif
         ot = mo_b_d(b, dflag);
         modrm = cpu_ldub_code(env, s->pc++);
         mod = (modrm >> 6) & 3;
@@ -5488,6 +5591,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         break;
     case 0x8a:
     case 0x8b: /* mov Ev, Gv */
+#if PREVENT_UNINTEND
+        PREVENTFlag = 1;
+#endif
         ot = mo_b_d(b, dflag);
         modrm = cpu_ldub_code(env, s->pc++);
         reg = ((modrm >> 3) & 7) | rex_r;
@@ -5496,6 +5602,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         gen_op_mov_reg_v(ot, reg, cpu_T0);
         break;
     case 0x8e: /* mov seg, Gv */
+#if PREVENT_UNINTEND
+        PREVENTFlag = 1;
+#endif
         modrm = cpu_ldub_code(env, s->pc++);
         reg = (modrm >> 3) & 7;
         if (reg >= 6 || reg == R_CS)
@@ -5514,6 +5623,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         }
         break;
     case 0x8c: /* mov Gv, seg */
+#if PREVENT_UNINTEND
+        PREVENTFlag = 1;
+#endif
         modrm = cpu_ldub_code(env, s->pc++);
         reg = (modrm >> 3) & 7;
         mod = (modrm >> 6) & 3;
@@ -5571,6 +5683,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         break;
 
     case 0x8d: /* lea */
+#if PREVENT_UNINTEND
+        	PREVENTFlag = 1;
+#endif
         modrm = cpu_ldub_code(env, s->pc++);
         mod = (modrm >> 6) & 3;
         if (mod == 3)
@@ -5588,6 +5703,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     case 0xa2: /* mov Ov, EAX */
     case 0xa3:
         {
+#if PREVENT_UNINTEND
+        	PREVENTFlag = 1;
+#endif
             target_ulong offset_addr;
 
             ot = mo_b_d(b, dflag);
@@ -5623,11 +5741,17 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         gen_op_mov_reg_v(MO_8, R_EAX, cpu_T0);
         break;
     case 0xb0 ... 0xb7: /* mov R, Ib */
+#if PREVENT_UNINTEND
+        PREVENTFlag = 1;
+#endif
         val = insn_get(env, s, MO_8);
         tcg_gen_movi_tl(cpu_T0, val);
         gen_op_mov_reg_v(MO_8, (b & 7) | REX_B(s), cpu_T0);
         break;
     case 0xb8 ... 0xbf: /* mov R, Iv */
+#if PREVENT_UNINTEND
+        PREVENTFlag = 1;
+#endif
 #ifdef TARGET_X86_64
         if (dflag == MO_64) {
             uint64_t tmp;
@@ -6473,6 +6597,10 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         /************************/
         /* control */
     case 0xc2: /* ret im */
+#if PREVENT_UNINTEND
+        	PREVENTFlag = 1;
+#endif
+
 #if GADGET
     	/**** judge gadget type ****/
     	indirect_insn = 1;
@@ -6491,6 +6619,10 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         gen_eob(s);
         break;
     case 0xc3: /* ret */
+#if PREVENT_UNINTEND
+        	PREVENTFlag = 1;
+#endif
+
 #if GADGET
     	/**** judge gadget type ****/
     	indirect_insn = 1;
@@ -6554,7 +6686,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     case 0xcf: /* iret */
         gen_svm_check_intercept(s, pc_start, SVM_EXIT_IRET);
 
-        //printf("iret pc :   %x\n",s->pc);
+        printf("iret pc :   %x\n",s->pc);
 
         if (!s->pe) {
             /* real mode */
@@ -6576,6 +6708,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         break;
     case 0xe8: /* call im */
         {
+#if PREVENT_UNINTEND
+        	PREVENTFlag = 1;
+#endif
             if (dflag != MO_16) {
                 tval = (int32_t)insn_get(env, s, MO_32);
             } else {
@@ -7988,6 +8123,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         break;
     case 0x120: /* mov reg, crN */
     case 0x122: /* mov crN, reg */
+#if PREVENT_UNINTEND
+        PREVENTFlag = 1;
+#endif
         if (s->cpl != 0) {
             gen_exception(s, EXCP0D_GPF, pc_start - s->cs_base);
         } else {
@@ -8033,6 +8171,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         break;
     case 0x121: /* mov reg, drN */
     case 0x123: /* mov drN, reg */
+#if PREVENT_UNINTEND
+        PREVENTFlag = 1;
+#endif
         if (s->cpl != 0) {
             gen_exception(s, EXCP0D_GPF, pc_start - s->cs_base);
         } else {
@@ -8595,6 +8736,15 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
 #endif
         insn_star = pc_ptr;
         pc_ptr = disas_insn(env, dc, pc_ptr);
+#if PREVENT_UNINTEND
+        PREVENTFlag = 0;
+        if(ENTERFlag){
+        	fprintf(stderr,"\n");
+        	printf("%x\n",insn_star);
+        }
+        ENTERFlag = 0;
+#endif
+
 #if SHADOW_STACK | NO_OPTIMIZE_NOSTACK | NO2OPTIMIZE_NOSTACK
         if(call_insn == 1)
         {

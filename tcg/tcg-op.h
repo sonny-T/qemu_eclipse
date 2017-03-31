@@ -26,6 +26,11 @@
 #include "exec/helper-proto.h"
 #include "exec/helper-gen.h"
 
+#if PREVENT_UNINTEND
+extern int PREVENTFlag;
+extern int ENTERFlag;
+#endif
+
 /* Basic output routines.  Not for general consumption.  */
 
 void tcg_gen_op1(TCGContext *, TCGOpcode, TCGArg);
@@ -499,6 +504,12 @@ static inline void tcg_gen_discard_i64(TCGv_i64 arg)
 
 static inline void tcg_gen_mov_i64(TCGv_i64 ret, TCGv_i64 arg)
 {
+#if PREVENT_UNINTEND
+	if((GET_TCGV_I64(ret)==9 || GET_TCGV_I64(arg)==9) && (!PREVENTFlag)){
+		fprintf(stderr,"Illegal esp operation!\n");
+		ENTERFlag = 1;
+	}
+#endif
     if (!TCGV_EQUAL_I64(ret, arg)) {
         tcg_gen_op2_i64(INDEX_op_mov_i64, ret, arg);
     }
@@ -506,6 +517,12 @@ static inline void tcg_gen_mov_i64(TCGv_i64 ret, TCGv_i64 arg)
 
 static inline void tcg_gen_movi_i64(TCGv_i64 ret, int64_t arg)
 {
+#if PREVENT_UNINTEND
+	if((GET_TCGV_I64(ret)==9) && (!PREVENTFlag)){
+		fprintf(stderr,"Illegal esp operation!\n");
+		ENTERFlag = 1;
+	}
+#endif
     tcg_gen_op2i_i64(INDEX_op_movi_i64, ret, arg);
 }
 

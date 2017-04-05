@@ -29,6 +29,7 @@
 #if PREVENT_UNINTEND
 extern int PREVENTFlag;
 extern int ENTERFlag;
+extern target_ulong ISP_PC;
 #endif
 
 /* Basic output routines.  Not for general consumption.  */
@@ -505,8 +506,8 @@ static inline void tcg_gen_discard_i64(TCGv_i64 arg)
 static inline void tcg_gen_mov_i64(TCGv_i64 ret, TCGv_i64 arg)
 {
 #if PREVENT_UNINTEND
-	if((GET_TCGV_I64(ret)==9 || GET_TCGV_I64(arg)==9) && (!PREVENTFlag)){
-		fprintf(stderr,"Illegal esp operation!\n");
+	if((!PREVENTFlag) && (GET_TCGV_I64(ret)==9)){
+		fprintf(stderr,"I_SP %#lx!\n",ISP_PC);
 		ENTERFlag = 1;
 	}
 #endif
@@ -518,8 +519,8 @@ static inline void tcg_gen_mov_i64(TCGv_i64 ret, TCGv_i64 arg)
 static inline void tcg_gen_movi_i64(TCGv_i64 ret, int64_t arg)
 {
 #if PREVENT_UNINTEND
-	if((GET_TCGV_I64(ret)==9) && (!PREVENTFlag)){
-		fprintf(stderr,"Illegal esp operation!\n");
+	if((!PREVENTFlag) && (GET_TCGV_I64(ret)==9)){
+		fprintf(stderr,"I_SP %#lx!\n",ISP_PC);
 		ENTERFlag = 1;
 	}
 #endif

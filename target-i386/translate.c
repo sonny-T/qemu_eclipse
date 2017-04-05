@@ -96,6 +96,10 @@ static TCGv_i64 cpu_tmp1_i64;
 static int x86_64_hregs;
 #endif
 
+#if PREVENT_UNINTEND
+target_ulong ISP_PC;
+#endif
+
 typedef struct DisasContext {
     /* current insn context */
     int override; /* -1 if no override */
@@ -4486,6 +4490,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     s->rip_offset = 0; /* for relative ip address */
     s->vex_l = 0;
     s->vex_v = 0;
+#if PREVENT_UNINTEND
+    ISP_PC = pc_start;
+#endif
  next_byte:
 
     b = cpu_ldub_code(env, s->pc);
@@ -8740,7 +8747,6 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         PREVENTFlag = 0;
         if(ENTERFlag){
         	fprintf(stderr,"\n");
-        	printf("%x\n",insn_star);
         }
         ENTERFlag = 0;
 #endif

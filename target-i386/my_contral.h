@@ -2,9 +2,9 @@
 
 #define GADGET 0
 
-#define SAFE_INSTRUCTIONS 0
-#define RJMP 0
-#define MJMP 0
+#define SAFE_INSTRUCTIONS 1
+#define RJMP 1
+#define MJMP 1
 
 /*********     stack   switch   ********/
 #define SHADOW_STACK 0
@@ -15,7 +15,7 @@
 #define NO2OPTIMIZE_NOSTACK 0  /*No stack, but removing tow optimization*/
 /***************************************/
 
-#define PREVENT_UNINTEND 1
+#define PREVENT_UNINTEND 0
 
 #define TBN 5
 

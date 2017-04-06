@@ -409,15 +409,24 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     cpu_get_tb_cpu_state(env, &pc, &cs_base, &flags);
 
 #if SAFE_INSTRUCTIONS
+    int JMPDIST;
 #if RJMP
     if(RFlag){
-    	fprintf(stderr,"INRJMP d: %#x  s: %#x\n",pc,var_pc);
+    	JMPDIST = pc - var_pc;
+    	JMPDIST = abs(JMPDIST);
+    	if(JMPDIST >= 0x4000){
+    		fprintf(stderr,"INRJMP d: %#x  s: %#x dist: %#x\n" ,pc,var_pc,JMPDIST);
+    	}
     }
 #endif
     RFlag = 0;
 #if MJMP
     if(MFlag){
-    	fprintf(stderr,"INMJMP d: %#x  s: %#x\n",pc,var_pc);
+    	JMPDIST = pc - var_pc;
+    	JMPDIST = abs(JMPDIST);
+    	if(JMPDIST >= 0x4000){
+    		fprintf(stderr,"INMJMP d: %#x  s: %#x dist: %#x\n" ,pc,var_pc,JMPDIST);
+    	}
     }
 #endif
     MFlag = 0;

@@ -795,7 +795,7 @@ int cpu_exec(CPUState *cpu)
 						RFlag = 1;
 						var_pc = tb->pc;
 					}
-					if(!tb->RMFlag){
+					if((!tb->RMFlag) && (!tb->Mod67Flag)){
 						MFlag = 1;
 						var_pc = tb->pc;
 					}

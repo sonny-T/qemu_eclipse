@@ -5139,7 +5139,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         	indirect_insn = 1;
 #endif
 
-#if SAFE_INSTRUCTIONS
+#if SAFE_INSTRUCTIONS | NO_OPTIMIZE_NOSAFEINST
         	/**** SAFE INSTRUCTIONS ****/
         	safe_insn = 1;
         	if(mod == 3) //mod = 3
@@ -5164,7 +5164,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         	indirect_insn = 1;
 #endif
 
-#if SAFE_INSTRUCTIONS
+#if SAFE_INSTRUCTIONS | NO_OPTIMIZE_NOSAFEINST
         	/**** SAFE INSTRUCTIONS ****/
         	safe_insn = 1;
         	if(mod == 3)
@@ -8620,7 +8620,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
     tb->IndirectDisas = 0xf;
 #endif
 
-#if SAFE_INSTRUCTIONS
+#if SAFE_INSTRUCTIONS | NO_OPTIMIZE_NOSAFEINST
     tb->SafeFlag = 0;
     tb->Mod67Flag = 0;
     tb->RMFlag = 0;
@@ -8797,7 +8797,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         indirect_insn = 0;
 #endif
 
-#if SAFE_INSTRUCTIONS
+#if SAFE_INSTRUCTIONS | NO_OPTIMIZE_NOSAFEINST
         if(safe_insn == 1)
         {
         	tb->SafeFlag = 1;

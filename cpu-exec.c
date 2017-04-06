@@ -485,7 +485,7 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     	}
 #endif
 #else
-#if SAFE_INSTRUCTIONS
+#if SAFE_INSTRUCTIONS | NO_OPTIMIZE_NOSAFEINST
     	if(tb->SafeFlag != 1){
     		tb_add_jump(*last_tb, tb_exit, tb);
     	}

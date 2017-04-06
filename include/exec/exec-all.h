@@ -295,7 +295,7 @@ struct TranslationBlock {
     target_ulong IndirectDisas;
 #endif
 
-#if SAFE_INSTRUCTIONS
+#if SAFE_INSTRUCTIONS | NO_OPTIMIZE_NOSAFEINST
     int SafeFlag;
     int Mod67Flag;
     int RMFlag;

@@ -2,9 +2,13 @@
 
 #define GADGET 0
 
-#define SAFE_INSTRUCTIONS 1
-#define RJMP 1
-#define MJMP 1
+/*********     Safe jump instruction switch   ********/
+#define SAFE_INSTRUCTIONS 0
+#define RJMP 0
+#define MJMP 0
+
+#define NO_OPTIMIZE_NOSAFEINST 1 /*No safe jump instruction, but removing one optimization*/
+/*****************************************************/
 
 /*********     stack   switch   ********/
 #define SHADOW_STACK 0

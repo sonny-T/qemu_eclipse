@@ -50,6 +50,7 @@ static target_ulong TRACEPC_Buf[TBN];
 #if SAFE_INSTRUCTIONS
 bool RFlag = 0;
 bool MFlag = 0;
+long dcount = 0;
 static target_ulong var_pc = 0;
 #endif
 
@@ -415,21 +416,23 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     	JMPDIST = pc - var_pc;
     	JMPDIST = abs(JMPDIST);
     	if(JMPDIST >= 0x4000){
-    		fprintf(stderr,"INRJMP d: %#x  s: %#x dist: %#x\n" ,pc,var_pc,JMPDIST);
+    		fprintf(stderr,"INRJMP d: %#x  s: %#x dist: %#x icount: %d\n" ,pc,var_pc,JMPDIST,dcount);
+    		dcount = 0;
     	}
     }
-#endif
     RFlag = 0;
+#endif
 #if MJMP
     if(MFlag){
     	JMPDIST = pc - var_pc;
     	JMPDIST = abs(JMPDIST);
     	if(JMPDIST >= 0x4000){
-    		fprintf(stderr,"INMJMP d: %#x  s: %#x dist: %#x\n" ,pc,var_pc,JMPDIST);
+    		fprintf(stderr,"INMJMP d: %#x  s: %#x dist: %#x icount: %d\n" ,pc,var_pc,JMPDIST,dcount);
+    		dcount = 0;
     	}
     }
-#endif
     MFlag = 0;
+#endif
 #endif
 
 #if SHADOW_STACK
@@ -790,6 +793,7 @@ int cpu_exec(CPUState *cpu)
 #if SAFE_INSTRUCTIONS
         		//Mod67Flag is mod = 3
         		//RMFlag is mod = 0 rm = 5
+                dcount += tb->icount;
 				if(tb->SafeFlag == 1){
 					if(tb->Mod67Flag){
 						RFlag = 1;

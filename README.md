@@ -9,3 +9,9 @@ Building
 Install
 
     sudo make install
+
+Running
+         
+    #64bits model
+
+    qemu-x86_64 EXE [arg1][arg2]...

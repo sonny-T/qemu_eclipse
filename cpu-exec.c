@@ -487,14 +487,16 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     		tb_add_jump(*last_tb, tb_exit, tb);
     	}
 #endif
-#else
+#endif
+
 #if SAFE_INSTRUCTIONS | NO_OPTIMIZE_NOSAFEINST
     	if(tb->SafeFlag != 1){
     		tb_add_jump(*last_tb, tb_exit, tb);
     	}
-#else
-    	tb_add_jump(*last_tb, tb_exit, tb);
 #endif
+
+#if (!SAFE_INSTRUCTIONS)&&(!NO_OPTIMIZE_NOSTACK)&&(!NO2OPTIMIZE_NOSTACK)&&(!SAFE_INSTRUCTIONS)&&(!NO_OPTIMIZE_NOSAFEINST)
+    	tb_add_jump(*last_tb, tb_exit, tb);
 #endif
     }
     tb_unlock();

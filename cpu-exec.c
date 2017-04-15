@@ -416,7 +416,9 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     	JMPDIST = pc - var_pc;
     	JMPDIST = abs(JMPDIST);
     	if(JMPDIST >= 0x4000){
+#if !NOSTDERR
     		fprintf(stderr,"INRJMP d: %#x  s: %#x dist: %#x icount: %d\n" ,pc,var_pc,JMPDIST,dcount);
+#endif
     		dcount = 0;
     	}
     }
@@ -427,7 +429,9 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     	JMPDIST = pc - var_pc;
     	JMPDIST = abs(JMPDIST);
     	if(JMPDIST >= 0x4000){
+#if !NOSTDERR
     		fprintf(stderr,"INMJMP d: %#x  s: %#x dist: %#x icount: %d\n" ,pc,var_pc,JMPDIST,dcount);
+#endif
     		dcount = 0;
     	}
     }
@@ -440,7 +444,9 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     if(TraditionalStackFlag){
     	pc_var = ShadowStackPop();
     	if(pc != pc_var){
+#if !NOSTDERR
     		fprintf(stderr,"TSS p: %#x  s: %#x\n",pc,pc_var);
+#endif
     	}
     }
     TraditionalStackFlag = 0;
@@ -500,7 +506,6 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     	if((tb->CALLFlag != 1)&&(tb->RETFlag != 1)&&(tb->SafeFlag != 1)){
     		tb_add_jump(*last_tb, tb_exit, tb);
     	}
-    	printf("ddddddd\n");
 #else
     	if((tb->CALLFlag != 1)&&(tb->SafeFlag != 1)){
     		tb_add_jump(*last_tb, tb_exit, tb);
@@ -510,7 +515,6 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
 
 #if (!SAFE_INSTRUCTIONS)&&(!NO_OPTIMIZE_NOSTACK)&&(!NO2OPTIMIZE_NOSTACK)&&(!SAFE_INSTRUCTIONS)&&(!NO_OPTIMIZE_NOSAFEINST)
     	tb_add_jump(*last_tb, tb_exit, tb);
-    	printf("ffffffff\n");
 #endif
     }
     tb_unlock();

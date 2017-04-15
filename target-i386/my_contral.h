@@ -9,7 +9,7 @@
 
 #define NO_OPTIMIZE_NOSAFEINST 0 /*No safe jump instruction, but removing one optimization*/
 /*****************************************************/
-
+#define NOSTDERR 0
 /*********     stack   switch   ********/
 #define SHADOW_STACK 0
 #define TRA_SHADOW_STACK 0  /*First setting SHADOW_STACK = 1 then setting TRA = 1*/

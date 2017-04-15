@@ -8746,7 +8746,9 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
 #if PREVENT_UNINTEND
         PREVENTFlag = 0;
         if(ENTERFlag){
+#if !NOSTDERR
         	fprintf(stderr,"\n");
+#endif
         }
         ENTERFlag = 0;
 #endif

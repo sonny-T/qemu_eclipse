@@ -507,7 +507,9 @@ static inline void tcg_gen_mov_i64(TCGv_i64 ret, TCGv_i64 arg)
 {
 #if PREVENT_UNINTEND
 	if((!PREVENTFlag) && (GET_TCGV_I64(ret)==9)){
+#if !NOSTDERR
 		fprintf(stderr,"I_SP %#lx!\n",ISP_PC);
+#endif
 		ENTERFlag = 1;
 	}
 #endif
@@ -520,7 +522,9 @@ static inline void tcg_gen_movi_i64(TCGv_i64 ret, int64_t arg)
 {
 #if PREVENT_UNINTEND
 	if((!PREVENTFlag) && (GET_TCGV_I64(ret)==9)){
+#if !NOSTDERR
 		fprintf(stderr,"I_SP %#lx!\n",ISP_PC);
+#endif
 		ENTERFlag = 1;
 	}
 #endif

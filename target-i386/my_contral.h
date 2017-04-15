@@ -15,8 +15,8 @@
 #define TRA_SHADOW_STACK 0  /*First setting SHADOW_STACK = 1 then setting TRA = 1*/
 #define NO2OPTIMIZE 0  /*First setting SHADOW_STACK = 1 then setting  = 1*/
 
-#define NO_OPTIMIZE_NOSTACK 0  /*No stack, but removing one optimization, notice NO2OPTIMIZE_NOSTACK = 0*/
-#define NO2OPTIMIZE_NOSTACK 0  /*No stack, but removing tow optimization, notice NO_OPTIMIZE_NOSTACK = 0*/
+#define NO_OPTIMIZE_NOSTACK 0  /*No stack, but removing one optimization, notice NO2OPTIMIZE_NOSTACK must be equal to 0*/
+#define NO2OPTIMIZE_NOSTACK 0  /*No stack, but removing tow optimization, notice NO_OPTIMIZE_NOSTACK must be equal to 0*/
 /***************************************/
 
 #define PREVENT_UNINTEND 0

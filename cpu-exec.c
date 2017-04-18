@@ -499,7 +499,7 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
 #if SAFE_INSTRUCTIONS
     	//if(tb->SafeFlag != 1){
     	if((tb->CALLFlag != 1)&&(tb->RETFlag != 1)&&(tb->SafeFlag != 1)){
-    		tb_add_jump(*last_tb, tb_exit, tb);
+    		//tb_add_jump(*last_tb, tb_exit, tb);
     	}
 #endif
 /*

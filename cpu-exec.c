@@ -482,7 +482,7 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     }
 #endif
     /* See if we can patch the calling TB. */
-    if (*last_tb && !qemu_loglevel_mask(CPU_LOG_TB_NOCHAIN)) {
+    if (*last_tb && !qemu_loglevel_mask(CPU_LOG_TB_NOCHAIN)) {/*
 #if (SHADOW_STACK | NO_OPTIMIZE_NOSTACK | NO2OPTIMIZE_NOSTACK)&&((!SAFE_INSTRUCTIONS) | (!NO_OPTIMIZE_NOSAFEINST))
 #if TRA_SHADOW_STACK | NO2OPTIMIZE | NO2OPTIMIZE_NOSTACK
     	if((tb->CALLFlag != 1) && (tb->RETFlag != 1)){
@@ -493,14 +493,16 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     		tb_add_jump(*last_tb, tb_exit, tb);
     	}
 #endif
-#endif
+#endif */
 
-#if (SAFE_INSTRUCTIONS | NO_OPTIMIZE_NOSAFEINST)&&((!SHADOW_STACK)|(!NO_OPTIMIZE_NOSTACK)|(!NO2OPTIMIZE_NOSTACK))
-    	if(tb->SafeFlag != 1){
+//#if (SAFE_INSTRUCTIONS | NO_OPTIMIZE_NOSAFEINST)&&((!SHADOW_STACK)|(!NO_OPTIMIZE_NOSTACK)|(!NO2OPTIMIZE_NOSTACK))
+#if SAFE_INSTRUCTIONS
+    	//if(tb->SafeFlag != 1){
+    	if((tb->CALLFlag != 1)&&(tb->RETFlag != 1)&&(tb->SafeFlag != 1)){
     		tb_add_jump(*last_tb, tb_exit, tb);
     	}
 #endif
-
+/*
 #if (SHADOW_STACK | NO_OPTIMIZE_NOSTACK | NO2OPTIMIZE_NOSTACK) && (SAFE_INSTRUCTIONS | NO_OPTIMIZE_NOSAFEINST)
 #if TRA_SHADOW_STACK | NO2OPTIMIZE | NO2OPTIMIZE_NOSTACK
     	if((tb->CALLFlag != 1)&&(tb->RETFlag != 1)&&(tb->SafeFlag != 1)){
@@ -516,7 +518,7 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
 #if (!SAFE_INSTRUCTIONS)&&(!NO_OPTIMIZE_NOSTACK)&&(!NO2OPTIMIZE_NOSTACK)&&(!SAFE_INSTRUCTIONS)&&(!NO_OPTIMIZE_NOSAFEINST)
     	tb_add_jump(*last_tb, tb_exit, tb);
 #endif
-    }
+   */ }
     tb_unlock();
 
 #if SHADOW_STACK

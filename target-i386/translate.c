@@ -5091,10 +5091,10 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             }
             next_eip = s->pc - s->cs_base;
 
-#if SHADOW_STACK | NO_OPTIMIZE_NOSTACK | NO2OPTIMIZE_NOSTACK
+#if SHADOW_STACK
             //printf("call Ev next_eip :   %x\n",next_eip);
             call_insn = 1;
-#if TRA_SHADOW_STACK | NO_OPTIMIZE_NOSTACK | NO2OPTIMIZE_NOSTACK
+#if TRA_SHADOW_STACK
             tcg_gen_movi_tl(cpu_T1, next_eip);
 #else
             tcg_gen_movi_tl(cpu_T1, 0);
@@ -5139,7 +5139,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         	indirect_insn = 1;
 #endif
 
-#if SAFE_INSTRUCTIONS | NO_OPTIMIZE_NOSAFEINST
+#if SAFE_INSTRUCTIONS
         	/**** SAFE INSTRUCTIONS ****/
         	safe_insn = 1;
         	if(mod == 3) //mod = 3
@@ -5164,7 +5164,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         	indirect_insn = 1;
 #endif
 
-#if SAFE_INSTRUCTIONS | NO_OPTIMIZE_NOSAFEINST
+#if SAFE_INSTRUCTIONS
         	/**** SAFE INSTRUCTIONS ****/
         	safe_insn = 1;
         	if(mod == 3)
@@ -6613,7 +6613,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     	indirect_insn = 1;
 #endif
 
-#if TRA_SHADOW_STACK | NO2OPTIMIZE | NO2OPTIMIZE_NOSTACK
+#if TRA_SHADOW_STACK
     	ret_insn = 1;
 #endif
         val = cpu_ldsw_code(env, s->pc);
@@ -6635,7 +6635,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     	indirect_insn = 1;
 #endif
 
-#if TRA_SHADOW_STACK | NO2OPTIMIZE | NO2OPTIMIZE_NOSTACK
+#if TRA_SHADOW_STACK
     	ret_insn = 1;
 #endif
         ot = gen_pop_T0(s);
@@ -6731,10 +6731,10 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             } else if (!CODE64(s)) {
                 tval &= 0xffffffff;
             }
-#if SHADOW_STACK | NO_OPTIMIZE_NOSTACK | NO2OPTIMIZE_NOSTACK
+#if SHADOW_STACK
             //printf("call im next_eip :   %x\n",next_eip);
             call_insn = 1;
-#if TRA_SHADOW_STACK | NO_OPTIMIZE_NOSTACK | NO2OPTIMIZE_NOSTACK
+#if TRA_SHADOW_STACK
             tcg_gen_movi_tl(cpu_T0, next_eip);
 #else
             tcg_gen_movi_tl(cpu_T0, 0);
@@ -8620,17 +8620,17 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
     tb->IndirectDisas = 0xf;
 #endif
 
-#if SAFE_INSTRUCTIONS | NO_OPTIMIZE_NOSAFEINST
+#if SAFE_INSTRUCTIONS
     tb->SafeFlag = 0;
     tb->Mod67Flag = 0;
     tb->RMFlag = 0;
 #endif
 
-#if SHADOW_STACK | NO_OPTIMIZE_NOSTACK | NO2OPTIMIZE_NOSTACK
+#if SHADOW_STACK
     tb->CALLFlag = 0;
     tb->next_insn = 0;
 #endif
-#if TRA_SHADOW_STACK | NO2OPTIMIZE | NO2OPTIMIZE_NOSTACK
+#if TRA_SHADOW_STACK
     tb->RETFlag = 0;
 #endif
 
@@ -8753,7 +8753,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         ENTERFlag = 0;
 #endif
 
-#if SHADOW_STACK | NO_OPTIMIZE_NOSTACK | NO2OPTIMIZE_NOSTACK
+#if SHADOW_STACK
         if(call_insn == 1)
         {
         	tb->CALLFlag = 1;
@@ -8761,7 +8761,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         }
         call_insn = 0;
 #endif
-#if TRA_SHADOW_STACK | NO2OPTIMIZE | NO2OPTIMIZE_NOSTACK
+#if TRA_SHADOW_STACK
         if(ret_insn == 1){
         	tb->RETFlag = 1;
         }
@@ -8799,7 +8799,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         indirect_insn = 0;
 #endif
 
-#if SAFE_INSTRUCTIONS | NO_OPTIMIZE_NOSAFEINST
+#if SAFE_INSTRUCTIONS
         if(safe_insn == 1)
         {
         	tb->SafeFlag = 1;

@@ -223,7 +223,7 @@ struct TB_Code{
 void gadget_track(target_ulong p,long RealGadgetLen);
 #endif
 
-#if SHADOW_STACK | NO_OPTIMIZE_NOSTACK | NO2OPTIMIZE_NOSTACK
+#if SHADOW_STACK
 struct shadow_stack{
 	target_ulong *stack;
 	int top;
@@ -295,17 +295,17 @@ struct TranslationBlock {
     target_ulong IndirectDisas;
 #endif
 
-#if SAFE_INSTRUCTIONS | NO_OPTIMIZE_NOSAFEINST
+#if SAFE_INSTRUCTIONS
     int SafeFlag;
     int Mod67Flag;
     int RMFlag;
 #endif
 
-#if SHADOW_STACK | NO_OPTIMIZE_NOSTACK | NO2OPTIMIZE_NOSTACK
+#if SHADOW_STACK
     int CALLFlag;
     target_ulong next_insn;
 #endif
-#if TRA_SHADOW_STACK | NO2OPTIMIZE | NO2OPTIMIZE_NOSTACK
+#if TRA_SHADOW_STACK
     int RETFlag;
 #endif
 };

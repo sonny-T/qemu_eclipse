@@ -47,7 +47,7 @@ static int PCI = 0;
 static target_ulong TRACEPC_Buf[TBN];
 #endif
 
-#if SAFE_INSTRUCTIONS
+#if MONITOR_INST_JMP
 bool RFlag = 0;
 bool MFlag = 0;
 long dcount = 0;
@@ -409,7 +409,7 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
        is executed. */
     cpu_get_tb_cpu_state(env, &pc, &cs_base, &flags);
 
-#if SAFE_INSTRUCTIONS
+#if MONITOR_INST_JMP
     int JMPDIST;
 #if RJMP
     if(RFlag){
@@ -778,7 +778,7 @@ int cpu_exec(CPUState *cpu)
             {
                 cpu_handle_interrupt(cpu, &last_tb);
                 tb = tb_find_fast(cpu, &last_tb, tb_exit);
-#if SAFE_INSTRUCTIONS
+#if MONITOR_INST_JMP
         		//Mod67Flag is mod = 3
         		//RMFlag is mod = 0 rm = 5
                 dcount += tb->icount;
@@ -792,6 +792,21 @@ int cpu_exec(CPUState *cpu)
 						var_pc = tb->pc;
 					}
 				}
+
+#endif
+
+#if MONITOR_INST_CALL
+               /* dcount += tb->icount;
+				if(tb->SafeFlag == 1){
+					if(tb->Mod67Flag){
+						RFlag = 1;
+						var_pc = tb->pc;
+					}
+					if((!tb->RMFlag) && (!tb->Mod67Flag)){
+						MFlag = 1;
+						var_pc = tb->pc;
+					}
+				}*/
 
 #endif
 

@@ -5086,6 +5086,19 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         	/**** judge gadget type ****/
         	indirect_insn = 1;
 #endif
+
+#if MONITOR_INST_CALL
+        	//safe_insn = 1;
+        	if(mod == 3) //mod = 3
+        	{
+        		regcall_insn = 1;
+        	}
+        	if( (!((mod == 0)&&((modrm & 7)==5))) && (mod!=3) ) //exclude mod = 0 rm = 5 and mod = 3
+        	{
+        		memcall_insn = 1;
+        	}
+#endif
+
             if (dflag == MO_16) {
                 tcg_gen_ext16u_tl(cpu_T0, cpu_T0);
             }
@@ -5115,7 +5128,20 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         	/**** judge gadget type ****/
         	indirect_insn = 1;
 #endif
+
+#if MONITOR_INST_CALL
+        	//safe_insn = 1;
+        	if(mod == 3) //mod = 3
+        	{
+        		regcall_insn = 1;
+        	}
+        	if( !((mod == 0)&&((modrm & 7)==5)) && (mod!=3) ) //exclude mod = 0 rm = 5 and mod = 3
+        	{
+        		memcall_insn = 1;
+        	}
         	printf("lcall Ev \n");
+#endif
+
             gen_op_ld_v(s, ot, cpu_T1, cpu_A0);
             gen_add_A0_im(s, 1 << ot);
             gen_op_ld_v(s, MO_16, cpu_T0, cpu_A0);
@@ -5139,7 +5165,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         	indirect_insn = 1;
 #endif
 
-#if SAFE_INSTRUCTIONS
+#if MONITOR_INST_JMP
         	/**** SAFE INSTRUCTIONS ****/
         	safe_insn = 1;
         	if(mod == 3) //mod = 3
@@ -5164,7 +5190,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         	indirect_insn = 1;
 #endif
 
-#if SAFE_INSTRUCTIONS
+#if MONITOR_INST_JMP
         	/**** SAFE INSTRUCTIONS ****/
         	safe_insn = 1;
         	if(mod == 3)
@@ -8620,10 +8646,15 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
     tb->IndirectDisas = 0xf;
 #endif
 
-#if SAFE_INSTRUCTIONS
+#if MONITOR_INST_JMP
     tb->SafeFlag = 0;
     tb->Mod67Flag = 0;
     tb->RMFlag = 0;
+#endif
+
+#if MONITOR_INST_CALL
+    tb->MONI_RegCALLFlag = 0;
+    tb->MONI_MemCALLFlag = 0;
 #endif
 
 #if SHADOW_STACK
@@ -8799,7 +8830,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         indirect_insn = 0;
 #endif
 
-#if SAFE_INSTRUCTIONS
+#if MONITOR_INST_JMP
         if(safe_insn == 1)
         {
         	tb->SafeFlag = 1;
@@ -8817,6 +8848,18 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         	//tb->IndirectDisas = insn_star;
         }
         safe_insn = 0;
+#endif
+
+#if MONITOR_INST_CALL
+        if(regcall_insn){
+        	tb->MONI_RegCALLFlag = 1;
+        }
+        regcall_insn = 0;
+
+        if(memcall_insn){
+        	tb->MONI_MemCALLFlag = 1;
+        }
+        memcall_insn = 0;
 #endif
         /* stop translation if indicated */
         if (dc->is_jmp)

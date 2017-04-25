@@ -295,10 +295,15 @@ struct TranslationBlock {
     target_ulong IndirectDisas;
 #endif
 
-#if SAFE_INSTRUCTIONS
+#if MONITOR_INST_JMP
     int SafeFlag;
     int Mod67Flag;
     int RMFlag;
+#endif
+
+#if MONITOR_INST_CALL
+    int MONI_RegCALLFlag;
+    int MONI_MemCALLFlag;
 #endif
 
 #if SHADOW_STACK

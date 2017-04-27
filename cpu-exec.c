@@ -48,8 +48,19 @@ static target_ulong TRACEPC_Buf[TBN];
 #endif
 
 #if MONITOR_INST_JMP
-bool RFlag = 0;
-bool MFlag = 0;
+bool JmpRFlag = 0;
+bool JmpMFlag = 0;
+#endif
+
+#if MONITOR_INST_CALL
+bool CallRFlag = 0;
+bool CallMFlag = 0;
+#endif
+
+/************************************************/
+/**  MOnitoring instruction ordinary variable  **/
+/************************************************/
+#if MONITOR_INST_JMP | MONITOR_INST_CALL
 long dcount = 0;
 static target_ulong var_pc = 0;
 #endif
@@ -412,7 +423,7 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
 #if MONITOR_INST_JMP
     int JMPDIST;
 #if RJMP
-    if(RFlag){
+    if(JmpRFlag){
     	JMPDIST = pc - var_pc;
     	JMPDIST = abs(JMPDIST);
     	if(JMPDIST >= 0x4000){
@@ -422,10 +433,10 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     		dcount = 0;
     	}
     }
-    RFlag = 0;
+    JmpRFlag = 0;
 #endif
 #if MJMP
-    if(MFlag){
+    if(JmpMFlag){
     	JMPDIST = pc - var_pc;
     	JMPDIST = abs(JMPDIST);
     	if(JMPDIST >= 0x4000){
@@ -435,7 +446,37 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     		dcount = 0;
     	}
     }
-    MFlag = 0;
+    JmpMFlag = 0;
+#endif
+#endif
+
+#if MONITOR_INST_CALL
+    int CALLDIST;
+#if RCALL
+    if(CallRFlag){
+    	CALLDIST = pc - var_pc;
+    	CALLDIST = abs(CALLDIST);
+    	if(CALLDIST >= 0x4000){
+#if !NOSTDERR
+    		fprintf(stderr,"INRCALL d: %#x  s: %#x dist: %#x icount: %ld\n" ,pc,var_pc,CALLDIST,dcount);
+#endif
+    		dcount = 0;
+    	}
+    }
+    CallRFlag = 0;
+#endif
+#if MCALL
+    if(CallMFlag){
+    	CALLDIST = pc - var_pc;
+    	CALLDIST = abs(CALLDIST);
+    	if(CALLDIST >= 0x4000){
+#if !NOSTDERR
+    		fprintf(stderr,"INMCALL d: %#x  s: %#x dist: %#x icount: %ld\n" ,pc,var_pc,CALLDIST,dcount);
+#endif
+    		dcount = 0;
+    	}
+    }
+    CallMFlag = 0;
 #endif
 #endif
 
@@ -778,17 +819,21 @@ int cpu_exec(CPUState *cpu)
             {
                 cpu_handle_interrupt(cpu, &last_tb);
                 tb = tb_find_fast(cpu, &last_tb, tb_exit);
+#if MONITOR_INST_JMP | MONITOR_INST_CALL
+                dcount += tb->icount;
+#endif
+
 #if MONITOR_INST_JMP
         		//Mod67Flag is mod = 3
         		//RMFlag is mod = 0 rm = 5
-                dcount += tb->icount;
+                // dcount += tb->icount;
 				if(tb->SafeFlag == 1){
 					if(tb->Mod67Flag){
-						RFlag = 1;
+						JmpRFlag = 1;
 						var_pc = tb->pc;
 					}
 					if((!tb->RMFlag) && (!tb->Mod67Flag)){
-						MFlag = 1;
+						JmpMFlag = 1;
 						var_pc = tb->pc;
 					}
 				}
@@ -796,18 +841,14 @@ int cpu_exec(CPUState *cpu)
 #endif
 
 #if MONITOR_INST_CALL
-               /* dcount += tb->icount;
-				if(tb->SafeFlag == 1){
-					if(tb->Mod67Flag){
-						RFlag = 1;
-						var_pc = tb->pc;
-					}
-					if((!tb->RMFlag) && (!tb->Mod67Flag)){
-						MFlag = 1;
-						var_pc = tb->pc;
-					}
-				}*/
-
+				if(tb->MONI_RegCALLFlag){
+					CallRFlag = 1;
+					var_pc = tb->pc;
+				}
+				if(tb->MONI_MemCALLFlag){
+					CallMFlag = 1;
+					var_pc = tb->pc;
+				}
 #endif
 
 #if GADGET

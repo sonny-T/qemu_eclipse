@@ -4011,6 +4011,11 @@ static void handle_arg_trace(const char *arg)
     trace_file = trace_opt_parse(arg);
 }
 
+static void handle_arg_monitor(const char *arg)
+{
+	//switch(arg)
+}
+
 struct qemu_argument {
     const char *argv;
     const char *env;
@@ -4062,6 +4067,8 @@ static const struct qemu_argument arg_table[] = {
      "",           "[[enable=]<pattern>][,events=<file>][,file=<file>]"},
     {"version",    "QEMU_VERSION",     false, handle_arg_version,
      "",           "display version information and exit"},
+	{"M",    "",     true, handle_arg_monitor,
+	 "monitor",    "monitor instruction and output information"},
     {NULL, NULL, false, NULL, NULL, NULL}
 };
 
@@ -4101,8 +4108,7 @@ static void usage(int exitcode)
 
     for (arginfo = arg_table; arginfo->handle_opt != NULL; arginfo++) {
         if (arginfo->has_arg) {
-            printf("-%s %-*s %-*s %s\n", arginfo->argv,
-                   (int)(maxarglen - strlen(arginfo->argv) - 1),
+            printf("-%s %-*s %-*s %s\n", arginfo->argv,(int)(maxarglen - strlen(arginfo->argv) - 1),
                    arginfo->example, maxenvlen, arginfo->env, arginfo->help);
         } else {
             printf("-%-*s %-*s %s\n", maxarglen, arginfo->argv,
@@ -4172,7 +4178,7 @@ static int parse_args(int argc, char **argv)
         }
 
         for (arginfo = arg_table; arginfo->handle_opt != NULL; arginfo++) {
-            if (!strcmp(r, arginfo->argv)) {
+            if (!strcmp(r, arginfo->argv)) {//Judge  r of input and arginfo->argv
                 if (arginfo->has_arg) {
                     if (optind >= argc) {
                         (void) fprintf(stderr,
@@ -4181,7 +4187,9 @@ static int parse_args(int argc, char **argv)
                     }
                     arginfo->handle_opt(argv[optind]);
                     optind++;
-                } else {
+
+                }
+                else {
                     arginfo->handle_opt(NULL);
                 }
                 break;

@@ -4033,6 +4033,11 @@ static void handle_arg_ShadowStack(void)
 	grin_shadowstack = 1;
 }
 
+static void handle_arg_TRAShadowStack(void)
+{
+
+}
+
 struct qemu_argument {
     const char *argv;
     const char *env;
@@ -4091,6 +4096,8 @@ static const struct qemu_argument arg_table[] = {
 	 "",    "watch register load/store information" },
 	{"ss",    "",     false, handle_arg_ShadowStack,
 	 "shadow stack",    "set shadow stack mechanism" },
+	{"tss",    "",     false, handle_arg_TRAShadowStack,
+	 "traditional shadow stack",    "set traditional shadow stack mechanism" },
     {NULL, NULL, false, NULL, NULL, NULL}
 };
 

@@ -535,7 +535,7 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     if(grin_shadowstack){
 		if(tb->CALLFlag == 1){
 			ShadowStackPush(tb->next_insn);
-			printf("Push stack****************************** %x\n",tb->next_insn);
+			//printf("Push stack****************************** %x\n",tb->next_insn);
 		}
     }
 

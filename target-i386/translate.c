@@ -5104,19 +5104,17 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             }
             next_eip = s->pc - s->cs_base;
 
-#if SHADOW_STACK
-            //printf("call Ev next_eip :   %x\n",next_eip);
+      //*** GRIN -ss command options, SHADOW_STACK module ***//
             call_insn = 1;
+            if(grin_shadowstack){
+            	tcg_gen_movi_tl(cpu_T1, 0);
+            }
+            else
+            	tcg_gen_movi_tl(cpu_T1, next_eip);
+/*
 #if TRA_SHADOW_STACK
             tcg_gen_movi_tl(cpu_T1, next_eip);
-#else
-            tcg_gen_movi_tl(cpu_T1, 0);
-#endif
-#else
-            tcg_gen_movi_tl(cpu_T1, next_eip);
-#endif
-
-           //tcg_gen_movi_tl(cpu_T1, next_eip);
+#endif*/
 
             gen_push_v(s, cpu_T1);
             gen_op_jmp_v(cpu_T0);
@@ -6757,17 +6755,17 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             } else if (!CODE64(s)) {
                 tval &= 0xffffffff;
             }
-#if SHADOW_STACK
-            //printf("call im next_eip :   %x\n",next_eip);
+      //*** GRIN -ss command options, SHADOW_STACK module ***//
             call_insn = 1;
+            if(grin_shadowstack){
+            	tcg_gen_movi_tl(cpu_T0, 0);
+            }
+            else
+            	tcg_gen_movi_tl(cpu_T0, next_eip);
+/*
 #if TRA_SHADOW_STACK
             tcg_gen_movi_tl(cpu_T0, next_eip);
-#else
-            tcg_gen_movi_tl(cpu_T0, 0);
-#endif
-#else
-            tcg_gen_movi_tl(cpu_T0, next_eip);
-#endif
+#endif */
             gen_push_v(s, cpu_T0);
             gen_bnd_jmp(s);
             gen_jmp(s, tval);
@@ -8657,10 +8655,10 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
     tb->MONI_MemCALLFlag = 0;
 #endif
 
-#if SHADOW_STACK
+//*** GRIN -ss command options, SHADOW_STACK module ***//
     tb->CALLFlag = 0;
     tb->next_insn = 0;
-#endif
+
 #if TRA_SHADOW_STACK
     tb->RETFlag = 0;
 #endif
@@ -8784,14 +8782,13 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         ENTERFlag = 0;
 #endif
 
-#if SHADOW_STACK
+//*** GRIN -ss command options, SHADOW_STACK module ***//
         if(call_insn == 1)
         {
         	tb->CALLFlag = 1;
         	tb->next_insn = pc_ptr;
         }
         call_insn = 0;
-#endif
 #if TRA_SHADOW_STACK
         if(ret_insn == 1){
         	tb->RETFlag = 1;

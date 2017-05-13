@@ -223,7 +223,7 @@ struct TB_Code{
 void gadget_track(target_ulong p,long RealGadgetLen);
 #endif
 
-#if SHADOW_STACK
+//*** GRIN -ss command options, SHADOW_STACK module ***//
 struct shadow_stack{
 	target_ulong *stack;
 	int top;
@@ -232,7 +232,7 @@ struct shadow_stack{
 target_ulong ShadowStackPop(void);
 void ShadowStackPush(target_ulong x);
 void ShadowStackInit(void);
-#endif
+
 
 struct TranslationBlock {
     target_ulong pc;   /* simulated PC corresponding to this block (EIP + CS base) */
@@ -306,10 +306,10 @@ struct TranslationBlock {
     int MONI_MemCALLFlag;
 #endif
 
-#if SHADOW_STACK
+//*** GRIN -ss command options, SHADOW_STACK module ***//
     int CALLFlag;
     target_ulong next_insn;
-#endif
+
 #if TRA_SHADOW_STACK
     int RETFlag;
 #endif
@@ -469,5 +469,8 @@ extern int singlestep;
 /* cpu-exec.c, accessed with atomic_mb_read/atomic_mb_set */
 extern CPUState *tcg_current_cpu;
 extern bool exit_request;
+
+/* For cpu-exec.c translate.c, GRIN -ss command options, SHADOW_STACK module */
+extern int grin_shadowstack;
 
 #endif

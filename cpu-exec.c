@@ -69,10 +69,10 @@ static target_ulong var_pc = 0;
 long RealGadgetLen = 0;
 #endif
 
-#if SHADOW_STACK
+//*** GRIN -ss command module ***//
     ShadowStack sstack1;
     bool CPUEXECFlag = 1;
-#endif
+
 #if TRA_SHADOW_STACK
     bool TraditionalStackFlag = 0;
 #endif
@@ -356,7 +356,8 @@ found:
     return tb;
 }
 
-#if SHADOW_STACK
+/********* GRIN -ss command module *********/
+/***     Shadow stack function module     ***/
 void ShadowStackInit(void)
 {
     ShadowStack *ss;
@@ -400,7 +401,7 @@ void ShadowStackPush(target_ulong x)
 	ss->stack[ss->top] = x;
 
 }
-#endif
+/*********** end module ***********/
 
 static inline TranslationBlock *tb_find_fast(CPUState *cpu,
                                              TranslationBlock **last_tb,
@@ -480,8 +481,8 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
 #endif
 #endif
 
-#if SHADOW_STACK
-#if TRA_SHADOW_STACK
+
+/*#if TRA_SHADOW_STACK
     if(TraditionalStackFlag){
     	pc_var = ShadowStackPop();
     	if(pc != pc_var){
@@ -490,15 +491,17 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
 #endif
     	}
     }
-    TraditionalStackFlag = 0;
-#else
-    if(pc == 0)
-    {
-    	pc = ShadowStackPop();
-    	//printf("Pop stack---------------------------- %x\n",pc);
+    TraditionalStackFlag = 0;  */
+
+/*** GRIN -ss command options ***/
+    if(grin_shadowstack){
+		if(pc == 0)
+		{
+			pc = ShadowStackPop();
+			//printf("Pop stack---------------------------- %x\n",pc);
+		}
     }
-#endif
-#endif
+
 
     tb_lock();
     tb = cpu->tb_jmp_cache[tb_jmp_cache_hash_func(pc)];
@@ -528,12 +531,14 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     }
     tb_unlock();
 
-#if SHADOW_STACK
-  	if(tb->CALLFlag == 1){
-  		ShadowStackPush(tb->next_insn);
-  		//printf("Push stack****************************** %x\n",tb->next_insn);
-  	}
-#endif
+/*** GRIN -ss command options ***/
+    if(grin_shadowstack){
+		if(tb->CALLFlag == 1){
+			ShadowStackPush(tb->next_insn);
+			printf("Push stack****************************** %x\n",tb->next_insn);
+		}
+    }
+
 #if TRA_SHADOW_STACK
   	if(tb->RETFlag == 1){
   		TraditionalStackFlag = 1;
@@ -770,13 +775,15 @@ int cpu_exec(CPUState *cpu)
     target_ulong CURRPC;
 #endif
 
-#if SHADOW_STACK
-    if(CPUEXECFlag)
-    {
-    ShadowStackInit();
-    CPUEXECFlag = 0;
+/*** GRIN -ss command option ***/
+    if(grin_shadowstack){
+		if(CPUEXECFlag)
+		{
+		ShadowStackInit();
+		CPUEXECFlag = 0;
+		}
     }
-#endif
+
 
     /* replay_interrupt may need current_cpu */
     current_cpu = cpu;

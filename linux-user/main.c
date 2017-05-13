@@ -49,6 +49,10 @@ unsigned long mmap_min_addr;
 unsigned long guest_base;
 int have_guest_base;
 
+/***GRIN command line options***/
+
+int grin_shadowstack; /*** GRIN -ss command options, SHADOW_STACK module ***/
+
 #define EXCP_DUMP(env, fmt, ...)                                        \
 do {                                                                    \
     CPUState *cs = ENV_GET_CPU(env);                                    \
@@ -4011,9 +4015,22 @@ static void handle_arg_trace(const char *arg)
     trace_file = trace_opt_parse(arg);
 }
 
+/*** GRIN command line options ***/
+
 static void handle_arg_monitor(const char *arg)
 {
 	//switch(arg)
+}
+
+static void handle_arg_watch(const char *arg)
+{
+
+}
+
+//*** GRIN -ss command options, SHADOW_STACK module ***//
+static void handle_arg_ShadowStack(void)
+{
+	grin_shadowstack = 1;
 }
 
 struct qemu_argument {
@@ -4067,8 +4084,13 @@ static const struct qemu_argument arg_table[] = {
      "",           "[[enable=]<pattern>][,events=<file>][,file=<file>]"},
     {"version",    "QEMU_VERSION",     false, handle_arg_version,
      "",           "display version information and exit"},
+
 	{"M",    "",     true, handle_arg_monitor,
 	 "monitor",    "monitor instruction and output information"},
+	{"watch",    "",     true, handle_arg_watch,
+	 "",    "watch register load/store information" },
+	{"ss",    "",     false, handle_arg_ShadowStack,
+	 "shadow stack",    "set shadow stack mechanism" },
     {NULL, NULL, false, NULL, NULL, NULL}
 };
 

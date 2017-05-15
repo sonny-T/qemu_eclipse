@@ -72,10 +72,7 @@ long RealGadgetLen = 0;
 //*** GRIN -ss command module ***//
     ShadowStack sstack1;
     bool CPUEXECFlag = 1;
-
-#if TRA_SHADOW_STACK
-    bool TraditionalStackFlag = 0;
-#endif
+    bool RetNextFlag = 0;
 
 #if !defined(CONFIG_USER_ONLY)
 /* Allow the guest to have a max 3ms advance.
@@ -480,10 +477,8 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     CallMFlag = 0;
 #endif
 #endif
-
-
-/*#if TRA_SHADOW_STACK
-    if(TraditionalStackFlag){
+/* TRA_SHADOW_STACK
+    if(RetNextFlag){
     	pc_var = ShadowStackPop();
     	if(pc != pc_var){
 #if !NOSTDERR
@@ -491,15 +486,19 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
 #endif
     	}
     }
-    TraditionalStackFlag = 0;  */
+    RetNextFlag = 0; */
 
 /*** GRIN -ss command options ***/
     if(grin_shadowstack){
-		if(pc == 0)
+		if(RetNextFlag)
 		{
+			if(pc != 0){
+				printf("attacked!\n");
+			}
 			pc = ShadowStackPop();
 			//printf("Pop stack---------------------------- %x\n",pc);
 		}
+		RetNextFlag = 0;
     }
 
 
@@ -538,12 +537,9 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
 			//printf("Push stack****************************** %x\n",tb->next_insn);
 		}
     }
-
-#if TRA_SHADOW_STACK
   	if(tb->RETFlag == 1){
-  		TraditionalStackFlag = 1;
+  		RetNextFlag = 1;
   	}
-#endif
 
     return tb;
 }

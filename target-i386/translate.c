@@ -6637,9 +6637,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     	indirect_insn = 1;
 #endif
 
-#if TRA_SHADOW_STACK
+//*** GRIN -ss command options ***//
     	ret_insn = 1;
-#endif
+
         val = cpu_ldsw_code(env, s->pc);
         s->pc += 2;
         ot = gen_pop_T0(s);
@@ -6659,9 +6659,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     	indirect_insn = 1;
 #endif
 
-#if TRA_SHADOW_STACK
+//*** GRIN -ss command options ***//
     	ret_insn = 1;
-#endif
+
         ot = gen_pop_T0(s);
         gen_pop_update(s, ot);
         /* Note that gen_pop_T0 uses a zero-extending load.  */
@@ -8658,11 +8658,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
 //*** GRIN -ss command options, SHADOW_STACK module ***//
     tb->CALLFlag = 0;
     tb->next_insn = 0;
-
-#if TRA_SHADOW_STACK
     tb->RETFlag = 0;
-#endif
-
 
     /* generate intermediate code */
     pc_start = tb->pc;
@@ -8789,12 +8785,10 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         	tb->next_insn = pc_ptr;
         }
         call_insn = 0;
-#if TRA_SHADOW_STACK
         if(ret_insn == 1){
         	tb->RETFlag = 1;
         }
         ret_insn = 0;
-#endif
 
 #if SYSCALLTEST
         insn_end = pc_ptr;

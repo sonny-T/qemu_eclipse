@@ -18,7 +18,7 @@
 
 /*********     stack   switch   ********/
 #define SHADOW_STACK 1
-#define TRA_SHADOW_STACK 0  /*First setting SHADOW_STACK = 1 then setting TRA = 1*/
+#define TRA_SHADOW_STACK 1  /*First setting SHADOW_STACK = 1 then setting TRA = 1*/
 /***************************************/
 
 #define PREVENT_UNINTEND 0

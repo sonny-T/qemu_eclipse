@@ -4091,13 +4091,13 @@ static const struct qemu_argument arg_table[] = {
      "",           "display version information and exit"},
 
 	{"M",    "",     true, handle_arg_monitor,
-	 "monitor",    "monitor instruction and output information"},
+	 "instruction",    "monitor instruction and output information"},
 	{"watch",    "",     true, handle_arg_watch,
-	 "",    "watch register load/store information" },
+	 "register",    "watch register load/store information" },
 	{"ss",    "",     false, handle_arg_ShadowStack,
-	 "shadow stack",    "set shadow stack mechanism" },
+	 "",    "set shadow stack mechanism" },
 	{"tss",    "",     false, handle_arg_TRAShadowStack,
-	 "traditional shadow stack",    "set traditional shadow stack mechanism" },
+	 "",    "set traditional shadow stack mechanism" },
     {NULL, NULL, false, NULL, NULL, NULL}
 };
 

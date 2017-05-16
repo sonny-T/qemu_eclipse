@@ -309,8 +309,6 @@ struct TranslationBlock {
 #if SHADOW_STACK
     int CALLFlag;
     target_ulong next_insn;
-#endif
-#if TRA_SHADOW_STACK
     int RETFlag;
 #endif
 };

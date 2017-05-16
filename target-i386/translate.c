@@ -6639,7 +6639,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     	indirect_insn = 1;
 #endif
 
-#if TRA_SHADOW_STACK
+#if SHADOW_STACK
     	ret_insn = 1;
 #endif
         val = cpu_ldsw_code(env, s->pc);
@@ -6661,7 +6661,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     	indirect_insn = 1;
 #endif
 
-#if TRA_SHADOW_STACK
+#if SHADOW_STACK
     	ret_insn = 1;
 #endif
         ot = gen_pop_T0(s);
@@ -8660,8 +8660,6 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
 #if SHADOW_STACK
     tb->CALLFlag = 0;
     tb->next_insn = 0;
-#endif
-#if TRA_SHADOW_STACK
     tb->RETFlag = 0;
 #endif
 
@@ -8791,8 +8789,6 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         	tb->next_insn = pc_ptr;
         }
         call_insn = 0;
-#endif
-#if TRA_SHADOW_STACK
         if(ret_insn == 1){
         	tb->RETFlag = 1;
         }

@@ -72,8 +72,6 @@ long RealGadgetLen = 0;
 #if SHADOW_STACK
     ShadowStack sstack1;
     bool CPUEXECFlag = 1;
-#endif
-#if TRA_SHADOW_STACK
     bool TraditionalStackFlag = 0;
 #endif
 
@@ -480,7 +478,6 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
 #endif
 #endif
 
-#if SHADOW_STACK
 #if TRA_SHADOW_STACK
     if(TraditionalStackFlag){
     	pc_var = ShadowStackPop();
@@ -491,13 +488,16 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     	}
     }
     TraditionalStackFlag = 0;
-#else
-    if(pc == 0)
-    {
+#endif
+
+#if SHADOW_STACK
+    if(TraditionalStackFlag){
+    	if(pc != 0)
+    		printf("attacked!\n");
     	pc = ShadowStackPop();
     	//printf("Pop stack---------------------------- %x\n",pc);
     }
-#endif
+    TraditionalStackFlag = 0;
 #endif
 
     tb_lock();
@@ -533,8 +533,6 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
   		ShadowStackPush(tb->next_insn);
   		//printf("Push stack****************************** %x\n",tb->next_insn);
   	}
-#endif
-#if TRA_SHADOW_STACK
   	if(tb->RETFlag == 1){
   		TraditionalStackFlag = 1;
   	}

@@ -52,6 +52,7 @@ int have_guest_base;
 /***GRIN command line options***/
 
 int grin_shadowstack; /*** GRIN -ss command options, SHADOW_STACK module ***/
+int grin_tra_shadowstack; /*** GRIN -tss command options, TRASHADOW_STACK module ***/
 
 #define EXCP_DUMP(env, fmt, ...)                                        \
 do {                                                                    \
@@ -4032,10 +4033,10 @@ static void handle_arg_ShadowStack(void)
 {
 	grin_shadowstack = 1;
 }
-
+//*** GRIN -tss command options, TRASHADOW_STACK module ***//
 static void handle_arg_TRAShadowStack(void)
 {
-
+	grin_tra_shadowstack = 1;
 }
 
 struct qemu_argument {

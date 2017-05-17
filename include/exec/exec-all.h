@@ -223,7 +223,7 @@ struct TB_Code{
 void gadget_track(target_ulong p,long RealGadgetLen);
 #endif
 
-//*** GRIN -ss command options, SHADOW_STACK module ***//
+//*** GRIN -ss/-tss command options, TRA/SHADOW STACK module ***//
 struct shadow_stack{
 	target_ulong *stack;
 	int top;
@@ -306,7 +306,7 @@ struct TranslationBlock {
     int MONI_MemCALLFlag;
 #endif
 
-//*** GRIN -ss command options, SHADOW_STACK module ***//
+//*** GRIN -ss/-tss command options, TRA/SHADOW STACK module ***//
     int CALLFlag;
     target_ulong next_insn;
     int RETFlag;
@@ -469,5 +469,7 @@ extern bool exit_request;
 
 /* For cpu-exec.c translate.c, GRIN -ss command options, SHADOW_STACK module */
 extern int grin_shadowstack;
+/* For cpu-exec.c translate.c, GRIN -tss command options, TRASHADOW_STACK module */
+extern int grin_tra_shadowstack;
 
 #endif

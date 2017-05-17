@@ -5104,17 +5104,16 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             }
             next_eip = s->pc - s->cs_base;
 
-      //*** GRIN -ss command options, SHADOW_STACK module ***//
+      //*** GRIN -ss/-tss command options, TRA/SHADOW STACK module ***//
             call_insn = 1;
             if(grin_shadowstack){
             	tcg_gen_movi_tl(cpu_T1, 0);
             }
+            else if(grin_tra_shadowstack){
+            	tcg_gen_movi_tl(cpu_T1, next_eip);
+            }
             else
             	tcg_gen_movi_tl(cpu_T1, next_eip);
-/*
-#if TRA_SHADOW_STACK
-            tcg_gen_movi_tl(cpu_T1, next_eip);
-#endif*/
 
             gen_push_v(s, cpu_T1);
             gen_op_jmp_v(cpu_T0);
@@ -6637,7 +6636,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     	indirect_insn = 1;
 #endif
 
-//*** GRIN -ss command options ***//
+//*** GRIN -ss/-tss command options, TRA/SHADOW STACK ***//
     	ret_insn = 1;
 
         val = cpu_ldsw_code(env, s->pc);
@@ -6659,7 +6658,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     	indirect_insn = 1;
 #endif
 
-//*** GRIN -ss command options ***//
+//*** GRIN -ss/-tss command options, TRA/SHADOW STACK ***//
     	ret_insn = 1;
 
         ot = gen_pop_T0(s);
@@ -6755,17 +6754,17 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             } else if (!CODE64(s)) {
                 tval &= 0xffffffff;
             }
-      //*** GRIN -ss command options, SHADOW_STACK module ***//
+      //*** GRIN -ss/-tss command options, TRA/SHADOW STACK module ***//
             call_insn = 1;
             if(grin_shadowstack){
             	tcg_gen_movi_tl(cpu_T0, 0);
             }
+            else if(grin_tra_shadowstack){
+            	tcg_gen_movi_tl(cpu_T0, next_eip);
+            }
             else
             	tcg_gen_movi_tl(cpu_T0, next_eip);
-/*
-#if TRA_SHADOW_STACK
-            tcg_gen_movi_tl(cpu_T0, next_eip);
-#endif */
+
             gen_push_v(s, cpu_T0);
             gen_bnd_jmp(s);
             gen_jmp(s, tval);
@@ -8655,7 +8654,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
     tb->MONI_MemCALLFlag = 0;
 #endif
 
-//*** GRIN -ss command options, SHADOW_STACK module ***//
+//*** GRIN -ss/-tss command options, TRA/SHADOW STACK module ***//
     tb->CALLFlag = 0;
     tb->next_insn = 0;
     tb->RETFlag = 0;
@@ -8778,7 +8777,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         ENTERFlag = 0;
 #endif
 
-//*** GRIN -ss command options, SHADOW_STACK module ***//
+//*** GRIN -ss/-tss command options, TRA/SHADOW STACK module ***//
         if(call_insn == 1)
         {
         	tb->CALLFlag = 1;

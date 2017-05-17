@@ -32,7 +32,7 @@
 typedef struct TB_Code TB_Code;
 #endif
 
-//*** GRIN -ss command options, SHADOW_STACK module ***//
+//*** GRIN -ss/-tss command options, TRA/SHADOW STACK module ***//
 typedef struct shadow_stack ShadowStack;
 
 typedef struct TranslationBlock TranslationBlock;

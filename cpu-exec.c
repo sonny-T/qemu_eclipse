@@ -69,7 +69,7 @@ static target_ulong var_pc = 0;
 long RealGadgetLen = 0;
 #endif
 
-//*** GRIN -ss command module ***//
+/*** GRIN TRA/SHADOW STACK module function ***/
     ShadowStack sstack1;
     bool CPUEXECFlag = 1;
     bool RetNextFlag = 0;
@@ -353,8 +353,7 @@ found:
     return tb;
 }
 
-/********* GRIN -ss command module *********/
-/***     Shadow stack function module     ***/
+/***    GRIN TRA/SHADOW STACK function module     ***/
 void ShadowStackInit(void)
 {
     ShadowStack *ss;
@@ -409,9 +408,10 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     target_ulong cs_base, pc;
     uint32_t flags;
 
-#if TRA_SHADOW_STACK
+    /***  GRIN -tss command options  ***/
+    /*   TRA STACK module function     */
     target_ulong pc_var;
-#endif
+
 
     /* we record a subset of the CPU state. It will
        always be the same before a given translated block
@@ -477,23 +477,30 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     CallMFlag = 0;
 #endif
 #endif
-/* TRA_SHADOW_STACK
-    if(RetNextFlag){
-    	pc_var = ShadowStackPop();
-    	if(pc != pc_var){
+    /***  GRIN -tss command options  ***/
+    /*   TRA STACK module function */
+    if(grin_tra_shadowstack){
+		if(RetNextFlag){
+			pc_var = ShadowStackPop();
+			if(pc != pc_var){
 #if !NOSTDERR
-    		fprintf(stderr,"TSS p: %#x  s: %#x\n",pc,pc_var);
+				fprintf(stderr,"TSS p: %#x  s: %#x\n",pc,pc_var);
 #endif
-    	}
+			}
+		}
+		RetNextFlag = 0;
     }
-    RetNextFlag = 0; */
 
-/*** GRIN -ss command options ***/
+/***  GRIN -ss command options  ***/
+/*   SHADOW STACK module function */
     if(grin_shadowstack){
 		if(RetNextFlag)
 		{
 			if(pc != 0){
-				fprintf(stderr,"attacked!\n");
+#if !NOSTDERR
+				printf("attacked!  %x\n",pc);
+				//printf(stderr,"attacked!\n");
+#endif
 			}
 			pc = ShadowStackPop();
 			//printf("Pop stack---------------------------- %x\n",pc);
@@ -530,16 +537,17 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     }
     tb_unlock();
 
-/*** GRIN -ss command options ***/
-    if(grin_shadowstack){
+/*** GRIN -ss/-tss command options ***/
+/*  TRA/SHADOW STACK module function */
+    if(grin_shadowstack || grin_tra_shadowstack){
 		if(tb->CALLFlag == 1){
 			ShadowStackPush(tb->next_insn);
 			//printf("Push stack****************************** %x\n",tb->next_insn);
 		}
+	  	if(tb->RETFlag == 1){
+	  		RetNextFlag = 1;
+	  	}
     }
-  	if(tb->RETFlag == 1){
-  		RetNextFlag = 1;
-  	}
 
     return tb;
 }
@@ -771,8 +779,9 @@ int cpu_exec(CPUState *cpu)
     target_ulong CURRPC;
 #endif
 
-/*** GRIN -ss command option ***/
-    if(grin_shadowstack){
+/***  GRIN -ss/-tss command option   ***/
+/*   TRA/SHADOW STACK module function  */
+    if(grin_shadowstack || grin_tra_shadowstack){
 		if(CPUEXECFlag)
 		{
 		ShadowStackInit();

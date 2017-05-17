@@ -498,8 +498,7 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
 		{
 			if(pc != 0){
 #if !NOSTDERR
-				printf("attacked!  %x\n",pc);
-				//printf(stderr,"attacked!\n");
+				fprintf(stderr,"attacked!\n");
 #endif
 			}
 			pc = ShadowStackPop();

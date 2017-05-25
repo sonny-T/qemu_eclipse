@@ -28,9 +28,8 @@
 #define CODE_GEN_HTABLE_BITS     15
 #define CODE_GEN_HTABLE_SIZE     (1 << CODE_GEN_HTABLE_BITS)
 
-#if SYSCALLTEST
+/*** GRIN -M command options, MONITOR SYSCALL module ***/
 typedef struct TB_Code TB_Code;
-#endif
 
 //*** GRIN -ss/-tss command options, TRA/SHADOW STACK module ***//
 typedef struct shadow_stack ShadowStack;

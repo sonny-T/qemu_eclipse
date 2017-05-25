@@ -50,7 +50,7 @@ unsigned long guest_base;
 int have_guest_base;
 
 /***GRIN command line options***/
-
+int grin_syscall; /*** GRIN -M command options, MONITOR SYSCALL module ***/
 int grin_shadowstack; /*** GRIN -ss command options, SHADOW_STACK module ***/
 int grin_tra_shadowstack; /*** GRIN -tss command options, TRASHADOW_STACK module ***/
 
@@ -4018,9 +4018,18 @@ static void handle_arg_trace(const char *arg)
 
 /*** GRIN command line options ***/
 
+/*** GRIN -M command options, MONITOR SYSCALL module ***/
 static void handle_arg_monitor(const char *arg)
 {
-	//switch(arg)
+	if(!strcmp(arg,"syscall")){
+		grin_syscall = 1;
+	}
+	else
+	{
+		printf("Input argments error!");
+		exit(1);
+	}
+
 }
 
 static void handle_arg_watch(const char *arg)
@@ -4028,12 +4037,12 @@ static void handle_arg_watch(const char *arg)
 
 }
 
-//*** GRIN -ss command options, SHADOW_STACK module ***//
+/*** GRIN -ss command options, SHADOW_STACK module ***/
 static void handle_arg_ShadowStack(void)
 {
 	grin_shadowstack = 1;
 }
-//*** GRIN -tss command options, TRASHADOW_STACK module ***//
+/*** GRIN -tss command options, TRASHADOW_STACK module ***/
 static void handle_arg_TRAShadowStack(void)
 {
 	grin_tra_shadowstack = 1;

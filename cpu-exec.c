@@ -42,10 +42,9 @@ typedef struct SyncClocks {
     int64_t realtime_clock;
 } SyncClocks;
 
-#if SYSCALLTEST
+/*** GRIN -M command options, MONITOR SYSCALL module ***/
 static int PCI = 0;
 static target_ulong TRACEPC_Buf[TBN];
-#endif
 
 #if MONITOR_INST_JMP
 bool JmpRFlag = 0;
@@ -766,6 +765,35 @@ static inline void cpu_loop_exec_tb(CPUState *cpu, TranslationBlock *tb,
         break;
     }
 }
+/*** GRIN function module ***/
+/** MONITOR SYSCALL module **/
+static inline void grin_handle_syscall(TranslationBlock *tb,CPUState *cpu)
+{
+	target_ulong CURRPC;
+	TranslationBlock *tb1;
+
+	TRACEPC_Buf[PCI] = tb->pc;
+
+    if(tb->syscall_flag == 1)
+    {
+    	for(int i = 0;i<TBN;i++)
+    	{
+    		CURRPC = TRACEPC_Buf[(PCI+i+1)%TBN];
+    		tb1 = cpu->tb_jmp_cache[tb_jmp_cache_hash_func(CURRPC)];
+    		printf("TB's first addr: %lx\n",tb1->pc);
+    		for(uint16_t j = 0;j<(tb1->icount);j++)
+    		{
+    			printf("%s\n",tb1->t_code->tb_code[j]);
+    		}
+    	}
+    	printf("\n");
+    }
+    PCI = PCI + 1;
+    if(PCI == TBN)
+    {
+    	PCI = 0;
+    }
+}
 
 /* main execution loop */
 
@@ -774,9 +802,6 @@ int cpu_exec(CPUState *cpu)
     CPUClass *cc = CPU_GET_CLASS(cpu);
     int ret;
     SyncClocks sc;
-#if SYSCALLTEST
-    target_ulong CURRPC;
-#endif
 
 /***  GRIN -ss/-tss command option   ***/
 /*   TRA/SHADOW STACK module function  */
@@ -817,9 +842,6 @@ int cpu_exec(CPUState *cpu)
         if (sigsetjmp(cpu->jmp_env, 0) == 0) {
             TranslationBlock *tb, *last_tb = NULL;
             int tb_exit = 0;
-#if SYSCALLTEST
-            TranslationBlock *tb1;
-#endif
             /* if an exception is pending, we execute it here */
             if (cpu_handle_exception(cpu, &ret)) {
                 break;
@@ -872,29 +894,10 @@ int cpu_exec(CPUState *cpu)
                 }
 #endif
 
-#if SYSCALLTEST
-                TRACEPC_Buf[PCI] = tb->pc;
-
-                if(tb->syscall_flag == 1)
-                {
-                	for(int i = 0;i<TBN;i++)
-                	{
-                		CURRPC = TRACEPC_Buf[(PCI+i+1)%TBN];
-                		tb1 = cpu->tb_jmp_cache[tb_jmp_cache_hash_func(CURRPC)];
-                		printf("TB's first addr: %lx\n",tb1->pc);
-                		for(uint16_t j = 0;j<(tb1->icount);j++)
-                		{
-                			printf("%s\n",tb1->t_code->tb_code[j]);
-                		}
-                	}
-                	printf("\n");
+                /*** GRIN -M command options, MONITOR SYSCALL module ***/
+                if(grin_syscall){
+                	grin_handle_syscall(tb,cpu);
                 }
-                PCI = PCI + 1;
-                if(PCI == TBN)
-                {
-                	PCI = 0;
-                }
-#endif
                 cpu_loop_exec_tb(cpu, tb, &last_tb, &tb_exit, &sc);
 
                 /* Try to align the host and virtual clocks

@@ -1,4 +1,6 @@
-#define SYSCALLTEST 0
+/*********     Monitoring syscall instruction switch   ********/
+//#define SYSCALLTEST 0
+/**************************************************************/
 
 #define GADGET 0
 

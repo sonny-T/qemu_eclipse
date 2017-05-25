@@ -212,12 +212,11 @@ static inline void tlb_flush_by_mmuidx(CPUState *cpu, ...)
 #define USE_DIRECT_JUMP
 #endif
 
-#if SYSCALLTEST
+/*** GRIN -M command options, MONITOR SYSCALL module ***/
 struct TB_Code{
 	target_ulong curr_pc;
 	char tb_code[512][100];
 };
-#endif
 
 #if GADGET
 void gadget_track(target_ulong p,long RealGadgetLen);
@@ -285,10 +284,9 @@ struct TranslationBlock {
      */
     uintptr_t jmp_list_next[2];
     uintptr_t jmp_list_first;
-#if SYSCALLTEST
+    /*** GRIN -M command options, MONITOR SYSCALL module ***/
     int syscall_flag;
     struct TB_Code *t_code;
-#endif
 
 #if GADGET
     int IndirectFlag;
@@ -471,5 +469,6 @@ extern bool exit_request;
 extern int grin_shadowstack;
 /* For cpu-exec.c translate.c, GRIN -tss command options, TRASHADOW_STACK module */
 extern int grin_tra_shadowstack;
-
+/* For cpu-exec.c translate.c, GRIN -M command options, MONITOR SYSCALL module */
+extern int grin_syscall;
 #endif

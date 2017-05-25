@@ -4655,10 +4655,12 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         /* extended op code */
         b = cpu_ldub_code(env, s->pc) | 0x100;
         s->pc++;
-        if(b == 0x105)
-        {
-        	syscall_insn = 1;
-        	//printf("syscall \n");
+ /*** GRIN -M command options, MONITOR SYSCALL module ***/
+        if(grin_syscall){
+			if(b == 0x105){
+				syscall_insn = 1;
+				//printf("syscall \n");
+			}
         }
 
         goto reswitch;
@@ -8614,6 +8616,39 @@ void tcg_x86_init(void)
     helper_lock_init();
 }
 
+/*** GRIN function module ***/
+/** MONITOR SYSCALL module **/
+static inline void grin_tcg_handle_syscall(CPUX86State *env, target_ulong insn_star,target_ulong pc_ptr,TranslationBlock *tb,int num_insns)
+{
+    target_ulong insn_end;
+    int insn_byte;
+    char insn_byte_inter[100];
+    char *p;
+
+    memset(insn_byte_inter,'\0',sizeof(insn_byte_inter));
+    //strcpy(insn_byte_inter,"");
+    //printf("ssssssssssss   %d\n",sizeof(insn_byte_inter));
+    insn_end = pc_ptr;
+    p = (char *)malloc(6);
+
+    for(target_ulong i = insn_star;i<insn_end;i++)
+	{
+    	insn_byte = cpu_ldub_code(env,i);
+		sprintf(p,"%02x",insn_byte);
+		//printf("%s\n",p);
+		strcat(insn_byte_inter,p);
+	}
+	// printf("num_insns:%d\n",num_insns);
+	strcpy(tb->t_code->tb_code[num_insns-1],insn_byte_inter);
+	strcpy(insn_byte_inter,"");
+	//memset(insn_byte_inter,'\0',strlen(insn_byte_inter));//clear this variable, assignmenting value for next time
+	if(syscall_insn == 1){
+		tb->syscall_flag = 1;
+	}
+	syscall_insn = 0;
+	free(p);
+}
+
 /* generate intermediate code for basic block 'tb'.  */
 void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
 {
@@ -8627,17 +8662,13 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
     int num_insns;
     int max_insns;
 
-#if SYSCALLTEST
-    target_ulong insn_end;
-    int insn_byte;
-    char insn_byte_inter[100];
-    char *p;
+/*** GRIN -M command options, MONITOR SYSCALL module ***/
     TB_Code *t_code1 = (TB_Code *)malloc(sizeof(TB_Code));
-
     tb->t_code = t_code1;
     tb->syscall_flag = 0;
-#endif
+
     target_ulong insn_star;
+
 #if GADGET
     tb->IndirectFlag = 0;
     tb->IndirectDisas = 0xf;
@@ -8654,7 +8685,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
     tb->MONI_MemCALLFlag = 0;
 #endif
 
-//*** GRIN -ss/-tss command options, TRA/SHADOW STACK module ***//
+/*** GRIN -ss/-tss command options, TRA/SHADOW STACK module ***/
     tb->CALLFlag = 0;
     tb->next_insn = 0;
     tb->RETFlag = 0;
@@ -8727,9 +8758,9 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
     cpu_ptr1 = tcg_temp_new_ptr();
     cpu_cc_srcT = tcg_temp_local_new();
 
-#if SYSCALLTEST
+/*** GRIN -M command options, MONITOR SYSCALL module ***/
     tb->t_code->curr_pc = tb->pc;
-#endif
+
 
     dc->is_jmp = DISAS_NEXT;
     pc_ptr = pc_start;
@@ -8762,10 +8793,9 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         if (num_insns == max_insns && (tb->cflags & CF_LAST_IO)) {
             gen_io_start();
         }
-#if SYSCALLTEST
-        strcpy(insn_byte_inter,"");
-#endif
+
         insn_star = pc_ptr;
+
         pc_ptr = disas_insn(env, dc, pc_ptr);
 #if PREVENT_UNINTEND
         PREVENTFlag = 0;
@@ -8777,7 +8807,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         ENTERFlag = 0;
 #endif
 
-//*** GRIN -ss/-tss command options, TRA/SHADOW STACK module ***//
+/*** GRIN -ss/-tss command options, TRA/SHADOW STACK module ***/
         if(call_insn == 1)
         {
         	tb->CALLFlag = 1;
@@ -8789,27 +8819,11 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         }
         ret_insn = 0;
 
-#if SYSCALLTEST
-        insn_end = pc_ptr;
-        p = (char *)malloc(6);
-        for(target_ulong i = insn_star;i<insn_end;i++)
-        {
-        	insn_byte = cpu_ldub_code(env,i);
-        	sprintf(p,"%02x",insn_byte);
-        	//printf("%s\n",p);
-        	strcat(insn_byte_inter,p);
+/*** GRIN -M command options, MONITOR SYSCALL module ***/
+        if(grin_syscall){
+        	grin_tcg_handle_syscall(env,insn_star,pc_ptr,tb,num_insns);
         }
-       // printf("num_insns:%d\n",num_insns);
-        strcpy(tb->t_code->tb_code[num_insns-1],insn_byte_inter);
 
-        strcpy(insn_byte_inter,"");
-        if(syscall_insn == 1)
-        {
-        	tb->syscall_flag = 1;
-        }
-        syscall_insn = 0;
-        free(p);
-#endif
 
 #if GADGET
         if(indirect_insn == 1)

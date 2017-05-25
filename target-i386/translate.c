@@ -8626,8 +8626,7 @@ static inline void grin_tcg_handle_syscall(CPUX86State *env, target_ulong insn_s
     char *p;
 
     memset(insn_byte_inter,'\0',sizeof(insn_byte_inter));
-    //strcpy(insn_byte_inter,"");
-    //printf("ssssssssssss   %d\n",sizeof(insn_byte_inter));
+
     insn_end = pc_ptr;
     p = (char *)malloc(6);
 
@@ -8640,8 +8639,7 @@ static inline void grin_tcg_handle_syscall(CPUX86State *env, target_ulong insn_s
 	}
 	// printf("num_insns:%d\n",num_insns);
 	strcpy(tb->t_code->tb_code[num_insns-1],insn_byte_inter);
-	strcpy(insn_byte_inter,"");
-	//memset(insn_byte_inter,'\0',strlen(insn_byte_inter));//clear this variable, assignmenting value for next time
+	memset(insn_byte_inter,'\0',sizeof(insn_byte_inter));//clear this variable, assignmenting value for next time
 	if(syscall_insn == 1){
 		tb->syscall_flag = 1;
 	}

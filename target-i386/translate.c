@@ -8666,6 +8666,20 @@ static inline void grin_tcg_handle_jmp(TranslationBlock *tb)
     }
     safe_insn = 0;
 }
+static inline void grin_tcg_handle_stack(target_ulong pc_ptr,TranslationBlock *tb)
+{
+    if(call_insn)
+    {
+    	tb->CALLFlag = 1;
+    	tb->next_insn = pc_ptr;
+    	call_insn = 0;
+    }
+
+    else if(ret_insn){
+    	tb->RETFlag = 1;
+    	ret_insn = 0;
+    }
+}
 /* generate intermediate code for basic block 'tb'.  */
 void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
 {
@@ -8824,17 +8838,9 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
 #endif
 
 /*** GRIN -ss/-tss command options, TRA/SHADOW STACK module ***/
-        if(call_insn == 1)
-        {
-        	tb->CALLFlag = 1;
-        	tb->next_insn = pc_ptr;
+        if(grin_shadowstack || grin_tra_shadowstack){
+        	grin_tcg_handle_stack(pc_ptr,tb);
         }
-        call_insn = 0;
-        if(ret_insn == 1){
-        	tb->RETFlag = 1;
-        }
-        ret_insn = 0;
-
 /*** GRIN -M command options, MONITOR SYSCALL module ***/
         if(grin_syscall){
         	grin_tcg_handle_syscall(env,insn_star,pc_ptr,tb,num_insns);

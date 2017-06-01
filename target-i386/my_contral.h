@@ -5,9 +5,9 @@
 #define GADGET 0
 
 /*********     Monitoring jump instruction switch   ********/
-#define MONITOR_INST_JMP 0
-#define RJMP 0
-#define MJMP 0
+//#define MONITOR_INST_JMP 0
+//#define RJMP 0
+//#define MJMP 0
 /***********************************************************/
 
 /*********     Monitoring call instruction switch   ********/

@@ -293,11 +293,10 @@ struct TranslationBlock {
     target_ulong IndirectDisas;
 #endif
 
-#if MONITOR_INST_JMP
-    int SafeFlag;
+    /*** GRIN -M command options, MONITOR JMP module ***/
+    int JmpFlag;
     int Mod67Flag;
     int RMFlag;
-#endif
 
 #if MONITOR_INST_CALL
     int MONI_RegCALLFlag;
@@ -471,4 +470,6 @@ extern int grin_shadowstack;
 extern int grin_tra_shadowstack;
 /* For cpu-exec.c translate.c, GRIN -M command options, MONITOR SYSCALL module */
 extern int grin_syscall;
+/* For cpu-exec.c translate.c, GRIN -M command options, MONITOR JMP module */
+extern int grin_jmp;
 #endif

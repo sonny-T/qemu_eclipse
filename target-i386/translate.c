@@ -5164,18 +5164,19 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         	indirect_insn = 1;
 #endif
 
-#if MONITOR_INST_JMP
-        	/**** SAFE INSTRUCTIONS ****/
-        	safe_insn = 1;
-        	if(mod == 3) //mod = 3
-        	{
-        		mod_insn = 1;
+        	/*** GRIN -M command options, MONITOR JMP module ***/
+        	if(grin_jmp){
+				safe_insn = 1;
+				if(mod == 3) //mod = 3
+				{
+					mod_insn = 1;
+				}
+				if(((modrm & 7)==5) && (mod == 0)) //mod = 0 rm = 5
+				{
+					rm_insn = 1;
+				}
         	}
-        	if(((modrm & 7)==5) && (mod == 0)) //mod = 0 rm = 5
-        	{
-        		rm_insn = 1;
-        	}
-#endif
+
             if (dflag == MO_16) {
                 tcg_gen_ext16u_tl(cpu_T0, cpu_T0);
             }
@@ -5189,19 +5190,20 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         	indirect_insn = 1;
 #endif
 
-#if MONITOR_INST_JMP
-        	/**** SAFE INSTRUCTIONS ****/
-        	safe_insn = 1;
-        	if(mod == 3)
-        	{
-        		mod_insn = 1;
+        	/*** GRIN -M command options, MONITOR JMP module ***/
+        	if(grin_jmp){
+				safe_insn = 1;
+				if(mod == 3)
+				{
+					mod_insn = 1;
+				}
+				if(((modrm & 7)==5) && (mod == 0))
+				{
+					rm_insn = 1;
+				}
+				printf("****   ljmp  ****\n");
         	}
-        	if(((modrm & 7)==5) && (mod == 0))
-        	{
-        		rm_insn = 1;
-        	}
-        	printf("****   ljmp  ****\n");
-#endif
+
             gen_op_ld_v(s, ot, cpu_T1, cpu_A0);
             gen_add_A0_im(s, 1 << ot);
             gen_op_ld_v(s, MO_16, cpu_T0, cpu_A0);
@@ -8647,6 +8649,23 @@ static inline void grin_tcg_handle_syscall(CPUX86State *env, target_ulong insn_s
 	free(p);
 }
 
+/*** GRIN function module ***/
+/** MONITOR JMP module **/
+static inline void grin_tcg_handle_jmp(TranslationBlock *tb)
+{
+    tb->JmpFlag = 1;
+    if(mod_insn == 1){
+    	//Mod67Flag is mod = 3
+    	tb->Mod67Flag = 1;
+    	mod_insn = 0;
+    }
+    else if(rm_insn == 1){
+    	//RMFlag is mod = 0 rm = 5
+    	tb->RMFlag = 1;
+    	rm_insn = 0;
+    }
+    safe_insn = 0;
+}
 /* generate intermediate code for basic block 'tb'.  */
 void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
 {
@@ -8672,11 +8691,10 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
     tb->IndirectDisas = 0xf;
 #endif
 
-#if MONITOR_INST_JMP
-    tb->SafeFlag = 0;
+/*** GRIN -M command options, MONITOR JMP module ***/
+    tb->JmpFlag = 0;
     tb->Mod67Flag = 0;
     tb->RMFlag = 0;
-#endif
 
 #if MONITOR_INST_CALL
     tb->MONI_RegCALLFlag = 0;
@@ -8832,25 +8850,10 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         indirect_insn = 0;
 #endif
 
-#if MONITOR_INST_JMP
-        if(safe_insn == 1)
-        {
-        	tb->SafeFlag = 1;
-        	if(mod_insn == 1){
-        		//Mod67Flag is mod = 3
-        		tb->Mod67Flag = 1;
-        	}
-        	mod_insn = 0;
-
-        	if(rm_insn == 1){
-        		//RMFlag is mod = 0 rm = 5
-        		tb->RMFlag = 1;
-        	}
-        	rm_insn = 0;
-        	//tb->IndirectDisas = insn_star;
+/*** GRIN -M command options, MONITOR JMP module ***/
+        if(grin_jmp && safe_insn){
+        	grin_tcg_handle_jmp(tb);
         }
-        safe_insn = 0;
-#endif
 
 #if MONITOR_INST_CALL
         if(regcall_insn){

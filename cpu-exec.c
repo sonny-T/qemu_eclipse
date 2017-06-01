@@ -46,10 +46,10 @@ typedef struct SyncClocks {
 static int PCI = 0;
 static target_ulong TRACEPC_Buf[TBN];
 
-#if MONITOR_INST_JMP
+/*** GRIN -M command options, MONITOR JMP module ***/
+bool JmpRMFlag = 0;
 bool JmpRFlag = 0;
 bool JmpMFlag = 0;
-#endif
 
 #if MONITOR_INST_CALL
 bool CallRFlag = 0;
@@ -59,10 +59,10 @@ bool CallMFlag = 0;
 /************************************************/
 /**  MOnitoring instruction ordinary variable  **/
 /************************************************/
-#if MONITOR_INST_JMP | MONITOR_INST_CALL
+
+/*** GRIN -M command options, MONITOR JMP module ***/
 long dcount = 0;
 static target_ulong var_pc = 0;
-#endif
 
 #if GADGET
 long RealGadgetLen = 0;
@@ -398,6 +398,18 @@ void ShadowStackPush(target_ulong x)
 }
 /*********** end module ***********/
 
+/*** GRIN function module ***/
+/** MONITOR JMP module **/
+static inline grin_handle_jmp(target_ulong pc)
+{
+#if !NOSTDERR
+    fprintf(stderr,"%d%dJMP d: %#x  s: %#x icount: %ld\n",JmpRFlag,JmpMFlag,pc,var_pc,dcount);
+#endif
+    dcount = 0;
+    JmpRFlag = 0;
+    JmpMFlag = 0;
+}
+
 static inline TranslationBlock *tb_find_fast(CPUState *cpu,
                                              TranslationBlock **last_tb,
                                              int tb_exit)
@@ -417,35 +429,11 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
        is executed. */
     cpu_get_tb_cpu_state(env, &pc, &cs_base, &flags);
 
-#if MONITOR_INST_JMP
-    int JMPDIST;
-#if RJMP
-    if(JmpRFlag){
-    	JMPDIST = pc - var_pc;
-    	JMPDIST = abs(JMPDIST);
-    	if(JMPDIST >= 0x4000){
-#if !NOSTDERR
-    		fprintf(stderr,"INRJMP d: %#x  s: %#x dist: %#x icount: %ld\n" ,pc,var_pc,JMPDIST,dcount);
-#endif
-    		dcount = 0;
-    	}
+    /*** GRIN -M command options, MONITOR JMP module ***/
+    if (JmpRMFlag){
+    	grin_handle_jmp(pc);
+    	JmpRMFlag = 0;
     }
-    JmpRFlag = 0;
-#endif
-#if MJMP
-    if(JmpMFlag){
-    	JMPDIST = pc - var_pc;
-    	JMPDIST = abs(JMPDIST);
-    	if(JMPDIST >= 0x4000){
-#if !NOSTDERR
-    		fprintf(stderr,"INMJMP d: %#x  s: %#x dist: %#x icount: %ld\n" ,pc,var_pc,JMPDIST,dcount);
-#endif
-    		dcount = 0;
-    	}
-    }
-    JmpMFlag = 0;
-#endif
-#endif
 
 #if MONITOR_INST_CALL
     int CALLDIST;
@@ -852,26 +840,28 @@ int cpu_exec(CPUState *cpu)
             {
                 cpu_handle_interrupt(cpu, &last_tb);
                 tb = tb_find_fast(cpu, &last_tb, tb_exit);
-#if MONITOR_INST_JMP | MONITOR_INST_CALL
-                dcount += tb->icount;
-#endif
+                /*** GRIN -M command options, MONITOR JMP module ***/
+                if(grin_jmp){
+                	dcount += tb->icount;
+                }
 
-#if MONITOR_INST_JMP
+                /*** GRIN -M command options, MONITOR JMP module ***/
         		//Mod67Flag is mod = 3
         		//RMFlag is mod = 0 rm = 5
                 // dcount += tb->icount;
-				if(tb->SafeFlag == 1){
-					if(tb->Mod67Flag){
-						JmpRFlag = 1;
-						var_pc = tb->pc;
+                if(grin_jmp){
+					if(tb->JmpFlag == 1){
+						JmpRMFlag = 1;
+						if(tb->Mod67Flag){
+							JmpRFlag = 1;
+							var_pc = tb->pc;
+						}
+						else if((!tb->RMFlag) && (!tb->Mod67Flag)){
+							JmpMFlag = 1;
+							var_pc = tb->pc;
+						}
 					}
-					if((!tb->RMFlag) && (!tb->Mod67Flag)){
-						JmpMFlag = 1;
-						var_pc = tb->pc;
-					}
-				}
-
-#endif
+                }
 
 #if MONITOR_INST_CALL
 				if(tb->MONI_RegCALLFlag){

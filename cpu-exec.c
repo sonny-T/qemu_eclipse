@@ -424,7 +424,8 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     if(JmpRFlag){
     	JMPDIST = pc - var_pc;
     	JMPDIST = abs(JMPDIST);
-    	if(JMPDIST >= 0x4000){
+    	//if(JMPDIST >= 0x4000)
+    	{
 #if !NOSTDERR
     		fprintf(stderr,"INRJMP d: %#x  s: %#x dist: %#x icount: %ld\n" ,pc,var_pc,JMPDIST,dcount);
 #endif
@@ -437,7 +438,8 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     if(JmpMFlag){
     	JMPDIST = pc - var_pc;
     	JMPDIST = abs(JMPDIST);
-    	if(JMPDIST >= 0x4000){
+    	//if(JMPDIST >= 0x4000)
+    	{
 #if !NOSTDERR
     		fprintf(stderr,"INMJMP d: %#x  s: %#x dist: %#x icount: %ld\n" ,pc,var_pc,JMPDIST,dcount);
 #endif

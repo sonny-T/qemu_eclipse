@@ -3,9 +3,9 @@
 #define GADGET 0
 
 /*********     Monitoring jump instruction switch   ********/
-#define MONITOR_INST_JMP 0
-#define RJMP 0
-#define MJMP 0
+#define MONITOR_INST_JMP 1
+#define RJMP 1
+#define MJMP 1
 /***********************************************************/
 
 /*********     Monitoring call instruction switch   ********/
@@ -17,8 +17,8 @@
 #define NOSTDERR 0
 
 /*********     stack   switch   ********/
-#define SHADOW_STACK 1
-#define TRA_SHADOW_STACK 1  /*First setting SHADOW_STACK = 1 then setting TRA = 1*/
+#define SHADOW_STACK 0
+#define TRA_SHADOW_STACK 0  /*First setting SHADOW_STACK = 1 then setting TRA = 1*/
 /***************************************/
 
 #define PREVENT_UNINTEND 0

@@ -50,11 +50,11 @@ unsigned long guest_base;
 int have_guest_base;
 
 /***GRIN command line options***/
-int grin_syscall; /***                                             ***/
-int grin_jmp;     /* GRIN -M command options, MONITOR SYSCALL module */
+//int grin_syscall; /***                                             ***/
+//int grin_jmp;     /* GRIN -M command options, MONITOR SYSCALL module */
 //int grin_call;
-int grin_shadowstack; /*** GRIN -ss command options, SHADOW_STACK module ***/
-int grin_tra_shadowstack; /*** GRIN -tss command options, TRASHADOW_STACK module ***/
+//int grin_shadowstack; /*** GRIN -ss command options, SHADOW_STACK module ***/
+//int grin_tra_shadowstack; /*** GRIN -tss command options, TRASHADOW_STACK module ***/
 
 #define EXCP_DUMP(env, fmt, ...)                                        \
 do {                                                                    \
@@ -4021,7 +4021,7 @@ static void handle_arg_trace(const char *arg)
 /*** GRIN command line options ***/
 
 /*** GRIN -M command options, MONITOR SYSCALL module ***/
-static void handle_arg_monitor(const char *arg)
+/*static void handle_arg_monitor(const char *arg)
 {
 	if(!strcmp(arg,"syscall")){
 		grin_syscall = 1;
@@ -4041,18 +4041,18 @@ static void handle_arg_watch(const char *arg)
 {
 	//if(!strcmp(arg,""))
 
-}
+} */
 
 /*** GRIN -ss command options, SHADOW_STACK module ***/
-static void handle_arg_ShadowStack(void)
+/*static void handle_arg_ShadowStack(void)
 {
 	grin_shadowstack = 1;
-}
+} */
 /*** GRIN -tss command options, TRASHADOW_STACK module ***/
-static void handle_arg_TRAShadowStack(void)
+/*static void handle_arg_TRAShadowStack(void)
 {
 	grin_tra_shadowstack = 1;
-}
+}  */
 
 struct qemu_argument {
     const char *argv;
@@ -4106,14 +4106,14 @@ static const struct qemu_argument arg_table[] = {
     {"version",    "QEMU_VERSION",     false, handle_arg_version,
      "",           "display version information and exit"},
 
-	{"M",    "",     true, handle_arg_monitor,
+	/*{"M",    "",     true, handle_arg_monitor,
 	 "instruction",    "monitor instruction and output information"},
 	{"watch",    "",     true, handle_arg_watch,
 	 "register",    "watch register load/store information" },
 	{"ss",    "",     false, handle_arg_ShadowStack,
 	 "",    "set shadow stack mechanism" },
 	{"tss",    "",     false, handle_arg_TRAShadowStack,
-	 "",    "set traditional shadow stack mechanism" },
+	 "",    "set traditional shadow stack mechanism" }, */
     {NULL, NULL, false, NULL, NULL, NULL}
 };
 

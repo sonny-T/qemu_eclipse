@@ -4044,12 +4044,12 @@ static void handle_arg_watch(const char *arg)
 }
 
 /*** GRIN -ss command options, SHADOW_STACK module ***/
-static void handle_arg_ShadowStack(void)
+static void handle_arg_ShadowStack(const char *arg)
 {
 	grin_shadowstack = 1;
 }
 /*** GRIN -tss command options, TRASHADOW_STACK module ***/
-static void handle_arg_TRAShadowStack(void)
+static void handle_arg_TRAShadowStack(const char *arg)
 {
 	grin_tra_shadowstack = 1;
 }

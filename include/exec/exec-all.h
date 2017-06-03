@@ -457,19 +457,16 @@ bool memory_region_is_unassigned(MemoryRegion *mr);
 
 #endif
 
-/* vl.c */
+/* vl.c  main.c*/
 extern int singlestep;
+
+extern int grin_shadowstack; //GRIN -ss command options, SHADOW_STACK module
+extern int grin_tra_shadowstack; //GRIN -tss command options, TRASHADOW_STACK module
+extern int grin_syscall;//GRIN -M command options, MONITOR SYSCALL module
+extern int grin_jmp;//GRIN -M command options, MONITOR JMP module
 
 /* cpu-exec.c, accessed with atomic_mb_read/atomic_mb_set */
 extern CPUState *tcg_current_cpu;
 extern bool exit_request;
 
-/* For cpu-exec.c translate.c, GRIN -ss command options, SHADOW_STACK module */
-extern int grin_shadowstack;
-/* For cpu-exec.c translate.c, GRIN -tss command options, TRASHADOW_STACK module */
-extern int grin_tra_shadowstack;
-/* For cpu-exec.c translate.c, GRIN -M command options, MONITOR SYSCALL module */
-extern int grin_syscall;
-/* For cpu-exec.c translate.c, GRIN -M command options, MONITOR JMP module */
-extern int grin_jmp;
 #endif

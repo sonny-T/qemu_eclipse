@@ -361,7 +361,7 @@ void ShadowStackInit(void)
 	ss->MaxSize = 50;
 	ss->stack = (target_ulong *)malloc(50*sizeof(target_ulong));
 	if(!ss->stack){
-		printf("Shadow stack inital failed!\n");
+		fprintf(stderr,"Shadow stack inital failed!\n");
 	}
 }
 
@@ -372,7 +372,9 @@ target_ulong ShadowStackPop(void)
     ss = &sstack1;
 
 	if(ss->top == 0){
-		printf("Pop shadow stack failed!\n");
+		fprintf(stderr,"Pop shadow stack failed!\n");
+		x = 0;
+		return x;
 	}
 	x = ss->stack[ss->top];
 	ss->top--;
@@ -528,7 +530,7 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     if(grin_shadowstack || grin_tra_shadowstack){
 		if(tb->CALLFlag == 1){
 			ShadowStackPush(tb->next_insn);
-			//printf("Push stack****************************** %x\n",tb->next_insn);
+			//fprintf(stderr,"Push stack****************************** %x\n",tb->next_insn);
 		}
 	  	if(tb->RETFlag == 1){
 	  		RetNextFlag = 1;

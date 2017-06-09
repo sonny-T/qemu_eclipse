@@ -3979,6 +3979,14 @@ int main(int argc, char **argv, char **envp)
                     exit(1);
                 }
                 break;
+       /*** GRIN -ss command options, SHADOW_STACK module ***/
+            case QEMU_OPTION_shadowstack:
+            	grin_shadowstack = 1;
+            	break;
+       /*** GRIN -tss command options, TRA_SHADOW_STACK module ***/
+            case QEMU_OPTION_tra_shadowstack:
+            	grin_tra_shadowstack = 1;
+            	break;
             default:
                 os_parse_cmd_args(popt->index, optarg);
             }

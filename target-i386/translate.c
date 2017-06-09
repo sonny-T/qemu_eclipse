@@ -5138,7 +5138,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         	{
         		memcall_insn = 1;
         	}
-        	printf("lcall Ev \n");
+        	//printf("lcall Ev \n");
 #endif
 
             gen_op_ld_v(s, ot, cpu_T1, cpu_A0);
@@ -6683,7 +6683,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         val = cpu_ldsw_code(env, s->pc);
         s->pc += 2;
 
-        printf("lret im pc :   %x\n",s->pc);
+        //printf("lret im pc :   %x\n",s->pc);
 
     do_lret:
         if (s->pe && !s->vm86) {
@@ -6714,13 +6714,13 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 #endif
         val = 0;
 
-        printf("lret pc :   %x\n",s->pc);
+       // printf("lret pc :   %x\n",s->pc);
 
         goto do_lret;
     case 0xcf: /* iret */
         gen_svm_check_intercept(s, pc_start, SVM_EXIT_IRET);
 
-        printf("iret pc :   %x\n",s->pc);
+       // printf("iret pc :   %x\n",s->pc);
 
         if (!s->pe) {
             /* real mode */
@@ -6785,7 +6785,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 
             tcg_gen_movi_tl(cpu_T0, selector);
             tcg_gen_movi_tl(cpu_T1, offset);
-            printf("lcall im \n");
+            //printf("lcall im \n");
         }
         goto do_lcall;
     case 0xe9: /* jmp im */

@@ -9,19 +9,19 @@
 /***********************************************************/
 
 /*********     Monitoring call instruction switch   ********/
-#define MONITOR_INST_CALL 0
-#define RCALL 0
-#define MCALL 0
+#define MONITOR_INST_CALL 1
+#define RCALL 1
+#define MCALL 1
 /***********************************************************/
 
-#define NOSTDERR 0
+#define NOSTDERR 1
 
 /*********     stack   switch   ********/
 #define SHADOW_STACK 0
 #define TRA_SHADOW_STACK 0  /*First setting SHADOW_STACK = 1 then setting TRA = 1*/
 /***************************************/
 
-#define PREVENT_UNINTEND 0
+#define PREVENT_UNINTEND 1
 
 #define TBN 5
 

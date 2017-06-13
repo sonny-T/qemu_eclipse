@@ -8620,7 +8620,7 @@ void tcg_x86_init(void)
 
 /*** GRIN function module ***/
 /** MONITOR SYSCALL module **/
-static inline void grin_tcg_handle_syscall(CPUX86State *env, target_ulong insn_star,target_ulong pc_ptr,TranslationBlock *tb,int num_insns)
+/*static inline void grin_tcg_handle_syscall(CPUX86State *env, target_ulong insn_star,target_ulong pc_ptr,TranslationBlock *tb,int num_insns)
 {
     target_ulong insn_end;
     int insn_byte;
@@ -8647,7 +8647,7 @@ static inline void grin_tcg_handle_syscall(CPUX86State *env, target_ulong insn_s
 	}
 	syscall_insn = 0;
 	free(p);
-}
+}  */
 
 /*** GRIN function module ***/
 /** MONITOR JMP module **/
@@ -8694,9 +8694,9 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
     int max_insns;
 
 /*** GRIN -M command options, MONITOR SYSCALL module ***/
-    TB_Code *t_code1 = (TB_Code *)malloc(sizeof(TB_Code));
-    tb->t_code = t_code1;
-    tb->syscall_flag = 0;
+   // TB_Code *t_code1 = (TB_Code *)malloc(sizeof(TB_Code));
+   // tb->t_code = t_code1;
+   //tb->syscall_flag = 0;
 
     target_ulong insn_star;
 
@@ -8789,7 +8789,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
     cpu_cc_srcT = tcg_temp_local_new();
 
 /*** GRIN -M command options, MONITOR SYSCALL module ***/
-    tb->t_code->curr_pc = tb->pc;
+    //tb->t_code->curr_pc = tb->pc;
 
 
     dc->is_jmp = DISAS_NEXT;
@@ -8843,7 +8843,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         }
 /*** GRIN -M command options, MONITOR SYSCALL module ***/
         if(grin_syscall){
-        	grin_tcg_handle_syscall(env,insn_star,pc_ptr,tb,num_insns);
+        	//grin_tcg_handle_syscall(env,insn_star,pc_ptr,tb,num_insns);
         }
 
 

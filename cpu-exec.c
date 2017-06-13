@@ -43,8 +43,8 @@ typedef struct SyncClocks {
 } SyncClocks;
 
 /*** GRIN -M command options, MONITOR SYSCALL module ***/
-static int PCI = 0;
-static target_ulong TRACEPC_Buf[TBN];
+//static int PCI = 0;
+//static target_ulong TRACEPC_Buf[TBN];
 
 /*** GRIN -M command options, MONITOR JMP module ***/
 bool JmpRMFlag = 0;
@@ -757,7 +757,7 @@ static inline void cpu_loop_exec_tb(CPUState *cpu, TranslationBlock *tb,
 }
 /*** GRIN function module ***/
 /** MONITOR SYSCALL module **/
-static inline void grin_handle_syscall(TranslationBlock *tb,CPUState *cpu)
+/*static inline void grin_handle_syscall(TranslationBlock *tb,CPUState *cpu)
 {
 	target_ulong CURRPC;
 	TranslationBlock *tb1;
@@ -783,7 +783,7 @@ static inline void grin_handle_syscall(TranslationBlock *tb,CPUState *cpu)
     {
     	PCI = 0;
     }
-}
+} */
 
 /* main execution loop */
 
@@ -888,7 +888,7 @@ int cpu_exec(CPUState *cpu)
 
                 /*** GRIN -M command options, MONITOR SYSCALL module ***/
                 if(grin_syscall){
-                	grin_handle_syscall(tb,cpu);
+                	//grin_handle_syscall(tb,cpu);
                 }
                 cpu_loop_exec_tb(cpu, tb, &last_tb, &tb_exit, &sc);
 

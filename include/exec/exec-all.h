@@ -213,10 +213,10 @@ static inline void tlb_flush_by_mmuidx(CPUState *cpu, ...)
 #endif
 
 /*** GRIN -M command options, MONITOR SYSCALL module ***/
-struct TB_Code{
+/*struct TB_Code{
 	target_ulong curr_pc;
 	char tb_code[512][100];
-};
+}; */
 
 #if GADGET
 void gadget_track(target_ulong p,long RealGadgetLen);
@@ -285,8 +285,8 @@ struct TranslationBlock {
     uintptr_t jmp_list_next[2];
     uintptr_t jmp_list_first;
     /*** GRIN -M command options, MONITOR SYSCALL module ***/
-    int syscall_flag;
-    struct TB_Code *t_code;
+    //int syscall_flag;
+    //struct TB_Code *t_code;
 
 #if GADGET
     int IndirectFlag;

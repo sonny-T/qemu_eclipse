@@ -176,6 +176,10 @@ static inline tcg_target_ulong cpu_tb_exec(CPUState *cpu, TranslationBlock *itb)
     int tb_exit;
     uint8_t *tb_ptr = itb->tc_ptr;
 
+   // FILE *fp = fopen("testtest.txt","ab+");//?
+    //fwrite(itb->tc_ptr,sizeof(itb->tc_ptr),1,fp);
+    //fclose(fp);
+
     qemu_log_mask_and_addr(CPU_LOG_EXEC, itb->pc,
                            "Trace %p [" TARGET_FMT_lx "] %s\n",
                            itb->tc_ptr, itb->pc, lookup_symbol(itb->pc));
@@ -712,9 +716,7 @@ static inline void cpu_loop_exec_tb(CPUState *cpu, TranslationBlock *tb,
 
     trace_exec_tb(tb, tb->pc);
     ret = cpu_tb_exec(cpu, tb);
-
     *last_tb = (TranslationBlock *)(ret & ~TB_EXIT_MASK);
-
     *tb_exit = ret & TB_EXIT_MASK;
     switch (*tb_exit) {
     case TB_EXIT_REQUESTED:

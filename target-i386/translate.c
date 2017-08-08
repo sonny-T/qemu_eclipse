@@ -82,6 +82,10 @@ static TCGv cpu_regs[CPU_NB_REGS];
 static TCGv cpu_seg_base[6];
 static TCGv_i64 cpu_bndl[4];
 static TCGv_i64 cpu_bndu[4];
+
+//encryption function
+static TCGv HASH_ESP;
+
 /* local temps */
 static TCGv cpu_T0, cpu_T1;
 /* local register indexes (only used inside old micro ops) */
@@ -5117,7 +5121,6 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 #endif
 
            //tcg_gen_movi_tl(cpu_T1, next_eip);
-
             gen_push_v(s, cpu_T1);
             gen_op_jmp_v(cpu_T0);
             gen_bnd_jmp(s);
@@ -8722,6 +8725,8 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
     cpu_T0 = tcg_temp_new();
     cpu_T1 = tcg_temp_new();
     cpu_A0 = tcg_temp_new();
+    //encryption function
+    HASH_ESP = tcg_temp_new();
 
     cpu_tmp0 = tcg_temp_new();
     cpu_tmp1_i64 = tcg_temp_new_i64();

@@ -959,6 +959,9 @@ typedef struct CPUX86State {
     target_ulong eflags; /* eflags register. During CPU emulation, CC
                         flags and DF are set to zero because they are
                         stored elsewhere */
+    // PRAR
+    /* Protected return address register */
+    target_ulong prt_reg;
 
     /* emulator internal eflags handling */
     target_ulong cc_dst;

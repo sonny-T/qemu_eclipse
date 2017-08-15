@@ -448,6 +448,8 @@ void tcg_func_start(TCGContext *s)
 static inline int temp_idx(TCGContext *s, TCGTemp *ts)
 {
     ptrdiff_t n = ts - s->temps;
+    // PRAR
+    //printf("n is %d\n",n);
     tcg_debug_assert(n >= 0 && n < s->nb_temps);
     return n;
 }

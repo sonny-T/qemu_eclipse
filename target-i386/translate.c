@@ -4606,6 +4606,8 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     //PRAR
     case 0x9d6:
     	printf("it is testing \n");
+    	tcg_gen_movi_tl(cpu_T0,0xaaaa);
+    	tcg_gen_mov_tl(cpu_prt_reg,cpu_T0);
     	tcg_gen_mov_tl(cpu_T0,cpu_prt_reg);
     	tcg_gen_mov_tl(cpu_regs[0],cpu_T0);
     	break;

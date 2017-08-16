@@ -82,6 +82,10 @@ static TCGv cpu_regs[CPU_NB_REGS];
 static TCGv cpu_seg_base[6];
 static TCGv_i64 cpu_bndl[4];
 static TCGv_i64 cpu_bndu[4];
+
+//PRAR
+static TCGv cpu_prt_reg;
+
 /* local temps */
 static TCGv cpu_T0, cpu_T1;
 /* local register indexes (only used inside old micro ops) */
@@ -4344,54 +4348,6 @@ static void gen_sse(CPUX86State *env, DisasContext *s, int b,
     }
 }
 
-static target_ulong insertcode_seg(CPUX86State *env, DisasContext *s,
-        target_ulong pc_start)
-{
-	TCGMemOp ot;
-	int rex_r = 0;
-	int modrm,mod,reg,rm,b;
-	int sub_b,push_b;
-	s->pc = pc_start;
-	s->pc++;
-	b = cpu_ldub_code(env, s->pc);
-	switch(b)
-	{
-	case 01:     //2b d0
-		{
-			int op, f, val;
-			sub_b = 0x2b;
-			op = (sub_b >> 3) & 7; //5
-			f = (sub_b >> 1) & 3;  //1
-
-			ot = mo_b_d(sub_b, s->dflag);
-			/* OP Gv, Ev */
-			modrm = 0xd0;
-			mod = (modrm >> 6) & 3;//3
-			reg = ((modrm >> 3) & 7) | rex_r;//0
-			rm = (modrm & 7) | REX_B(s);//0
-			gen_op_mov_v_reg(ot, cpu_T1, rm);
-
-			gen_op(s, op, ot, reg);
-    	}
-		break;
-	case 50:     //50 54
-		{
-			/*50 push %rax*/
-			push_b = 0x50;
-			gen_op_mov_v_reg(MO_32, cpu_T0, (push_b & 7) | REX_B(s));
-			gen_push_v(s, cpu_T0);
-
-			/*54 push %rsp*/
-			push_b = 0x54;
-			gen_op_mov_v_reg(MO_32, cpu_T0, (push_b & 7) | REX_B(s));
-			gen_push_v(s, cpu_T0);
-		}
-		break;
-	}
-
-	s->pc++;
-	return s->pc;
-}
 #if GADGET
 static int charto(char *p)
 {
@@ -4501,12 +4457,12 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 
     /* Collect prefixes.  */
     switch (b) {
+    //PRAR
     /*according blank opcode 0xd6,add new mark instruction*/
     case 0xd6:
-    	printf("it is testing\n");
     	b = b | 0x900;
-    	goto reswitch;
-
+    	rex_w = 1;
+    	break;
     case 0xf3:
         prefixes |= PREFIX_REPZ;
         goto next_byte;
@@ -4647,8 +4603,11 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
  reswitch:
     switch(b) {
     /*according blank opcode 0x1d6,add new mark instruction*/
+    //PRAR
     case 0x9d6:
-    	s->pc = insertcode_seg(env, s, pc_start);
+    	printf("it is testing \n");
+    	tcg_gen_mov_tl(cpu_T0,cpu_prt_reg);
+    	tcg_gen_mov_tl(cpu_regs[0],cpu_T0);
     	break;
     case 0x0f:
         /**************************/
@@ -8596,6 +8555,9 @@ void tcg_x86_init(void)
                                          offsetof(CPUX86State, regs[i]),
                                          reg_names[i]);
     }
+    //PRAR
+    cpu_prt_reg = tcg_global_mem_new(cpu_env,
+    									offsetof(CPUX86State,prt_reg),"prt_reg");
 
     for (i = 0; i < 6; ++i) {
         cpu_seg_base[i]

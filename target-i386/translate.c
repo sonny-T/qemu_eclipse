@@ -85,6 +85,7 @@ static TCGv_i64 cpu_bndu[4];
 
 //PRAR
 static TCGv cpu_prt_reg;
+static TCGv cpu_salt_reg;
 
 /* local temps */
 static TCGv cpu_T0, cpu_T1;
@@ -8560,6 +8561,8 @@ void tcg_x86_init(void)
     //PRAR
     cpu_prt_reg = tcg_global_mem_new(cpu_env,
     									offsetof(CPUX86State,prt_reg),"prt_reg");
+    cpu_salt_reg = tcg_global_mem_new(cpu_env,
+    									offsetof(CPUX86State,salt_reg),"salt_reg");
 
     for (i = 0; i < 6; ++i) {
         cpu_seg_base[i]

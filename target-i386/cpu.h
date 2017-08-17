@@ -962,6 +962,8 @@ typedef struct CPUX86State {
     //PRAR
     /* Protected return address register */
     target_ulong prt_reg;
+    target_ulong salt_reg; /* as salt hash. To store a random, each process
+    						is called that random will be change */
 
     /* emulator internal eflags handling */
     target_ulong cc_dst;

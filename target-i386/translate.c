@@ -5066,6 +5066,12 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             if (dflag == MO_16) {
                 tcg_gen_ext16u_tl(cpu_T0, cpu_T0);
             }
+            //PRAR
+            /*prt_reg xor salt_reg assignment to ?t0? */
+            tcg_gen_mov_tl(cpu_T1,cpu_prt_reg);
+            tcg_gen_mov_tl(cpu_T0,cpu_salt_reg);
+            tcg_gen_xor_tl(cpu_T0,cpu_T0,cpu_T1);
+
             next_eip = s->pc - s->cs_base;
 
       //*** GRIN -ss/-tss command options, TRA/SHADOW STACK module ***//

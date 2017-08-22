@@ -89,6 +89,8 @@ static TCGv cpu_salt_reg;
 
 /* local temps */
 static TCGv cpu_T0, cpu_T1;
+/* PRAR */
+static TCGv cpu_T2,cpu_T3;
 /* local register indexes (only used inside old micro ops) */
 static TCGv cpu_tmp0, cpu_tmp4;
 static TCGv_ptr cpu_ptr0, cpu_ptr1;
@@ -4607,10 +4609,27 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     //PRAR
     case 0x9d6:
     	printf("it is testing \n");
-    	tcg_gen_movi_tl(cpu_T0,0xaaaa);
+    	/*tcg_gen_movi_tl(cpu_prt_reg,0xaaaa);
     	tcg_gen_mov_tl(cpu_prt_reg,cpu_T0);
     	tcg_gen_mov_tl(cpu_T0,cpu_prt_reg);
-    	tcg_gen_mov_tl(cpu_regs[0],cpu_T0);
+    	tcg_gen_mov_tl(cpu_regs[0],cpu_prt_reg);*/
+
+    	//testing data
+    	tcg_gen_movi_tl(cpu_T2,0x400890);
+    	tcg_gen_movi_tl(cpu_prt_reg,0xaaaaaaaa00000000);
+    	tcg_gen_movi_tl(cpu_salt_reg,0xbbbbbbbb);
+
+        //PRAR
+        /*prt_reg xor salt_reg assignment to ?t0? */
+        tcg_gen_xor_tl(cpu_prt_reg,cpu_salt_reg,cpu_prt_reg);
+        tcg_gen_movi_tl(cpu_T3,0x9e3779b97f4a7c15);
+
+        tcg_gen_mulu2_i64(cpu_prt_reg,cpu_T3,cpu_prt_reg,cpu_T3);
+        tcg_gen_mov_tl(cpu_T3,cpu_prt_reg);
+        tcg_gen_deposit_i64(cpu_prt_reg,cpu_T3,cpu_T2,0,33);
+
+        tcg_gen_mov_tl(cpu_regs[0],cpu_prt_reg);//output cpu_prt_reg to rax
+
     	break;
     case 0x0f:
         /**************************/
@@ -5066,11 +5085,6 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             if (dflag == MO_16) {
                 tcg_gen_ext16u_tl(cpu_T0, cpu_T0);
             }
-            //PRAR
-            /*prt_reg xor salt_reg assignment to ?t0? */
-            tcg_gen_mov_tl(cpu_T1,cpu_prt_reg);
-            tcg_gen_mov_tl(cpu_T0,cpu_salt_reg);
-            tcg_gen_xor_tl(cpu_T0,cpu_T0,cpu_T1);
 
             next_eip = s->pc - s->cs_base;
 
@@ -5085,7 +5099,16 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             else
             	tcg_gen_movi_tl(cpu_T1, next_eip);
 
-            gen_push_v(s, cpu_T1);
+            //PRAR
+            tcg_gen_mov_tl(cpu_T2,cpu_prt_reg);
+            tcg_gen_xor_tl(cpu_prt_reg,cpu_salt_reg,cpu_prt_reg);
+            tcg_gen_movi_tl(cpu_T3,0x9e3779b97f4a7c15);
+
+            tcg_gen_mulu2_i64(cpu_prt_reg,cpu_T3,cpu_prt_reg,cpu_T3);
+            tcg_gen_mov_tl(cpu_T3,cpu_prt_reg);
+            tcg_gen_deposit_i64(cpu_prt_reg,cpu_T3,cpu_T1,0,33);
+
+            gen_push_v(s, cpu_T2);
             gen_op_jmp_v(cpu_T0);
             gen_bnd_jmp(s);
             gen_eob(s);
@@ -6737,7 +6760,16 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             else
             	tcg_gen_movi_tl(cpu_T0, next_eip);
 
-            gen_push_v(s, cpu_T0);
+            //PRAR
+            tcg_gen_mov_tl(cpu_T2,cpu_prt_reg);
+            tcg_gen_xor_tl(cpu_prt_reg,cpu_salt_reg,cpu_prt_reg);
+            tcg_gen_movi_tl(cpu_T3,0x9e3779b97f4a7c15);
+
+            tcg_gen_mulu2_i64(cpu_prt_reg,cpu_T3,cpu_prt_reg,cpu_T3);
+            tcg_gen_mov_tl(cpu_T3,cpu_prt_reg);
+            tcg_gen_deposit_i64(cpu_prt_reg,cpu_T3,cpu_T0,0,33);
+
+            gen_push_v(s, cpu_T2);
             gen_bnd_jmp(s);
             gen_jmp(s, tval);
         }
@@ -8751,6 +8783,10 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
     cpu_T0 = tcg_temp_new();
     cpu_T1 = tcg_temp_new();
     cpu_A0 = tcg_temp_new();
+
+    //PRAR
+    cpu_T2 = tcg_temp_new();
+    cpu_T3 = tcg_temp_new();
 
     cpu_tmp0 = tcg_temp_new();
     cpu_tmp1_i64 = tcg_temp_new_i64();

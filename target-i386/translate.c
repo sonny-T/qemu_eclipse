@@ -5097,15 +5097,15 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             	tcg_gen_movi_tl(cpu_T1, next_eip);
 
             //PRAR
-           /* tcg_gen_mov_tl(cpu_T2,cpu_prt_reg);
+            tcg_gen_mov_tl(cpu_T2,cpu_prt_reg);
             tcg_gen_xor_tl(cpu_prt_reg,cpu_salt_reg,cpu_prt_reg);
             tcg_gen_movi_tl(cpu_T3,0x9e3779b97f4a7c15);
 
             tcg_gen_mulu2_i64(cpu_prt_reg,cpu_T3,cpu_prt_reg,cpu_T3);
             tcg_gen_mov_tl(cpu_T3,cpu_prt_reg);
-            tcg_gen_deposit_i64(cpu_prt_reg,cpu_T3,cpu_T1,0,33); */
+            tcg_gen_deposit_i64(cpu_prt_reg,cpu_T3,cpu_T1,0,33);
 
-            gen_push_v(s, cpu_T1);
+            gen_push_v(s, cpu_T2);
             gen_op_jmp_v(cpu_T0);
             gen_bnd_jmp(s);
             gen_eob(s);
@@ -6638,7 +6638,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         /* Note that gen_pop_T0 uses a zero-extending load.  */
 
         //PRAR
-/*        tcg_gen_mov_tl(cpu_T2,cpu_prt_reg);
+        tcg_gen_mov_tl(cpu_T2,cpu_prt_reg);
 
         tcg_gen_movi_tl(cpu_T4,16);
         tcg_gen_shr_i64(cpu_T2,cpu_T2,cpu_T4);
@@ -6650,9 +6650,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         tcg_gen_movi_tl(cpu_T3,0x7fff00000000);
         tcg_gen_or_i64(cpu_T3,cpu_T3,cpu_T1);
         tcg_gen_movcond_i64(TCG_COND_EQ,cpu_T3,cpu_T2,cpu_T4,cpu_T3,cpu_T1);
-        tcg_gen_mov_tl(cpu_prt_reg,cpu_T0); */
+        tcg_gen_mov_tl(cpu_prt_reg,cpu_T0);
         //?PRAR?
-        gen_op_jmp_v(cpu_T0);
+        gen_op_jmp_v(cpu_T3); //cpu_T0 to eip
         gen_bnd_jmp(s);
         gen_eob(s);
         break;
@@ -6674,7 +6674,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         /* Note that gen_pop_T0 uses a zero-extending load.  */
 
         //PRAR
-/*        tcg_gen_mov_tl(cpu_T2,cpu_prt_reg);
+        tcg_gen_mov_tl(cpu_T2,cpu_prt_reg);
 
         tcg_gen_movi_tl(cpu_T4,16);
         tcg_gen_shr_i64(cpu_T2,cpu_T2,cpu_T4);
@@ -6686,10 +6686,10 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         tcg_gen_movi_tl(cpu_T3,0x7fff00000000);
         tcg_gen_or_i64(cpu_T3,cpu_T3,cpu_T1);
         tcg_gen_movcond_i64(TCG_COND_EQ,cpu_T3,cpu_T2,cpu_T4,cpu_T3,cpu_T1);
-        tcg_gen_mov_tl(cpu_prt_reg,cpu_T0);  */
+        tcg_gen_mov_tl(cpu_prt_reg,cpu_T0);
         //?PRAR?
 
-        gen_op_jmp_v(cpu_T0); //cpu_T0 to eip
+        gen_op_jmp_v(cpu_T3); //cpu_T0 to eip
         //printf("ret pc :   %x\n",s->pc);
         gen_bnd_jmp(s);
         gen_eob(s);
@@ -6789,15 +6789,15 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             	tcg_gen_movi_tl(cpu_T0, next_eip);
 
             //PRAR
-        /*    tcg_gen_mov_tl(cpu_T2,cpu_prt_reg);
+            tcg_gen_mov_tl(cpu_T2,cpu_prt_reg);
             tcg_gen_xor_tl(cpu_prt_reg,cpu_salt_reg,cpu_prt_reg);
             tcg_gen_movi_tl(cpu_T3,0x9e3779b97f4a7c15);
 
             tcg_gen_mulu2_i64(cpu_prt_reg,cpu_T3,cpu_prt_reg,cpu_T3);
             tcg_gen_mov_tl(cpu_T3,cpu_prt_reg);
-            tcg_gen_deposit_i64(cpu_prt_reg,cpu_T3,cpu_T0,0,33); */
+            tcg_gen_deposit_i64(cpu_prt_reg,cpu_T3,cpu_T0,0,33);
 
-            gen_push_v(s, cpu_T0);
+            gen_push_v(s, cpu_T2);
             gen_bnd_jmp(s);
             gen_jmp(s, tval);
         }

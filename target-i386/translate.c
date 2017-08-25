@@ -86,6 +86,7 @@ static TCGv_i64 cpu_bndu[4];
 //PRAR
 static TCGv cpu_prt_reg;
 static TCGv cpu_salt_reg;
+static TCGv cpu_tpush_reg;
 
 /* local temps */
 static TCGv cpu_T0, cpu_T1;
@@ -5096,6 +5097,8 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             else
             	tcg_gen_movi_tl(cpu_T1, next_eip);
 
+            //test next eip
+            tcg_gen_mov_tl(cpu_tpush_reg,cpu_T1);
             //PRAR
             tcg_gen_mov_tl(cpu_T2,cpu_prt_reg);
             tcg_gen_xor_tl(cpu_prt_reg,cpu_salt_reg,cpu_prt_reg);
@@ -6788,6 +6791,8 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             else
             	tcg_gen_movi_tl(cpu_T0, next_eip);
 
+            //test next eip
+            tcg_gen_mov_tl(cpu_tpush_reg,cpu_T0);
             //PRAR
             tcg_gen_mov_tl(cpu_T2,cpu_prt_reg);
             tcg_gen_xor_tl(cpu_prt_reg,cpu_salt_reg,cpu_prt_reg);
@@ -8629,7 +8634,8 @@ void tcg_x86_init(void)
     									offsetof(CPUX86State,prt_reg),"prt_reg");
     cpu_salt_reg = tcg_global_mem_new(cpu_env,
     									offsetof(CPUX86State,salt_reg),"salt_reg");
-
+    cpu_tpush_reg = tcg_global_mem_new(cpu_env,
+    									offsetof(CPUX86State,tpush_reg),"tpush_reg");
     for (i = 0; i < 6; ++i) {
         cpu_seg_base[i]
             = tcg_global_mem_new(cpu_env,

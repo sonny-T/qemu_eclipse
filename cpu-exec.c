@@ -471,7 +471,7 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     if(grin_tra_shadowstack){
 		if(RetNextFlag){
 			pc_var = ShadowStackPop();
-			printf("Pop stack---------------------------- %x  original pc %x\n",pc_var,pc);
+			printf("Pop stack---------------------------- %lx  original pc %lx\n",pc_var,pc);
 			if(pc != pc_var){
 #if !NOSTDERR
 				fprintf(stderr,"TSS p: %#x  s: %#x\n",pc,pc_var);
@@ -492,7 +492,7 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
 #endif
 			}
 			pc = ShadowStackPop();
-			printf("Pop stack---------------------------- %x\n",pc);
+			printf("Pop stack---------------------------- %lx\n",pc);
 		}
 		RetNextFlag = 0;
     }
@@ -528,10 +528,12 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
 
 /*** GRIN -ss/-tss command options ***/
 /*  TRA/SHADOW STACK module function */
+    target_ulong * aaa;
     if(grin_shadowstack || grin_tra_shadowstack){
 		if(tb->CALLFlag == 1){
 			ShadowStackPush(tb->next_insn);
-			printf("Push stack****************************** %x\n",tb->next_insn);
+			//env->eip;
+			printf("Push stack****************************** %lx  next pc %lx\n",tb->next_insn,env->tpush_reg);
 		}
 	  	if(tb->RETFlag == 1){
 	  		RetNextFlag = 1;

@@ -4538,6 +4538,10 @@ int main(int argc, char **argv, char **envp)
     env->regs[R_EBP] = regs->rbp;
     env->regs[R_ESP] = regs->rsp;
     env->eip = regs->rip;
+    /* PRAR
+     * initial prt_reg and salt_reg */
+    env->prt_reg = 0xabababababababab;
+    env->salt_reg = 0x521131416;
 #else
     env->regs[R_EAX] = regs->eax;
     env->regs[R_EBX] = regs->ebx;

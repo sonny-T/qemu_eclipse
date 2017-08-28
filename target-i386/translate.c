@@ -5096,9 +5096,6 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             }
             else
             	tcg_gen_movi_tl(cpu_T1, next_eip);
-
-            //test next eip
-            tcg_gen_mov_tl(cpu_tpush_reg,cpu_T1);
             //PRAR
             /* Reserved cpu_prt_reg to cpu_T2
              * cpu_salt_reg xor cpu_prt_reg */
@@ -5110,6 +5107,8 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             /* cpu_prt_reg = cpu_T3 & (~0x7fffffffff(1ffffffff))|(cpu_T0 << 0)&0x7fffffffff(1ffffffff) */
             tcg_gen_mov_tl(cpu_T3,cpu_prt_reg);
             tcg_gen_deposit_i64(cpu_prt_reg,cpu_T3,cpu_T1,0,39);
+            //test next eip
+            tcg_gen_mov_tl(cpu_tpush_reg,cpu_T2);
 
             gen_push_v(s, cpu_T2);
             gen_op_jmp_v(cpu_T0);
@@ -6804,9 +6803,6 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             }
             else
             	tcg_gen_movi_tl(cpu_T0, next_eip);
-
-            //test next eip
-            tcg_gen_mov_tl(cpu_tpush_reg,cpu_T0);
             //PRAR
             /* Reserved cpu_prt_reg to cpu_T2
              * cpu_salt_reg xor cpu_prt_reg */
@@ -6818,6 +6814,8 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             /* cpu_prt_reg = cpu_T3 & (~0x7fffffffff(1ffffffff))|(cpu_T0 << 0)&0x7fffffffff(1ffffffff) */
             tcg_gen_mov_tl(cpu_T3,cpu_prt_reg);
             tcg_gen_deposit_i64(cpu_prt_reg,cpu_T3,cpu_T0,0,39);
+            //test next eip
+            tcg_gen_mov_tl(cpu_tpush_reg,cpu_T2);
 
             gen_push_v(s, cpu_T2);
             gen_bnd_jmp(s);
@@ -8647,12 +8645,14 @@ void tcg_x86_init(void)
                                          reg_names[i]);
     }
     //PRAR
+    /* allocate prt_reg and salt_reg*/
     cpu_prt_reg = tcg_global_mem_new(cpu_env,
     									offsetof(CPUX86State,prt_reg),"prt_reg");
     cpu_salt_reg = tcg_global_mem_new(cpu_env,
     									offsetof(CPUX86State,salt_reg),"salt_reg");
     cpu_tpush_reg = tcg_global_mem_new(cpu_env,
     									offsetof(CPUX86State,tpush_reg),"tpush_reg");
+
     for (i = 0; i < 6; ++i) {
         cpu_seg_base[i]
             = tcg_global_mem_new(cpu_env,

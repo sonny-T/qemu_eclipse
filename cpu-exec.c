@@ -471,7 +471,7 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     if(grin_tra_shadowstack){
 		if(RetNextFlag){
 			pc_var = ShadowStackPop();
-			printf("Pop stack---------------------------- %lx  original pc %lx\n",pc_var,pc);
+			printf("Pop stack---------------------------- %lx\n",pc_var);
 			if(pc != pc_var){
 #if !NOSTDERR
 				fprintf(stderr,"TSS p: %#x  s: %#x\n",pc,pc_var);

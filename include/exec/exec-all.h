@@ -464,6 +464,7 @@ extern int grin_shadowstack; //GRIN -ss command options, SHADOW_STACK module
 extern int grin_tra_shadowstack; //GRIN -tss command options, TRASHADOW_STACK module
 extern int grin_syscall;//GRIN -M command options, MONITOR SYSCALL module
 extern int grin_jmp;//GRIN -M command options, MONITOR JMP module
+extern int grin_prar;  /* Protected return address register mechanism*/
 
 /* cpu-exec.c, accessed with atomic_mb_read/atomic_mb_set */
 extern CPUState *tcg_current_cpu;

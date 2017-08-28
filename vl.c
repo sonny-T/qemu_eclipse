@@ -187,6 +187,7 @@ int grin_jmp;     /* GRIN -M command options, MONITOR SYSCALL module */
 int grin_call;
 int grin_shadowstack; /*** GRIN -ss command options, SHADOW_STACK module ***/
 int grin_tra_shadowstack; /*** GRIN -tss command options, TRASHADOW_STACK module ***/
+int grin_prar;  /* Protected return address register mechanism*/
 
 /* The bytes in qemu_uuid[] are in the order specified by RFC4122, _not_ in the
  * little-endian "wire format" described in the SMBIOS 2.6 specification.

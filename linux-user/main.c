@@ -55,6 +55,7 @@ int grin_jmp;     /* GRIN -M command options, MONITOR SYSCALL module */
 int grin_call;
 int grin_shadowstack; /*** GRIN -ss command options, SHADOW_STACK module ***/
 int grin_tra_shadowstack; /*** GRIN -tss command options, TRASHADOW_STACK module ***/
+int grin_prar;  /* Protected return address register mechanism*/
 
 #define EXCP_DUMP(env, fmt, ...)                                        \
 do {                                                                    \
@@ -4053,7 +4054,11 @@ static void handle_arg_TRAShadowStack(const char *arg)
 {
 	grin_tra_shadowstack = 1;
 }
-
+/*** GRIN -encrypt command options, PRAR module ***/
+static void handle_arg_PRAR(const char *arg)
+{
+	grin_prar = 1;
+}
 struct qemu_argument {
     const char *argv;
     const char *env;
@@ -4114,6 +4119,8 @@ static const struct qemu_argument arg_table[] = {
 	 "",    "set shadow stack mechanism" },
 	{"tss",    "",     false, handle_arg_TRAShadowStack,
 	 "",    "set traditional shadow stack mechanism" },
+	{"encrypt",    "",     false, handle_arg_PRAR,
+		 "",    "encrypt return address" },
     {NULL, NULL, false, NULL, NULL, NULL}
 };
 
@@ -4539,7 +4546,7 @@ int main(int argc, char **argv, char **envp)
     env->regs[R_ESP] = regs->rsp;
     env->eip = regs->rip;
     /* PRAR
-     * initial prt_reg and salt_reg */
+     * initial encrypt register */
     env->prt_reg = 0xabababababababab;
     env->salt_reg = 0x521131416;
 #else

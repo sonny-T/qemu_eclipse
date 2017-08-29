@@ -4612,22 +4612,39 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     	printf("it is testing \n");
     	//testing data
     	tcg_gen_movi_tl(cpu_prt_reg,0xfffffffff400890);
+    	tcg_gen_movi_tl(cpu_T0,0xfffffffff400890);
+    	tcg_gen_movi_tl(cpu_T1,0x400990);
         //PRAR
-        tcg_gen_mov_tl(cpu_T2,cpu_prt_reg);
+		/* Reserved cpu_prt_reg to cpu_T2
+		 * cpu_salt_reg xor cpu_prt_reg */
+		tcg_gen_mov_tl(cpu_T2,cpu_prt_reg);
+		tcg_gen_xor_tl(cpu_prt_reg,cpu_salt_reg,cpu_prt_reg);
+		/* Xor's result mul A assigned to cpu_prt_reg*/
+		tcg_gen_movi_tl(cpu_T3,0x9e3779b97f4a7c15);
+		tcg_gen_mulu2_i64(cpu_prt_reg,cpu_T3,cpu_prt_reg,cpu_T3);
+		/* cpu_prt_reg = cpu_T3 & (~0x7fffffffff(1ffffffff))|(cpu_T0 << 0)&0x7fffffffff(1ffffffff) */
+		tcg_gen_mov_tl(cpu_T3,cpu_prt_reg);
+		tcg_gen_deposit_i64(cpu_prt_reg,cpu_T3,cpu_T1,0,39);
 
-        tcg_gen_movi_tl(cpu_T4,16);
-        tcg_gen_shr_i64(cpu_T2,cpu_T2,cpu_T4);
-        tcg_gen_shr_i64(cpu_T2,cpu_T2,cpu_T4);
-        tcg_gen_movi_tl(cpu_T4,0x1);
-        tcg_gen_and_i64(cpu_T2,cpu_T2,cpu_T4);
-        tcg_gen_movi_tl(cpu_T1,0xffffffff);
-        tcg_gen_and_i64(cpu_T1,cpu_prt_reg,cpu_T1);
-        tcg_gen_movi_tl(cpu_T3,0x7fff00000000);
-        tcg_gen_or_i64(cpu_T3,cpu_T3,cpu_T1);
-        tcg_gen_movcond_i64(TCG_COND_EQ,cpu_T3,cpu_T2,cpu_T4,cpu_T3,cpu_T1);
-        tcg_gen_mov_tl(cpu_prt_reg,cpu_T3);
+		//checkout
+		tcg_gen_xor_tl(cpu_T0,cpu_salt_reg,cpu_T0);
+		tcg_gen_movi_tl(cpu_T3,0x9e3779b97f4a7c15);
+		tcg_gen_mulu2_i64(cpu_T0,cpu_T3,cpu_T0,cpu_T3);
+		/* cpu_T0 >> 39bits(33 bits)*/
+		tcg_gen_movi_tl(cpu_T4,20);
+		tcg_gen_shr_i64(cpu_T0,cpu_T0,cpu_T4);
+		tcg_gen_shr_i64(cpu_prt_reg,cpu_prt_reg,cpu_T4);
+		tcg_gen_movi_tl(cpu_T4,19);
+		tcg_gen_shr_i64(cpu_T0,cpu_T0,cpu_T4);
+		tcg_gen_shr_i64(cpu_prt_reg,cpu_prt_reg,cpu_T4);
+
+		/* cpu_T3 = (Preg TCG_COND_EQ 0x1) ? 40..(7fff):00400890 */
+		tcg_gen_movi_tl(cpu_T3,1);
+		tcg_gen_movi_tl(cpu_T1,0);
+		tcg_gen_movcond_i64(TCG_COND_EQ,cpu_T3,cpu_T0,cpu_prt_reg,cpu_T3,cpu_T1);
         //?PRAR?
-        tcg_gen_mov_tl(cpu_regs[0],cpu_prt_reg);
+		//output
+        tcg_gen_mov_tl(cpu_regs[0],cpu_T3);
     	break;
     case 0x0f:
         /**************************/
@@ -8663,14 +8680,15 @@ void tcg_x86_init(void)
     }
 
     /*** GRIN -encrypt command options, PRAR module ***/
-    if(grin_prar){
+ //   if(grin_prar){
     /* allocate prt_reg and salt_reg*/
     cpu_prt_reg = tcg_global_mem_new(cpu_env,
     									offsetof(CPUX86State,prt_reg),"prt_reg");
     cpu_salt_reg = tcg_global_mem_new(cpu_env,
     									offsetof(CPUX86State,salt_reg),"salt_reg");
     cpu_tpush_reg = tcg_global_mem_new(cpu_env,
-    									offsetof(CPUX86State,tpush_reg),"tpush_reg");}
+    									offsetof(CPUX86State,tpush_reg),"tpush_reg");
+//	}
 
     for (i = 0; i < 6; ++i) {
         cpu_seg_base[i]

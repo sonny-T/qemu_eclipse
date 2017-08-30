@@ -16,7 +16,7 @@
 #define MCALL 0
 /***********************************************************/
 
-#define NOSTDERR 1
+#define NOSTDERR 0
 
 /*********     stack   switch   ********/
 //#define SHADOW_STACK 0

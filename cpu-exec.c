@@ -431,6 +431,12 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
        is executed. */
     cpu_get_tb_cpu_state(env, &pc, &cs_base, &flags);
 
+    /*** GRIN -encrypt command options, PRAR module ***/
+    if(grin_prar){
+    	if(pc == 0xffffffff){
+    		fprintf(stderr,"The program is attacked!\n");
+    	}
+    }
     /*** GRIN -M command options, MONITOR JMP module ***/
     if (JmpRMFlag){
     	grin_handle_jmp(pc);
@@ -522,7 +528,7 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
 #endif
     /* See if we can patch the calling TB. */
     if (*last_tb && !qemu_loglevel_mask(CPU_LOG_TB_NOCHAIN)) {
-    		//tb_add_jump(*last_tb, tb_exit, tb);
+    		tb_add_jump(*last_tb, tb_exit, tb);
     }
     tb_unlock();
 

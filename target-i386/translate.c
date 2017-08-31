@@ -7331,6 +7331,10 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             gen_exception(s, EXCP0D_GPF, pc_start - s->cs_base);
         } else {
             gen_interrupt(s, val, pc_start - s->cs_base, s->pc - s->cs_base);
+#if GADGET
+        	/**** judge gadget type ****/
+        	indirect_insn = 1;
+#endif
         }
         break;
     case 0xce: /* into */

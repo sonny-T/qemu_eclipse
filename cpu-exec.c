@@ -480,7 +480,7 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
 			//printf("Pop stack---------------------------- %lx\n",pc_var);
 			if(pc != pc_var){
 #if !NOSTDERR
-				fprintf(stderr,"TSS p: %#x  s: %#x\n",pc,pc_var);
+				fprintf(stderr,"TSS p: %#lx  s: %#lx\n",pc,pc_var);
 #endif
 			}
 		}

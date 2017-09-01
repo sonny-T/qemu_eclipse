@@ -4388,7 +4388,7 @@ void gadget_track(target_ulong p,long RealGadgetLen)
 	}
 	indirect_p = NULL;
 	/****  test  ****/
-	printf("%s %s %s\n",insnbuf[0],insnbuf[1],insnbuf[2]);
+	//printf("%s %s %s\n",insnbuf[0],insnbuf[1],insnbuf[2]);
 
 	nopgadget_max_len = charto(insnbuf[2]);        /*translate char to int */
 	functiongadget_max_len = charto(insnbuf[1]);
@@ -7333,7 +7333,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             gen_interrupt(s, val, pc_start - s->cs_base, s->pc - s->cs_base);
 #if GADGET
         	/**** judge gadget type ****/
-        	indirect_insn = 1;
+            if(val == 0x80){
+            	indirect_insn = 1;
+            }
 #endif
         }
         break;

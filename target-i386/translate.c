@@ -4517,6 +4517,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     case 0xc4: /* 3-byte VEX */
         /* VEX prefixes cannot be used except in 32-bit mode.
            Otherwise the instruction is LES or LDS.  */
+    	printf("dfgggghhhhjhhh\n");
         if (s->code32 && !s->vm86) {
             static const int pp_prefix[4] = {
                 0, PREFIX_DATA, PREFIX_REPZ, PREFIX_REPNZ

@@ -47,7 +47,7 @@ typedef struct SyncClocks {
 //static target_ulong TRACEPC_Buf[TBN];
 
 /*** GRIN -M command options, MONITOR JMP module ***/
-bool JmpRMFlag = 0;
+bool jmpto_addr = 0;
 bool JmpRFlag = 0;
 bool JmpMFlag = 0;
 
@@ -438,9 +438,9 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     	}
     }
     /*** GRIN -M command options, MONITOR JMP module ***/
-    if (JmpRMFlag){
+    if (jmpto_addr){
     	grin_handle_jmp(pc);
-    	JmpRMFlag = 0;
+    	jmpto_addr = 0;
     }
 
 #if MONITOR_INST_CALL
@@ -850,17 +850,13 @@ int cpu_exec(CPUState *cpu)
                 cpu_handle_interrupt(cpu, &last_tb);
                 tb = tb_find_fast(cpu, &last_tb, tb_exit);
                 /*** GRIN -M command options, MONITOR JMP module ***/
-                if(grin_jmp){
-                	dcount += tb->icount;
-                }
-
-                /*** GRIN -M command options, MONITOR JMP module ***/
         		//Mod67Flag is mod = 3
         		//RMFlag is mod = 0 rm = 5
                 // dcount += tb->icount;
                 if(grin_jmp){
+                	dcount += tb->icount;
 					if(tb->JmpFlag == 1){
-						JmpRMFlag = 1;
+						jmpto_addr = 1;
 						if(tb->Mod67Flag){
 							JmpRFlag = 1;
 							var_pc = tb->pc;

@@ -50,8 +50,8 @@ unsigned long guest_base;
 int have_guest_base;
 
 /***GRIN command line options***/
-int grin_syscall; /***                                             ***/
-int grin_jmp;     /* GRIN -M command options, MONITOR SYSCALL module */
+int grin_syscall; /* GRIN -M command options, MONITOR SYSCALL module */
+int grin_jmp;     /* GRIN -M command options, MONITOR JMP module */
 int grin_call;
 int grin_shadowstack; /*** GRIN -ss command options, SHADOW_STACK module ***/
 int grin_tra_shadowstack; /*** GRIN -tss command options, TRASHADOW_STACK module ***/

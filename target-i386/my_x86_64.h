@@ -3307,8 +3307,8 @@ char array[][30]={
 [x808aa93]="	Functional  	3	0",
 };
 */
-/*
 
+/*
 enum index{
 	x80873f9=	0x873f9,
 	x80848a4=	0x848a4,

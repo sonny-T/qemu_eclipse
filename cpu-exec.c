@@ -47,9 +47,10 @@ typedef struct SyncClocks {
 //static target_ulong TRACEPC_Buf[TBN];
 
 /*** GRIN -M command options, MONITOR JMP module ***/
-bool jmpto_addr = 0;
-bool JmpRFlag = 0;
-bool JmpMFlag = 0;
+bool jmpto_flag = 0;
+static target_ulong jmpaddr_of;
+//bool JmpRFlag = 0;
+//bool JmpMFlag = 0;
 
 #if MONITOR_INST_CALL
 bool CallRFlag = 0;
@@ -60,9 +61,8 @@ bool CallMFlag = 0;
 /**  MOnitoring instruction ordinary variable  **/
 /************************************************/
 
-/*** GRIN -M command options, MONITOR JMP module ***/
+/* GRIN -M command options */
 long dcount = 0;
-static target_ulong var_pc = 0;
 
 #if GADGET
 long RealGadgetLen = 0;
@@ -405,11 +405,13 @@ void ShadowStackPush(target_ulong x)
 static inline grin_handle_jmp(target_ulong pc)
 {
 #if !NOSTDERR
-    fprintf(stderr,"%d%dJMP d: %#x  s: %#x icount: %ld\n",JmpRFlag,JmpMFlag,pc,var_pc,dcount);
+    fprintf(stderr,"d: %#lx  s: %#lx icount: %ld\n",pc,jmpaddr_of,dcount);
+    //fprintf(stderr,"%d%dJMP d: %#x  s: %#x icount: %ld\n",JmpRFlag,JmpMFlag,pc,var_pc,dcount);
 #endif
     dcount = 0;
-    JmpRFlag = 0;
-    JmpMFlag = 0;
+    jmpto_flag = 0;
+//    JmpRFlag = 0;
+//    JmpMFlag = 0;
 }
 
 static inline TranslationBlock *tb_find_fast(CPUState *cpu,
@@ -437,10 +439,9 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     		fprintf(stderr,"The program is attacked!\n");
     	}
     }
-    /*** GRIN -M command options, MONITOR JMP module ***/
-    if (jmpto_addr){
+    /* GRIN -M command options, MONITOR JMP module */
+    if (jmpto_flag){
     	grin_handle_jmp(pc);
-    	jmpto_addr = 0;
     }
 
 #if MONITOR_INST_CALL
@@ -849,22 +850,21 @@ int cpu_exec(CPUState *cpu)
             {
                 cpu_handle_interrupt(cpu, &last_tb);
                 tb = tb_find_fast(cpu, &last_tb, tb_exit);
-                /*** GRIN -M command options, MONITOR JMP module ***/
+                /* GRIN -M command options, MONITOR JMP module */
         		//Mod67Flag is mod = 3
         		//RMFlag is mod = 0 rm = 5
                 // dcount += tb->icount;
                 if(grin_jmp){
                 	dcount += tb->icount;
 					if(tb->JmpFlag == 1){
-						jmpto_addr = 1;
-						if(tb->Mod67Flag){
-							JmpRFlag = 1;
-							var_pc = tb->pc;
-						}
-						else if((!tb->RMFlag) && (!tb->Mod67Flag)){
-							JmpMFlag = 1;
-							var_pc = tb->pc;
-						}
+						jmpto_flag = 1;
+						jmpaddr_of = tb->jmp_addr;
+//						if(tb->Mod67Flag){
+//							JmpRFlag = 1;
+//						}
+//						else if((!tb->RMFlag) && (!tb->Mod67Flag)){
+//							JmpMFlag = 1;
+//						}
 					}
                 }
 

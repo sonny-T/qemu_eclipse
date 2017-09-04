@@ -295,8 +295,9 @@ struct TranslationBlock {
 
     /*** GRIN -M command options, MONITOR JMP module ***/
     int JmpFlag;
-    int Mod67Flag;
-    int RMFlag;
+    target_ulong jmp_addr;
+//    int Mod67Flag;
+//    int RMFlag;
 
 #if MONITOR_INST_CALL
     int MONI_RegCALLFlag;

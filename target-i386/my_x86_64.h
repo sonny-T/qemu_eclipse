@@ -6,7 +6,6 @@
 bool syscall_insn = 0;
 bool indirect_insn = 0;
 
-bool safe_insn = 0;
 bool mod_insn = 0;
 bool rm_insn = 0;
 

@@ -118,6 +118,9 @@ typedef struct DisasContext {
     target_ulong pc; /* pc = eip + cs_base */
     int is_jmp; /* 1 = means jump (stop translation), 2 means CPU
                    static state change (stop translation) */
+    int have_jmp;/* GRIN -M command options, MONITOR JMP module
+     	 	 	   1 = means have jmp instruction,vice versa */
+
     /* current block context */
     target_ulong cs_base; /* base of CS segment */
     int pe;     /* protected mode */
@@ -5183,15 +5186,15 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 
         	/*** GRIN -M command options, MONITOR JMP module ***/
         	if(grin_jmp){
-				safe_insn = 1;
-				if(mod == 3) //mod = 3
-				{
-					mod_insn = 1;
-				}
-				if(((modrm & 7)==5) && (mod == 0)) //mod = 0 rm = 5
-				{
-					rm_insn = 1;
-				}
+				s->have_jmp = 1;
+//				if(mod == 3) //mod = 3
+//				{
+//					mod_insn = 1;
+//				}
+//				if(((modrm & 7)==5) && (mod == 0)) //mod = 0 rm = 5
+//				{
+//					rm_insn = 1;
+//				}
         	}
 
             if (dflag == MO_16) {
@@ -5209,15 +5212,15 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 
         	/*** GRIN -M command options, MONITOR JMP module ***/
         	if(grin_jmp){
-				safe_insn = 1;
-				if(mod == 3)
-				{
-					mod_insn = 1;
-				}
-				if(((modrm & 7)==5) && (mod == 0))
-				{
-					rm_insn = 1;
-				}
+        		s->have_jmp = 1;
+//				if(mod == 3)
+//				{
+//					mod_insn = 1;
+//				}
+//				if(((modrm & 7)==5) && (mod == 0))
+//				{
+//					rm_insn = 1;
+//				}
 				printf("****   ljmp  ****\n");
         	}
 
@@ -8783,23 +8786,6 @@ void tcg_x86_init(void)
 	free(p);
 }  */
 
-/*** GRIN function module ***/
-/** MONITOR JMP module **/
-static inline void grin_tcg_handle_jmp(TranslationBlock *tb)
-{
-    tb->JmpFlag = 1;
-    if(mod_insn == 1){
-    	//Mod67Flag is mod = 3
-    	tb->Mod67Flag = 1;
-    	mod_insn = 0;
-    }
-    else if(rm_insn == 1){
-    	//RMFlag is mod = 0 rm = 5
-    	tb->RMFlag = 1;
-    	rm_insn = 0;
-    }
-    safe_insn = 0;
-}
 static inline void grin_tcg_handle_stack(target_ulong pc_ptr,TranslationBlock *tb)
 {
     if(call_insn)
@@ -8839,10 +8825,11 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
     tb->IndirectDisas = 0xf;
 #endif
 
-/*** GRIN -M command options, MONITOR JMP module ***/
+    /* GRIN -M command options, MONITOR JMP module */
     tb->JmpFlag = 0;
-    tb->Mod67Flag = 0;
-    tb->RMFlag = 0;
+    tb->jmp_addr = 0;
+//    tb->Mod67Flag = 0;
+//    tb->RMFlag = 0;
 
 #if MONITOR_INST_CALL
     tb->MONI_RegCALLFlag = 0;
@@ -8859,6 +8846,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
     cs_base = tb->cs_base;
     flags = tb->flags;
 
+    dc->have_jmp = 0; /* GRIN -M command options, MONITOR JMP module */
     dc->pe = (flags >> HF_PE_SHIFT) & 1;
     dc->code32 = (flags >> HF_CS32_SHIFT) & 1;
     dc->ss32 = (flags >> HF_SS32_SHIFT) & 1;
@@ -8963,7 +8951,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
             gen_io_start();
         }
 
-        insn_star = pc_ptr;
+        insn_star = pc_ptr;//  delete delete
 
         pc_ptr = disas_insn(env, dc, pc_ptr);
 #if PREVENT_UNINTEND
@@ -8995,11 +8983,6 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         indirect_insn = 0;
 #endif
 
-/*** GRIN -M command options, MONITOR JMP module ***/
-        if(grin_jmp && safe_insn){
-        	grin_tcg_handle_jmp(tb);
-        }
-
 #if MONITOR_INST_CALL
         if(regcall_insn){
         	tb->MONI_RegCALLFlag = 1;
@@ -9011,6 +8994,11 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         }
         memcall_insn = 0;
 #endif
+        /* GRIN -M command options, MONITOR JMP module */
+        if(grin_jmp && dc->have_jmp){
+        	tb->JmpFlag = dc->have_jmp;
+        	tb->jmp_addr = dc->pc_start;
+    	}
         /* stop translation if indicated */
         if (dc->is_jmp)
             break;
@@ -9074,7 +9062,6 @@ done_generating:
         qemu_log("\n");
     }
 #endif
-
     tb->size = pc_ptr - pc_start;
     tb->icount = num_insns;
 }

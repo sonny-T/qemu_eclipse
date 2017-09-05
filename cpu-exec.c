@@ -892,6 +892,7 @@ int cpu_exec(CPUState *cpu)
                 /*** GRIN -M command options, MONITOR SYSCALL module ***/
                 if(grin_syscall){
                 	//grin_handle_syscall(tb,cpu);
+                	printf("hhhhhhgg\n");
                 }
                 cpu_loop_exec_tb(cpu, tb, &last_tb, &tb_exit, &sc);
 

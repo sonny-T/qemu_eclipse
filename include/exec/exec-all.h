@@ -293,16 +293,18 @@ struct TranslationBlock {
     target_ulong IndirectDisas;
 #endif
 
-    /*** GRIN -M command options, MONITOR JMP module ***/
-    int JmpFlag;
+    /* GRIN -M command options, MONITOR JMP module */
+    int JmpFlagM;
     target_ulong jmp_addr;
 //    int Mod67Flag;
 //    int RMFlag;
 
-#if MONITOR_INST_CALL
-    int MONI_RegCALLFlag;
-    int MONI_MemCALLFlag;
-#endif
+    /* GRIN -M command options, MONITOR CALL module */
+    int CallFlagM;
+    target_ulong call_addr;
+    target_ulong callnext_addr;
+//    int MONI_RegCALLFlag;
+//    int MONI_MemCALLFlag;
 
 //*** GRIN -ss/-tss command options, TRA/SHADOW STACK module ***//
     int CALLFlag;
@@ -466,7 +468,7 @@ extern int grin_tra_shadowstack; //GRIN -tss command options, TRASHADOW_STACK mo
 extern int grin_syscall;//GRIN -M command options, MONITOR SYSCALL module
 extern int grin_jmp;//GRIN -M command options, MONITOR JMP module
 extern int grin_prar;  /* Protected return address register mechanism*/
-
+extern int grin_call;//GRIN -M command options, MONITOR CALL module
 /* cpu-exec.c, accessed with atomic_mb_read/atomic_mb_set */
 extern CPUState *tcg_current_cpu;
 extern bool exit_request;

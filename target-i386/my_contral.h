@@ -11,9 +11,9 @@
 /***********************************************************/
 
 /*********     Monitoring call instruction switch   ********/
-#define MONITOR_INST_CALL 0
-#define RCALL 0
-#define MCALL 0
+#define MONITOR_INST_CALL 1
+#define RCALL 1
+#define MCALL 1
 /***********************************************************/
 
 #define NOSTDERR 0

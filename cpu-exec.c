@@ -48,14 +48,16 @@ typedef struct SyncClocks {
 
 /*** GRIN -M command options, MONITOR JMP module ***/
 bool jmpto_flag = 0;
-static target_ulong jmpaddr_of;
+static target_ulong jmpaddr_of = 0;
 //bool JmpRFlag = 0;
 //bool JmpMFlag = 0;
 
-#if MONITOR_INST_CALL
-bool CallRFlag = 0;
-bool CallMFlag = 0;
-#endif
+/*** GRIN -M command options, MONITOR CALL module ***/
+bool callto_flag = 0;
+static target_ulong calladdr_of = 0;
+//bool CallRFlag = 0;
+//bool CallMFlag = 0;
+static target_ulong calladdr_next = 0;
 
 /************************************************/
 /**  MOnitoring instruction ordinary variable  **/
@@ -413,7 +415,16 @@ static inline grin_handle_jmp(target_ulong pc)
 //    JmpRFlag = 0;
 //    JmpMFlag = 0;
 }
-
+/* GRIN function module */
+/* MONITOR CALL module */
+static inline grin_handle_call(target_ulong pc)
+{
+#if !NOSTDERR
+	fprintf(stderr,"CALL d: %#lx  s: %#lx beside addr: %#lx icount: %ld\n",
+													pc,calladdr_of,calladdr_next,dcount);
+#endif
+    dcount = 0;
+}
 static inline TranslationBlock *tb_find_fast(CPUState *cpu,
                                              TranslationBlock **last_tb,
                                              int tb_exit)
@@ -440,39 +451,15 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     	}
     }
     /* GRIN -M command options, MONITOR JMP module */
-    if (jmpto_flag){
+    if (grin_jmp && jmpto_flag){
     	grin_handle_jmp(pc);
     }
 
-#if MONITOR_INST_CALL
-    int CALLDIST;
-#if RCALL
-    if(CallRFlag){
-    	CALLDIST = pc - var_pc;
-    	CALLDIST = abs(CALLDIST);
-    	if(CALLDIST >= 0x4000){
-#if !NOSTDERR
-    		fprintf(stderr,"INRCALL d: %#x  s: %#x dist: %#x icount: %ld\n" ,pc,var_pc,CALLDIST,dcount);
-#endif
-    		dcount = 0;
-    	}
+    /* GRIN -M command options, MONITOR CALL module */
+    if (grin_call && callto_flag){
+    	grin_handle_call(pc);
     }
-    CallRFlag = 0;
-#endif
-#if MCALL
-    if(CallMFlag){
-    	CALLDIST = pc - var_pc;
-    	CALLDIST = abs(CALLDIST);
-    	if(CALLDIST >= 0x4000){
-#if !NOSTDERR
-    		fprintf(stderr,"INMCALL d: %#x  s: %#x dist: %#x icount: %ld\n" ,pc,var_pc,CALLDIST,dcount);
-#endif
-    		dcount = 0;
-    	}
-    }
-    CallMFlag = 0;
-#endif
-#endif
+
     /***  GRIN -tss command options  ***/
     /*   TRA STACK module function */
     if(grin_tra_shadowstack){
@@ -850,13 +837,13 @@ int cpu_exec(CPUState *cpu)
             {
                 cpu_handle_interrupt(cpu, &last_tb);
                 tb = tb_find_fast(cpu, &last_tb, tb_exit);
-                /* GRIN -M command options, MONITOR JMP module */
+            /* GRIN -M command options, MONITOR JMP module */
         		//Mod67Flag is mod = 3
         		//RMFlag is mod = 0 rm = 5
-                // dcount += tb->icount;
+                dcount += tb->icount;
                 if(grin_jmp){
                 	dcount += tb->icount;
-					if(tb->JmpFlag == 1){
+					if(tb->JmpFlagM == 1){
 						jmpto_flag = 1;
 						jmpaddr_of = tb->jmp_addr;
 //						if(tb->Mod67Flag){
@@ -868,16 +855,23 @@ int cpu_exec(CPUState *cpu)
 					}
                 }
 
-#if MONITOR_INST_CALL
-				if(tb->MONI_RegCALLFlag){
-					CallRFlag = 1;
-					var_pc = tb->pc;
-				}
-				if(tb->MONI_MemCALLFlag){
-					CallMFlag = 1;
-					var_pc = tb->pc;
-				}
-#endif
+            /* GRIN -M command options, MONITOR CALL module */
+                if (grin_call){
+                	dcount += tb->icount;
+                	if(tb->CallFlagM == 1){
+                		callto_flag = 1;
+                		calladdr_of = tb->call_addr;
+                		calladdr_next = tb->callnext_addr;
+                	}
+                }
+//				if(tb->MONI_RegCALLFlag){
+//					CallRFlag = 1;
+//					var_pc = tb->pc;
+//				}
+//				if(tb->MONI_MemCALLFlag){
+//					CallMFlag = 1;
+//					var_pc = tb->pc;
+//				}
 
 #if GADGET
                 RealGadgetLen = RealGadgetLen + tb->icount;

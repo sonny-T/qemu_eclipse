@@ -52,7 +52,7 @@ int have_guest_base;
 /***GRIN command line options***/
 int grin_syscall; /* GRIN -M command options, MONITOR SYSCALL module */
 int grin_jmp;     /* GRIN -M command options, MONITOR JMP module */
-int grin_call;
+int grin_call;	  /* GRIN -M command options, MONITOR CALL module */
 int grin_shadowstack; /*** GRIN -ss command options, SHADOW_STACK module ***/
 int grin_tra_shadowstack; /*** GRIN -tss command options, TRASHADOW_STACK module ***/
 int grin_prar;  /* Protected return address register mechanism*/
@@ -4029,6 +4029,9 @@ static void handle_arg_monitor(const char *arg)
 	}
 	else if(!strcmp(arg,"jmp")){
 		grin_jmp = 1;
+	}
+	else if(!strcmp(arg,"call")){
+		grin_call = 1;
 	}
 	else
 	{

@@ -420,8 +420,8 @@ static inline grin_handle_jmp(target_ulong pc)
 static inline grin_handle_call(target_ulong pc)
 {
 	int CALLDIST;//
-	CALLDIST = pc - calladdr_of;
-	CALLDIST = abs(CALLDIST);
+	CALLDIST = pc - calladdr_of;//
+	CALLDIST = abs(CALLDIST);//
 	if(CALLDIST >= 0x4000){
 #if !NOSTDERR
 	fprintf(stderr,"CALL d: %#lx  s: %#lx beside addr: %#lx icount: %ld distance %#lx\n",

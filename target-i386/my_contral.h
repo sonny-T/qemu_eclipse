@@ -10,7 +10,7 @@
 
 /*********     Monitoring call instruction switch   ********/
 #define MONITOR_INST_CALL 1
-#define RCALL 1
+#define RCALL 0
 #define MCALL 1
 /***********************************************************/
 

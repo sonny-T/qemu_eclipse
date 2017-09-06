@@ -846,7 +846,7 @@ int cpu_exec(CPUState *cpu)
         		//RMFlag is mod = 0 rm = 5
                 dcount += tb->icount;
                 if(grin_jmp){
-                	dcount += tb->icount;
+                	//dcount += tb->icount;
 					if(tb->JmpFlagM == 1){
 						jmpto_flag = 1;
 						jmpaddr_of = tb->jmp_addr;
@@ -861,7 +861,7 @@ int cpu_exec(CPUState *cpu)
 
             /* GRIN -M command options, MONITOR CALL module */
                 if (grin_call){
-                	dcount += tb->icount;
+                	//dcount += tb->icount;
                 	if(tb->CallFlagM == 1){
                 		callto_flag = 1;
                 		calladdr_of = tb->call_addr;

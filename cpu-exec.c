@@ -408,7 +408,6 @@ static inline grin_handle_jmp(target_ulong pc)
 {
 #if !NOSTDERR
     fprintf(stderr,"JMP  d: %#lx  s: %#lx icount: %ld\n",pc,jmpaddr_of,dcount);
-    //fprintf(stderr,"%d%dJMP d: %#x  s: %#x icount: %ld\n",JmpRFlag,JmpMFlag,pc,var_pc,dcount);
 #endif
     dcount = 0;
     jmpto_flag = 0;
@@ -420,8 +419,8 @@ static inline grin_handle_jmp(target_ulong pc)
 static inline grin_handle_call(target_ulong pc)
 {
 #if !NOSTDERR
-	fprintf(stderr,"CALL d: %#lx  s: %#lx beside addr: %#lx icount: %ld\n",
-													pc,calladdr_of,calladdr_next,dcount);
+	fprintf(stderr,"CALL d: %#lx  s: %#lx icount: %ld beside addr: %#lx\n",
+													pc,calladdr_of,dcount,calladdr_next);
 #endif
     dcount = 0;
 	callto_flag = 0;

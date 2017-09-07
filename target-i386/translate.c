@@ -4362,12 +4362,11 @@ static void gen_sse(CPUX86State *env, DisasContext *s, int b,
 #if GADGET
 static int charto(char *p)
 {
-	int n = 0;
 	int num = 0;
 
 	for(int i = 0;i<strlen(p);i++)
 	{
-		num = n*10 + (*(p+i)-'0');
+		num = num*10 + (*(p+i)-'0');
 	}
 	return num;
 }

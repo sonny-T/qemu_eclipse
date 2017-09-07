@@ -406,6 +406,31 @@ void ShadowStackPush(target_ulong x)
  * MONITOR JMP module */
 static inline grin_handle_jmp(target_ulong pc)
 {
+	FILE * pfile = NULL;
+	char *token,*str1;
+	char bufLine[30];
+	char bufParser[2][20];
+	int i = 0;
+	char c;
+
+	if((pfile=fopen("/home/sonny/CFI_TEST/func.list","r"))==NULL){
+		printf("Read file failed!\n");
+		exit(0);
+	}
+	while(c!=EOF)
+	{
+		fgets(bufLine,30,pfile);
+		for(i=0,str1=bufLine;i<2;i++,str1=NULL){
+			token = strtok(str1,"	");
+			strcpy(bufParser[i],token);
+			if(token==NULL){break;}
+		}
+		//printf("%s---%s\n",bufParser[0],bufParser[1]);
+		c = getc(pfile);
+		fseek(pfile,-1L,1);
+		if(c=='\n'){break;}
+	}
+	fclose(pfile);
 #if !NOSTDERR
     fprintf(stderr,"JMP  d: %#lx  s: %#lx icount: %ld\n",
     												pc,jmpaddr_of,dcount);

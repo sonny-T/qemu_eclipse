@@ -454,6 +454,10 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
 #endif
 #endif
 
+//    if(pc==0x42133a){
+//
+//    printf("CallMFlag = %d, CallRFlag = %d pc %#lx\n",CallRFlag,CallMFlag,var_pc);
+//    }
 #if MONITOR_INST_CALL
     int CALLDIST;
 #if RCALL
@@ -854,6 +858,7 @@ int cpu_exec(CPUState *cpu)
 					CallMFlag = 1;
 					var_pc = tb->pc;
 				}
+				//var_pc = tb->pc;
 #endif
 
 #if GADGET

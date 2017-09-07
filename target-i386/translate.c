@@ -122,6 +122,8 @@ typedef struct DisasContext {
      	 	 	   1 = means have jmp instruction,vice versa */
     int have_call;/* GRIN -M command options, MONITOR CALL module
      	 	 	   1 = means have call instruction,vice versa */
+    int have_ret;/* GRIN -M command options, MONITOR RET module
+         	 	 	   1 = means have ret instruction,vice versa */
 
     /* current block context */
     target_ulong cs_base; /* base of CS segment */
@@ -6664,6 +6666,10 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     	indirect_insn = 1;
 #endif
 
+    	/* GRIN -M command options, MONITOR RET module */
+    	if(grin_ret){
+    		s->have_ret = 1;
+    	}
 //*** GRIN -ss/-tss command options, TRA/SHADOW STACK ***//
     	ret_insn = 1;
 
@@ -6728,6 +6734,10 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     	indirect_insn = 1;
 #endif
 
+    	/* GRIN -M command options, MONITOR RET module */
+    	if(grin_ret){
+    		s->have_ret = 1;
+    	}
 //*** GRIN -ss/-tss command options, TRA/SHADOW STACK ***//
     	ret_insn = 1;
 
@@ -8841,6 +8851,9 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
     tb->callnext_addr = 0;
     //tb->MONI_RegCALLFlag = 0;
     //tb->MONI_MemCALLFlag = 0;
+    /* GRIN -M command options, MONITOR RET module */
+    tb->RetFlagM = 0;
+    tb->ret_addr = 0;
 
 /*** GRIN -ss/-tss command options, TRA/SHADOW STACK module ***/
     tb->CALLFlag = 0;
@@ -8854,6 +8867,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
 
     dc->have_jmp = 0; /* GRIN -M command options, MONITOR JMP module */
     dc->have_call = 0; /* GRIN -M command options, MONITOR CALL module */
+    dc->have_ret = 0; /* GRIN -M command options, MONITOR RET module */
     dc->pe = (flags >> HF_PE_SHIFT) & 1;
     dc->code32 = (flags >> HF_CS32_SHIFT) & 1;
     dc->ss32 = (flags >> HF_SS32_SHIFT) & 1;
@@ -8990,21 +9004,17 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         indirect_insn = 0;
 #endif
 
+        /* GRIN -M command options, MONITOR RET module */
+        if(grin_ret && dc->have_ret){
+        	tb->RetFlagM = dc->have_ret;
+        	tb->ret_addr = dc->pc_start;
+        }
         /* GRIN -M command options, MONITOR CALL module */
         if(grin_call && dc->have_call){
         	tb->CallFlagM = dc->have_call;
         	tb->call_addr = dc->pc_start;
         	tb->callnext_addr = pc_ptr;
         }
-//        if(regcall_insn){
-//        	tb->MONI_RegCALLFlag = 1;
-//        }
-//        regcall_insn = 0;
-//
-//        if(memcall_insn){
-//        	tb->MONI_MemCALLFlag = 1;
-//        }
-//        memcall_insn = 0;
         /* GRIN -M command options, MONITOR JMP module */
         if(grin_jmp && dc->have_jmp){
         	tb->JmpFlagM = dc->have_jmp;

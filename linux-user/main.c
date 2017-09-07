@@ -53,6 +53,7 @@ int have_guest_base;
 int grin_syscall; /* GRIN -M command options, MONITOR SYSCALL module */
 int grin_jmp;     /* GRIN -M command options, MONITOR JMP module */
 int grin_call;	  /* GRIN -M command options, MONITOR CALL module */
+int grin_ret;	  /* GRIN -M command options, MONITOR RET module */
 int grin_shadowstack; /*** GRIN -ss command options, SHADOW_STACK module ***/
 int grin_tra_shadowstack; /*** GRIN -tss command options, TRASHADOW_STACK module ***/
 int grin_prar;  /* Protected return address register mechanism*/
@@ -4019,9 +4020,8 @@ static void handle_arg_trace(const char *arg)
     trace_file = trace_opt_parse(arg);
 }
 
-/*** GRIN command line options ***/
-
-/*** GRIN -M command options, MONITOR SYSCALL module ***/
+/* GRIN command line options
+ * GRIN -M command options */
 static void handle_arg_monitor(const char *arg)
 {
 	if(!strcmp(arg,"syscall")){
@@ -4032,6 +4032,9 @@ static void handle_arg_monitor(const char *arg)
 	}
 	else if(!strcmp(arg,"call")){
 		grin_call = 1;
+	}
+	else if(!strcmp(arg,"ret")){
+		grin_ret = 1;
 	}
 	else
 	{

@@ -49,15 +49,15 @@ typedef struct SyncClocks {
 /*** GRIN -M command options, MONITOR JMP module ***/
 bool jmpto_flag = 0;
 static target_ulong jmpaddr_of = 0;
-//bool JmpRFlag = 0;
-//bool JmpMFlag = 0;
 
 /*** GRIN -M command options, MONITOR CALL module ***/
 bool callto_flag = 0;
 static target_ulong calladdr_of = 0;
-//bool CallRFlag = 0;
-//bool CallMFlag = 0;
 static target_ulong calladdr_next = 0;
+
+/*** GRIN -M command options, MONITOR RET module ***/
+bool retto_flag = 0;
+static target_ulong retaddr_of = 0;
 
 /************************************************/
 /**  MOnitoring instruction ordinary variable  **/
@@ -402,29 +402,40 @@ void ShadowStackPush(target_ulong x)
 }
 /*********** end module ***********/
 
-/*** GRIN function module ***/
-/** MONITOR JMP module **/
+/* GRIN function module
+ * MONITOR JMP module */
 static inline grin_handle_jmp(target_ulong pc)
 {
 #if !NOSTDERR
-    fprintf(stderr,"JMP  d: %#lx  s: %#lx icount: %ld\n",pc,jmpaddr_of,dcount);
+    fprintf(stderr,"JMP  d: %#lx  s: %#lx icount: %ld\n",
+    												pc,jmpaddr_of,dcount);
 #endif
     dcount = 0;
     jmpto_flag = 0;
 //    JmpRFlag = 0;
 //    JmpMFlag = 0;
 }
-/* GRIN function module */
-/* MONITOR CALL module */
+/* GRIN function module
+ * MONITOR CALL module */
 static inline grin_handle_call(target_ulong pc)
 {
 #if !NOSTDERR
-	fprintf(stderr,"CALL d: %#lx  s: %#lx icount: %ld beside addr: %#lx\n",
+	fprintf(stderr,"CALL d: %#lx  s: %#lx icount: %ld   beside addr: %#lx\n",
 													pc,calladdr_of,dcount,calladdr_next);
 #endif
     dcount = 0;
 	callto_flag = 0;
-
+}
+/* GRIN function module
+ * MONITOR RET module */
+static inline grin_handle_ret(target_ulong pc)
+{
+#if !NOSTDERR
+	fprintf(stderr,"RET  d: %#lx  s: %#lx icount: %ld\n",
+													pc,retaddr_of,dcount);
+#endif
+    dcount = 0;
+	retto_flag = 0;
 }
 static inline TranslationBlock *tb_find_fast(CPUState *cpu,
                                              TranslationBlock **last_tb,
@@ -459,6 +470,10 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     /* GRIN -M command options, MONITOR CALL module */
     if (grin_call && callto_flag){
     	grin_handle_call(pc);
+    }
+    /* GRIN -M command options, MONITOR RET module */
+    if (grin_ret && retto_flag){
+    	grin_handle_ret(pc);
     }
 
     /***  GRIN -tss command options  ***/
@@ -847,12 +862,6 @@ int cpu_exec(CPUState *cpu)
 					if(tb->JmpFlagM == 1){
 						jmpto_flag = 1;
 						jmpaddr_of = tb->jmp_addr;
-//						if(tb->Mod67Flag){
-//							JmpRFlag = 1;
-//						}
-//						else if((!tb->RMFlag) && (!tb->Mod67Flag)){
-//							JmpMFlag = 1;
-//						}
 					}
                 }
 
@@ -865,14 +874,15 @@ int cpu_exec(CPUState *cpu)
                 		calladdr_next = tb->callnext_addr;
                 	}
                 }
-//				if(tb->MONI_RegCALLFlag){
-//					CallRFlag = 1;
-//					var_pc = tb->pc;
-//				}
-//				if(tb->MONI_MemCALLFlag){
-//					CallMFlag = 1;
-//					var_pc = tb->pc;
-//				}
+                /* GRIN -M command options, MONITOR RET module */
+                if (grin_ret){
+                	//dcount += tb->icount;
+                	if(tb->RetFlagM == 1){
+                		retto_flag = 1;
+                    	retaddr_of = tb->ret_addr;
+                    }
+                }
+
 
 #if GADGET
                 RealGadgetLen = RealGadgetLen + tb->icount;

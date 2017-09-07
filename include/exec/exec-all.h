@@ -305,6 +305,9 @@ struct TranslationBlock {
     target_ulong callnext_addr;
 //    int MONI_RegCALLFlag;
 //    int MONI_MemCALLFlag;
+    /* GRIN -M command options, MONITOR RET module */
+    int RetFlagM;
+    target_ulong ret_addr;
 
 //*** GRIN -ss/-tss command options, TRA/SHADOW STACK module ***//
     int CALLFlag;
@@ -469,6 +472,7 @@ extern int grin_syscall;//GRIN -M command options, MONITOR SYSCALL module
 extern int grin_jmp;//GRIN -M command options, MONITOR JMP module
 extern int grin_prar;  /* Protected return address register mechanism*/
 extern int grin_call;//GRIN -M command options, MONITOR CALL module
+extern int grin_ret;//GRIN -M command options, MONITOR RET module
 /* cpu-exec.c, accessed with atomic_mb_read/atomic_mb_set */
 extern CPUState *tcg_current_cpu;
 extern bool exit_request;

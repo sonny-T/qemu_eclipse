@@ -407,7 +407,7 @@ void ShadowStackPush(target_ulong x)
 static inline grin_handle_jmp(target_ulong pc)
 {
 #if !NOSTDERR
-    fprintf(stderr,"d: %#lx  s: %#lx icount: %ld\n",pc,jmpaddr_of,dcount);
+    fprintf(stderr,"JMP  d: %#lx  s: %#lx icount: %ld\n",pc,jmpaddr_of,dcount);
     //fprintf(stderr,"%d%dJMP d: %#x  s: %#x icount: %ld\n",JmpRFlag,JmpMFlag,pc,var_pc,dcount);
 #endif
     dcount = 0;

@@ -419,15 +419,13 @@ static inline grin_handle_jmp(target_ulong pc)
 /* MONITOR CALL module */
 static inline grin_handle_call(target_ulong pc)
 {
-	int CALLDIST;//
-	CALLDIST = pc - calladdr_of;//
-	CALLDIST = abs(CALLDIST);//
-	if(CALLDIST >= 0x4000){
 #if !NOSTDERR
-	fprintf(stderr,"CALL d: %#lx  s: %#lx beside addr: %#lx icount: %ld distance %#lx\n",
-													pc,calladdr_of,calladdr_next,dcount,CALLDIST);
+	fprintf(stderr,"CALL d: %#lx  s: %#lx beside addr: %#lx icount: %ld\n",
+													pc,calladdr_of,calladdr_next,dcount);
 #endif
-    dcount = 0;}
+    dcount = 0;
+	callto_flag = 0;
+
 }
 static inline TranslationBlock *tb_find_fast(CPUState *cpu,
                                              TranslationBlock **last_tb,

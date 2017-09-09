@@ -408,13 +408,11 @@ static inline grin_handle_jmp(target_ulong pc)
 {
 	FILE * pfile = NULL;
 	char *token,*str1;
-	char bufLine[30],cmpbuff[16];
+	char bufLine[30];
 	char bufParser[2][20];
+	target_ulong buf0,buf1;
 	int i = 0;
 	char c;
-
-	//test
-	unsigned long int a = 0x4004ed;
 
 	if((pfile=fopen("/home/sonny/CFI_TEST/func.list","r"))==NULL){
 		printf("Read file failed!\n");
@@ -429,15 +427,22 @@ static inline grin_handle_jmp(target_ulong pc)
 			if(token==NULL){break;}
 		}
 		//printf("%s---%s\n",bufParser[0],bufParser[1]);
-		sprintf(cmpbuff,"%lx",pc);
-		if(!strcmp(cmpbuff,bufParser[0])){
+		buf0 = strtol(bufParser[0],NULL,16);
+		buf1 = strtol(bufParser[1],NULL,10);
+		if(pc==buf0){
 			//printf("CFG have jmp to function head!\n");
+			break;
+		}
+		if((pc>buf0)&&((jmpaddr_of-buf0)<buf1)&&((pc-buf0)<buf1))
+		{
+			//printf("CFG have jmp to function internal!\n");
 			break;
 		}
 		c = getc(pfile);
 		fseek(pfile,-1L,1);
 		if(c=='\n'|| c==EOF){
-			printf("No data! Jmp addr:%lx\n",pc);
+
+			printf("No data! dest: %lx src: %lx\n",pc,jmpaddr_of);
 			break;
 		}
 	}

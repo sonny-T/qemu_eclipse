@@ -408,16 +408,19 @@ static inline grin_handle_jmp(target_ulong pc)
 {
 	FILE * pfile = NULL;
 	char *token,*str1;
-	char bufLine[30];
+	char bufLine[30],cmpbuff[16];
 	char bufParser[2][20];
 	int i = 0;
 	char c;
+
+	//test
+	unsigned long int a = 0x4004ed;
 
 	if((pfile=fopen("/home/sonny/CFI_TEST/func.list","r"))==NULL){
 		printf("Read file failed!\n");
 		exit(0);
 	}
-	while(c!=EOF)
+	while(1)
 	{
 		fgets(bufLine,30,pfile);
 		for(i=0,str1=bufLine;i<2;i++,str1=NULL){
@@ -426,14 +429,22 @@ static inline grin_handle_jmp(target_ulong pc)
 			if(token==NULL){break;}
 		}
 		//printf("%s---%s\n",bufParser[0],bufParser[1]);
+		sprintf(cmpbuff,"%lx",pc);
+		if(!strcmp(cmpbuff,bufParser[0])){
+			//printf("CFG have jmp to function head!\n");
+			break;
+		}
 		c = getc(pfile);
 		fseek(pfile,-1L,1);
-		if(c=='\n'){break;}
+		if(c=='\n'|| c==EOF){
+			printf("No data! Jmp addr:%lx\n",pc);
+			break;
+		}
 	}
 	fclose(pfile);
 #if !NOSTDERR
-    fprintf(stderr,"JMP  d: %#lx  s: %#lx icount: %ld\n",
-    												pc,jmpaddr_of,dcount);
+    //fprintf(stderr,"JMP  d: %#lx  s: %#lx icount: %ld\n",
+    //												pc,jmpaddr_of,dcount);
 #endif
     dcount = 0;
     jmpto_flag = 0;

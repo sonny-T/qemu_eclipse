@@ -404,7 +404,7 @@ void ShadowStackPush(target_ulong x)
 
 /* GRIN function module
  * MONITOR JMP module */
-static inline grin_handle_jmp(target_ulong pc)
+static inline void grin_handle_jmp(target_ulong pc)
 {
 	FILE * pfile = NULL;
 	char *token,*str1;
@@ -453,12 +453,10 @@ static inline grin_handle_jmp(target_ulong pc)
 #endif
     dcount = 0;
     jmpto_flag = 0;
-//    JmpRFlag = 0;
-//    JmpMFlag = 0;
 }
 /* GRIN function module
  * MONITOR CALL module */
-static inline grin_handle_call(target_ulong pc)
+static inline  void grin_handle_call(target_ulong pc)
 {
 #if !NOSTDERR
 	fprintf(stderr,"CALL d: %#lx  s: %#lx icount: %ld   beside addr: %#lx\n",
@@ -469,11 +467,45 @@ static inline grin_handle_call(target_ulong pc)
 }
 /* GRIN function module
  * MONITOR RET module */
-static inline grin_handle_ret(target_ulong pc)
+static inline void grin_handle_ret(target_ulong pc)
 {
+	FILE * pfile = NULL;
+	char *token,*str1;
+	char bufLine[30];
+	char bufParser[3][20];
+	target_ulong buf1;
+	int i = 0;
+	char c;
+
+	if((pfile=fopen("/home/sonny/CFI_TEST/call.list","r"))==NULL){
+		printf("Read file failed!\n");
+		exit(0);
+	}
+	while(1)
+	{
+		fgets(bufLine,30,pfile);
+		for(i=0,str1=bufLine;i<3;i++,str1=NULL){
+			token = strtok(str1,"	");
+			strcpy(bufParser[i],token);
+			if(token==NULL){break;}
+		}
+		//printf("%s---%s\n",bufParser[0],bufParser[1]);
+		buf1 = strtol(bufParser[1],NULL,16);
+		if(pc==buf1){
+			//printf("ret return to call next address!\n");
+			break;
+		}
+		c = getc(pfile);
+		fseek(pfile,-1L,1);
+		if(c=='\n'|| c==EOF){
+			printf("No data! dest: %lx src: %lx\n",pc,retaddr_of);
+			break;
+		}
+	}
+	fclose(pfile);
 #if !NOSTDERR
-	fprintf(stderr,"RET  d: %#lx  s: %#lx icount: %ld\n",
-													pc,retaddr_of,dcount);
+	//fprintf(stderr,"RET  d: %#lx  s: %#lx icount: %ld\n",
+	//												pc,retaddr_of,dcount);
 #endif
     dcount = 0;
 	retto_flag = 0;

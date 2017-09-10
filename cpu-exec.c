@@ -458,9 +458,43 @@ static inline void grin_handle_jmp(target_ulong pc)
  * MONITOR CALL module */
 static inline  void grin_handle_call(target_ulong pc)
 {
+	FILE * pfile = NULL;
+	char *token,*str1;
+	char bufLine[30];
+	char bufParser[2][20];
+	target_ulong buf0;
+	int i = 0;
+	char c;
+
+	if((pfile=fopen("/home/sonny/CFI_TEST/func.list","r"))==NULL){
+		printf("Read file failed!\n");
+		exit(0);
+	}
+	while(1)
+	{
+		fgets(bufLine,30,pfile);
+		for(i=0,str1=bufLine;i<2;i++,str1=NULL){
+			token = strtok(str1,"	");
+			strcpy(bufParser[i],token);
+			if(token==NULL){break;}
+		}
+		//printf("%s---%s\n",bufParser[0],bufParser[1]);
+		buf0 = strtol(bufParser[0],NULL,16);
+		if(pc==buf0){
+			//printf("ret return to call next address!\n");
+			break;
+		}
+		c = getc(pfile);
+		fseek(pfile,-1L,1);
+		if(c=='\n'|| c==EOF){
+			printf("No data! dest: %lx src: %lx\n",pc,calladdr_of);
+			break;
+		}
+	}
+	fclose(pfile);
 #if !NOSTDERR
-	fprintf(stderr,"CALL d: %#lx  s: %#lx icount: %ld   beside addr: %#lx\n",
-													pc,calladdr_of,dcount,calladdr_next);
+	//fprintf(stderr,"CALL d: %#lx  s: %#lx icount: %ld   beside addr: %#lx\n",
+	//												pc,calladdr_of,dcount,calladdr_next);
 #endif
     dcount = 0;
 	callto_flag = 0;

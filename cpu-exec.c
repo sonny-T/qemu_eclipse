@@ -494,7 +494,7 @@ static inline  void grin_handle_call(target_ulong pc)
 	fclose(pfile);
 #if !NOSTDERR
 	//fprintf(stderr,"CALL d: %#lx  s: %#lx icount: %ld   beside addr: %#lx\n",
-	//												pc,calladdr_of,dcount,calladdr_next);
+	//											pc,calladdr_of,dcount,calladdr_next);
 #endif
     dcount = 0;
 	callto_flag = 0;

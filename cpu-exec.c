@@ -422,6 +422,9 @@ static inline void grin_handle_jmp(target_ulong pc)
 	{
 		fgets(bufLine,30,pfile);
 		for(i=0,str1=bufLine;i<2;i++,str1=NULL){
+			if(bufLine[0] == '#'){
+				goto nextline;
+			}
 			token = strtok(str1,"	");
 			strcpy(bufParser[i],token);
 			if(token==NULL){break;}
@@ -445,6 +448,8 @@ static inline void grin_handle_jmp(target_ulong pc)
 			printf("No data! dest: %lx src: %lx\n",pc,jmpaddr_of);
 			break;
 		}
+nextline:
+		continue;
 	}
 	fclose(pfile);
 #if !NOSTDERR
@@ -474,6 +479,9 @@ static inline  void grin_handle_call(target_ulong pc)
 	{
 		fgets(bufLine,30,pfile);
 		for(i=0,str1=bufLine;i<2;i++,str1=NULL){
+			if(bufLine[0] == '#'){
+				goto nextline;
+			}
 			token = strtok(str1,"	");
 			strcpy(bufParser[i],token);
 			if(token==NULL){break;}
@@ -490,6 +498,8 @@ static inline  void grin_handle_call(target_ulong pc)
 			printf("No data! dest: %lx src: %lx\n",pc,calladdr_of);
 			break;
 		}
+nextline:
+		continue;
 	}
 	fclose(pfile);
 #if !NOSTDERR
@@ -511,7 +521,7 @@ static inline void grin_handle_ret(target_ulong pc)
 	int i = 0;
 	char c;
 
-	if((pfile=fopen("/home/sonny/CFI_TEST/call.list","r"))==NULL){
+	if((pfile=fopen("/home/sonny/CFI_TEST/result/socket_server3.call","r"))==NULL){
 		printf("Read file failed!\n");
 		exit(0);
 	}
@@ -519,6 +529,9 @@ static inline void grin_handle_ret(target_ulong pc)
 	{
 		fgets(bufLine,30,pfile);
 		for(i=0,str1=bufLine;i<3;i++,str1=NULL){
+			if(bufLine[0] == '#'){
+				goto nextline;
+			}
 			token = strtok(str1,"	");
 			strcpy(bufParser[i],token);
 			if(token==NULL){break;}
@@ -535,6 +548,8 @@ static inline void grin_handle_ret(target_ulong pc)
 			printf("No data! dest: %lx src: %lx\n",pc,retaddr_of);
 			break;
 		}
+nextline:
+		continue;
 	}
 	fclose(pfile);
 #if !NOSTDERR

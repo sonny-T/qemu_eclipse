@@ -57,4 +57,6 @@ static inline void log_page_dump(void)
 #endif
 #endif
 
+extern char path_buff[100];
+
 #endif

@@ -58,6 +58,8 @@ int grin_shadowstack; /*** GRIN -ss command options, SHADOW_STACK module ***/
 int grin_tra_shadowstack; /*** GRIN -tss command options, TRASHADOW_STACK module ***/
 int grin_prar;  /* Protected return address register mechanism*/
 
+char path_buff[100];/* GRIN -M command options,exist overflow risk*/
+
 #define EXCP_DUMP(env, fmt, ...)                                        \
 do {                                                                    \
     CPUState *cs = ENV_GET_CPU(env);                                    \
@@ -4044,6 +4046,13 @@ static void handle_arg_monitor(const char *arg)
 
 }
 
+/* GRIN command line options
+ * GRIN -fpath command options */
+static void handle_arg_CFI_file_path(const char *arg)
+{
+	strcpy(path_buff,arg);
+}
+
 static void handle_arg_watch(const char *arg)
 {
 	//if(!strcmp(arg,""))
@@ -4119,6 +4128,8 @@ static const struct qemu_argument arg_table[] = {
 
 	{"M",    "",     true, handle_arg_monitor,
 	 "instruction",    "monitor instruction and output information"},
+	{"fpath",    "",     true, handle_arg_CFI_file_path,
+	"path",    "set CFG file path"},
 	{"watch",    "",     true, handle_arg_watch,
 	 "register",    "watch register load/store information" },
 	{"ss",    "",     false, handle_arg_ShadowStack,

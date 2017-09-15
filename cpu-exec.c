@@ -414,7 +414,7 @@ static inline void grin_handle_jmp(target_ulong pc)
 	int i = 0;
 	char c;
 
-	if((pfile=fopen("/home/sonny/CFI_TEST/func.list","r"))==NULL){
+	if((pfile=fopen(path_buff,"r"))==NULL){
 		printf("Read file failed!\n");
 		exit(0);
 	}
@@ -444,8 +444,9 @@ static inline void grin_handle_jmp(target_ulong pc)
 		c = getc(pfile);
 		fseek(pfile,-1L,1);
 		if(c=='\n'|| c==EOF){
-
-			printf("No data! dest: %lx src: %lx\n",pc,jmpaddr_of);
+			if(pc<0x4000000000){
+				printf("No data! dest: %lx src: %lx\n",pc,jmpaddr_of);
+			}
 			break;
 		}
 nextline:
@@ -471,7 +472,7 @@ static inline  void grin_handle_call(target_ulong pc)
 	int i = 0;
 	char c;
 
-	if((pfile=fopen("/home/sonny/CFI_TEST/func.list","r"))==NULL){
+	if((pfile=fopen(path_buff,"r"))==NULL){
 		printf("Read file failed!\n");
 		exit(0);
 	}
@@ -495,7 +496,9 @@ static inline  void grin_handle_call(target_ulong pc)
 		c = getc(pfile);
 		fseek(pfile,-1L,1);
 		if(c=='\n'|| c==EOF){
-			printf("No data! dest: %lx src: %lx\n",pc,calladdr_of);
+			if(pc<0x4000000000){
+				printf("No data! dest: %lx src: %lx\n",pc,calladdr_of);
+			}
 			break;
 		}
 nextline:
@@ -521,7 +524,7 @@ static inline void grin_handle_ret(target_ulong pc)
 	int i = 0;
 	char c;
 
-	if((pfile=fopen("/home/sonny/CFI_TEST/result/socket_server3.call","r"))==NULL){
+	if((pfile=fopen(path_buff,"r"))==NULL){
 		printf("Read file failed!\n");
 		exit(0);
 	}
@@ -532,7 +535,7 @@ static inline void grin_handle_ret(target_ulong pc)
 			if(bufLine[0] == '#'){
 				goto nextline;
 			}
-			token = strtok(str1,"	");
+			token = strtok(str1," ");
 			strcpy(bufParser[i],token);
 			if(token==NULL){break;}
 		}
@@ -545,7 +548,9 @@ static inline void grin_handle_ret(target_ulong pc)
 		c = getc(pfile);
 		fseek(pfile,-1L,1);
 		if(c=='\n'|| c==EOF){
-			printf("No data! dest: %lx src: %lx\n",pc,retaddr_of);
+			if(pc<0x4000000000){
+				printf("No data! dest: %lx src: %lx\n",pc,retaddr_of);
+			}
 			break;
 		}
 nextline:

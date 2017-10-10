@@ -425,7 +425,7 @@ static inline void grin_handle_jmp(target_ulong pc)
 			if(bufLine[0] == '#'){
 				goto nextline;
 			}
-			token = strtok(str1,"	");
+			token = strtok(str1," ");
 			strcpy(bufParser[i],token);
 			if(token==NULL){break;}
 		}
@@ -445,7 +445,7 @@ static inline void grin_handle_jmp(target_ulong pc)
 		fseek(pfile,-1L,1);
 		if(c=='\n'|| c==EOF){
 			if(pc<0x4000000000){
-				printf("No data! dest: %lx src: %lx\n",pc,jmpaddr_of);
+				printf("JMP No data! dest: %lx src: %lx\n",pc,jmpaddr_of);
 			}
 			break;
 		}
@@ -483,7 +483,7 @@ static inline  void grin_handle_call(target_ulong pc)
 			if(bufLine[0] == '#'){
 				goto nextline;
 			}
-			token = strtok(str1,"	");
+			token = strtok(str1," ");
 			strcpy(bufParser[i],token);
 			if(token==NULL){break;}
 		}
@@ -497,7 +497,7 @@ static inline  void grin_handle_call(target_ulong pc)
 		fseek(pfile,-1L,1);
 		if(c=='\n'|| c==EOF){
 			if(pc<0x4000000000){
-				printf("No data! dest: %lx src: %lx\n",pc,calladdr_of);
+				printf("CALL No data! dest: %lx src: %lx\n",pc,calladdr_of);
 			}
 			break;
 		}
@@ -549,7 +549,7 @@ static inline void grin_handle_ret(target_ulong pc)
 		fseek(pfile,-1L,1);
 		if(c=='\n'|| c==EOF){
 			if(pc<0x4000000000){
-				printf("No data! dest: %lx src: %lx\n",pc,retaddr_of);
+				printf("RET No data! dest: %lx src: %lx\n",pc,retaddr_of);
 			}
 			break;
 		}

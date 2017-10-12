@@ -313,6 +313,8 @@ struct TranslationBlock {
     int CALLFlag;
     target_ulong next_insn;
     int RETFlag;
+    /*temp test ltr*/
+    int TestFlag;
 };
 
 void tb_free(TranslationBlock *tb);

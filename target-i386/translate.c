@@ -125,6 +125,9 @@ typedef struct DisasContext {
     int have_ret;/* GRIN -M command options, MONITOR RET module
          	 	 	   1 = means have ret instruction,vice versa */
 
+    /*temp test ltr*/
+    int have_test;
+
     /* current block context */
     target_ulong cs_base; /* base of CS segment */
     int pe;     /* protected mode */
@@ -7609,6 +7612,8 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
                              offsetof(CPUX86State, tr.selector));
             ot = mod == 3 ? dflag : MO_16;
             gen_ldst_modrm(env, s, modrm, ot, OR_TMP0, 1);
+            /*temp test ltr*/
+            s->have_test = 1;
             break;
         case 3: /* ltr */
             if (!s->pe || s->vm86)
@@ -8859,10 +8864,16 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
     tb->next_insn = 0;
     tb->RETFlag = 0;
 
+    /*temp test ltr*/
+    tb->TestFlag = 0;
+
     /* generate intermediate code */
     pc_start = tb->pc;
     cs_base = tb->cs_base;
     flags = tb->flags;
+
+    /*temp test ltr*/
+    dc->have_test = 0;
 
     dc->have_jmp = 0; /* GRIN -M command options, MONITOR JMP module */
     dc->have_call = 0; /* GRIN -M command options, MONITOR CALL module */
@@ -9003,6 +9014,12 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         indirect_insn = 0;
 #endif
 
+        /*temp test ltr*/
+        if(dc->have_test)
+        {
+        	tb->TestFlag += dc->have_test;
+        	dc->have_test = 0;
+        }
         /* GRIN -M command options, MONITOR RET module */
         if(grin_ret && dc->have_ret){
         	tb->RetFlagM = dc->have_ret;

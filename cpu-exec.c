@@ -980,6 +980,11 @@ int cpu_exec(CPUState *cpu)
             {
                 cpu_handle_interrupt(cpu, &last_tb);
                 tb = tb_find_fast(cpu, &last_tb, tb_exit);
+                /*temp test ltr*/
+                if(tb->TestFlag)
+                {
+                	printf("operate ltr %d\n",tb->TestFlag);
+                }
             /* GRIN -M command options, MONITOR JMP module */
         		//Mod67Flag is mod = 3
         		//RMFlag is mod = 0 rm = 5

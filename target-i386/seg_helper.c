@@ -252,6 +252,8 @@ static void switch_tss_ra(CPUX86State *env, int tss_selector,
     type = (e2 >> DESC_TYPE_SHIFT) & 0xf;
     LOG_PCALL("switch_tss: sel=0x%04x type=%d src=%d\n", tss_selector, type,
               source);
+    printf("switch_tss: sel=0x%04x type=%d src=%d\n", tss_selector
+    		, type,source);
 
     /* if task gate, we read the TSS segment and we load it */
     if (type == 5) {

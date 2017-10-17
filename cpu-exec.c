@@ -431,14 +431,24 @@ static inline void grin_handle_jmp(target_ulong pc)
 		}
 		//printf("%s---%s\n",bufParser[0],bufParser[1]);
 		buf0 = strtol(bufParser[0],NULL,16);
-		buf1 = strtol(bufParser[1],NULL,10);
-		if(pc==buf0){
-			//printf("CFG have jmp to function head!\n");
-			break;
-		}
-		if((pc>buf0)&&((jmpaddr_of-buf0)<buf1)&&((pc-buf0)<buf1))
-		{
-			//printf("CFG have jmp to function internal!\n");
+		buf1 = strtol(bufParser[1],NULL,16);//Coarse-grained is 10
+		/* Coarse-grained CFI */
+//		if(pc==buf0){
+//			//printf("CFG have jmp to function head!\n");
+//			break;
+//		}
+//		if((pc>buf0)&&((jmpaddr_of-buf0)<buf1)&&((pc-buf0)<buf1))
+//		{
+//			//printf("CFG have jmp to function internal!\n");
+//			break;
+//		}
+		/* Fine-grained CFI */
+		if(jmpaddr_of==buf0){
+			printf("CFG have jmp to function head!\n");
+			if(pc!=buf1){
+				printf("JMP data wrong! dest: %lx s-target: %lx\n"
+						,pc,buf1);
+			}
 			break;
 		}
 		c = getc(pfile);
@@ -468,7 +478,7 @@ static inline  void grin_handle_call(target_ulong pc)
 	char *token,*str1;
 	char bufLine[30];
 	char bufParser[2][20];
-	target_ulong buf0;
+	target_ulong buf0,buf1;
 	int i = 0;
 	char c;
 
@@ -489,8 +499,19 @@ static inline  void grin_handle_call(target_ulong pc)
 		}
 		//printf("%s---%s\n",bufParser[0],bufParser[1]);
 		buf0 = strtol(bufParser[0],NULL,16);
-		if(pc==buf0){
-			//printf("ret return to call next address!\n");
+		buf1 = strtol(bufParser[1],NULL,16);//Coarse-grained is 10
+		/* Coarse-grained CFI */
+//		if(pc==buf0){
+//			//printf("ret return to call next address!\n");
+//			break;
+//		}
+		/* Fine-grained CFI */
+		if(calladdr_of==buf0){
+			printf("CFG have call to function head!\n");
+			if(pc!=buf1){
+				printf("call data wrong! dest: %lx s-target: %lx src: %lx\n"
+						,pc,buf1,calladdr_of);
+			}
 			break;
 		}
 		c = getc(pfile);
@@ -519,8 +540,8 @@ static inline void grin_handle_ret(target_ulong pc)
 	FILE * pfile = NULL;
 	char *token,*str1;
 	char bufLine[30];
-	char bufParser[3][20];
-	target_ulong buf1;
+	char bufParser[2][20];//Coarse-grained is [3][20]
+	target_ulong buf0,buf1;
 	int i = 0;
 	char c;
 
@@ -531,7 +552,7 @@ static inline void grin_handle_ret(target_ulong pc)
 	while(1)
 	{
 		fgets(bufLine,30,pfile);
-		for(i=0,str1=bufLine;i<3;i++,str1=NULL){
+		for(i=0,str1=bufLine;i<2;i++,str1=NULL){
 			if(bufLine[0] == '#'){
 				goto nextline;
 			}
@@ -540,9 +561,22 @@ static inline void grin_handle_ret(target_ulong pc)
 			if(token==NULL){break;}
 		}
 		//printf("%s---%s\n",bufParser[0],bufParser[1]);
+		/* Coarse-grained CFI */
+//		buf1 = strtol(bufParser[1],NULL,16);
+//		if(pc==buf1){
+//			//printf("ret return to call next address!\n");
+//			break;
+//		}
+		/* Fine-grained CFI */
+		buf0 = strtol(bufParser[0],NULL,16);
 		buf1 = strtol(bufParser[1],NULL,16);
-		if(pc==buf1){
-			//printf("ret return to call next address!\n");
+		if(retaddr_of==buf0){
+			printf("CFG have ret to function head! src: %lx\n"
+					,retaddr_of);
+			if(pc!=buf1){
+				printf("ret data wrong! dest: %lx s-target: %lx src: %lx\n"
+						,pc,buf1,retaddr_of);
+			}
 			break;
 		}
 		c = getc(pfile);
@@ -984,7 +1018,7 @@ int cpu_exec(CPUState *cpu)
                 /*temp test ltr*/
                 if(tb->TestFlag)
                 {
-                	printf("operate ltr %d\n",tb->TestFlag);
+                	printf("new task %d\n",tb->TestFlag);
                 }
 
             /* GRIN -M command options, MONITOR JMP module */

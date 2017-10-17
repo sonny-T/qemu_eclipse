@@ -4619,6 +4619,8 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     /*according blank opcode 0x1d6,add new mark instruction*/
     //PRAR
     case 0x9d6:
+    	/*temp test ltr*/
+    	s->have_test = 1;
     	printf("it is testing \n");
 //    	//testing data
 //    	tcg_gen_movi_tl(cpu_prt_reg,0xfffffffff400890);
@@ -6837,7 +6839,8 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     case 0xcf: /* iret */
         gen_svm_check_intercept(s, pc_start, SVM_EXIT_IRET);
 
-       // printf("iret pc :   %x\n",s->pc);
+    	/*temp test ltr*/
+    	//s->have_test = 1;
 
         if (!s->pe) {
             /* real mode */

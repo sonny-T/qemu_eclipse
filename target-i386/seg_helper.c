@@ -252,8 +252,6 @@ static void switch_tss_ra(CPUX86State *env, int tss_selector,
     type = (e2 >> DESC_TYPE_SHIFT) & 0xf;
     LOG_PCALL("switch_tss: sel=0x%04x type=%d src=%d\n", tss_selector, type,
               source);
-    printf("switch_tss: sel=0x%04x type=%d src=%d\n", tss_selector
-    		, type,source);
 
     /* if task gate, we read the TSS segment and we load it */
     if (type == 5) {
@@ -424,8 +422,6 @@ static void switch_tss_ra(CPUX86State *env, int tss_selector,
     env->tr.base = tss_base;
     env->tr.limit = tss_limit;
     env->tr.flags = e2 & ~DESC_TSS_BUSY_MASK;
-
-    printf("new task breakpoint\n");
 
     if ((type & 8) && (env->cr[0] & CR0_PG_MASK)) {
         cpu_x86_update_cr3(env, new_cr3);
@@ -836,7 +832,7 @@ static inline target_ulong get_rsp_from_tss(CPUX86State *env, int level)
     X86CPU *cpu = x86_env_get_cpu(env);
     int index;
 
-#if 0
+#if 1
     printf("TR: base=" TARGET_FMT_lx " limit=%x\n",
            env->tr.base, env->tr.limit);
 #endif

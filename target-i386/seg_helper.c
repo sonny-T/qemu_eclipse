@@ -835,6 +835,7 @@ static inline target_ulong get_rsp_from_tss(CPUX86State *env, int level)
 #if 1
     printf("TR: base=" TARGET_FMT_lx " limit=%x\n",
            env->tr.base, env->tr.limit);
+    printf("EIP: %lx\n",env->eip);
 #endif
 
     if (!(env->tr.flags & DESC_P_MASK)) {

@@ -832,7 +832,7 @@ static inline target_ulong get_rsp_from_tss(CPUX86State *env, int level)
     X86CPU *cpu = x86_env_get_cpu(env);
     int index;
 
-#if 1
+#if 0
     printf("TR: base=" TARGET_FMT_lx " limit=%x\n",
            env->tr.base, env->tr.limit);
     printf("EIP: %lx\n",env->eip);
@@ -1284,6 +1284,14 @@ void x86_cpu_do_interrupt(CPUState *cs)
 {
     X86CPU *cpu = X86_CPU(cs);
     CPUX86State *env = &cpu->env;
+
+    target_ulong cr3tmp = 0;
+
+    if((env->cr[3]>>12)^cr3tmp)
+    {
+    	printf(" %lx\n",env->cr[3]>>12);
+    }
+    cr3tmp = env->cr[3]>>12;
 
 #if defined(CONFIG_USER_ONLY)
     /* if user mode only, we simulate a fake exception

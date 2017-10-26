@@ -759,7 +759,8 @@ static inline bool cpu_handle_exception(CPUState *cpu, int *ret)
             }
             cpu->exception_index = -1;
             return true;
-        } else {
+        }
+        else {
 #if defined(CONFIG_USER_ONLY)
             /* if user mode only, we simulate a fake exception
                which will be handled outside the cpu execution
@@ -776,7 +777,8 @@ static inline bool cpu_handle_exception(CPUState *cpu, int *ret)
                 CPUClass *cc = CPU_GET_CLASS(cpu);
                 cc->do_interrupt(cpu);
                 cpu->exception_index = -1;
-            } else if (!replay_has_interrupt()) {
+            }
+            else if (!replay_has_interrupt()) {
                 /* give a chance to iothread in replay mode */
                 *ret = EXCP_INTERRUPT;
                 return true;
@@ -784,8 +786,10 @@ static inline bool cpu_handle_exception(CPUState *cpu, int *ret)
 #endif
         }
 #ifndef CONFIG_USER_ONLY
-    } else if (replay_has_exception()
-               && cpu->icount_decr.u16.low + cpu->icount_extra == 0) {
+    }
+    else if (replay_has_exception()
+               && cpu->icount_decr.u16.low + cpu->icount_extra == 0)
+    {
         /* try to cause an exception pending in the log */
         TranslationBlock *last_tb = NULL; /* Avoid chaining TBs */
         cpu_exec_nocache(cpu, 1, tb_find_fast(cpu, &last_tb, 0), true);
@@ -815,7 +819,8 @@ static inline void cpu_handle_interrupt(CPUState *cpu,
         }
         if (replay_mode == REPLAY_MODE_PLAY && !replay_has_interrupt()) {
             /* Do nothing */
-        } else if (interrupt_request & CPU_INTERRUPT_HALT) {
+        }
+        else if (interrupt_request & CPU_INTERRUPT_HALT) {
             replay_interrupt();
             cpu->interrupt_request &= ~CPU_INTERRUPT_HALT;
             cpu->halted = 1;
@@ -964,6 +969,7 @@ int cpu_exec(CPUState *cpu)
     CPUClass *cc = CPU_GET_CLASS(cpu);
     int ret;
     SyncClocks sc;
+    CPUArchState *env = cpu->env_ptr;
 
 /***  GRIN -ss/-tss command option   ***/
 /*   TRA/SHADOW STACK module function  */
@@ -974,7 +980,6 @@ int cpu_exec(CPUState *cpu)
 		CPUEXECFlag = 0;
 		}
     }
-
 
     /* replay_interrupt may need current_cpu */
     current_cpu = cpu;
@@ -998,7 +1003,7 @@ int cpu_exec(CPUState *cpu)
      * advance/delay we gain here, we try to fix it next time.
      */
     init_delay_params(&sc, cpu);
-
+    CPUArchState *env1 = (CPUArchState *)cpu->env_ptr;
     for(;;) {
         /* prepare setjmp context for exception handling */
         if (sigsetjmp(cpu->jmp_env, 0) == 0) {

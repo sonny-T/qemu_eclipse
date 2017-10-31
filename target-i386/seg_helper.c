@@ -69,6 +69,8 @@
 #undef MEMSUFFIX
 #endif
 
+target_ulong cr3tmp = 0;
+
 /* return non zero if error */
 static inline int load_segment_ra(CPUX86State *env, uint32_t *e1_ptr,
                                uint32_t *e2_ptr, int selector,
@@ -1285,13 +1287,28 @@ void x86_cpu_do_interrupt(CPUState *cs)
     X86CPU *cpu = X86_CPU(cs);
     CPUX86State *env = &cpu->env;
 
-    target_ulong cr3tmp = 0;
+    target_ulong a;
+    target_ulong *b;
 
+    //printf(" %lx\n",(env->cr[3]>>12)^cr3tmp);
     if((env->cr[3]>>12)^cr3tmp)
     {
     	printf(" %lx\n",env->cr[3]>>12);
+    	if(env->eip==0xffffffff812bbae1)
+    	{
+    		printf("EIP %lx\n",env->eip);
+        	a = 0xffff88003fc09020;
+        	*b = (target_ulong *)a;
+        	printf("CS Seg Desc %lx\n",*b);
+    	}
+
+    	printf("CS selector %ld\n",env->segs[1].selector>>3);
+    	printf("GDT base %lx\n",env->gdt.base);
+    	printf("TR selector %ld base %lx\n",env->tr.selector,env->tr.base);
+
+    	cr3tmp = env->cr[3]>>12;
     }
-    cr3tmp = env->cr[3]>>12;
+
 
 #if defined(CONFIG_USER_ONLY)
     /* if user mode only, we simulate a fake exception

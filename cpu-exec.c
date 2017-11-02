@@ -518,7 +518,7 @@ static inline  void grin_handle_call(target_ulong pc)
 		fseek(pfile,-1L,1);
 		if(c=='\n'|| c==EOF){
 			if(pc<0x4000000000){
-				printf("CALL No data! dest: %lx src: %lx\n",pc,calladdr_of);
+				fprintf(stderr,"CALL No data! dest: %lx src: %lx\n",pc,calladdr_of);
 			}
 			break;
 		}
@@ -539,7 +539,7 @@ static inline void grin_handle_ret(target_ulong pc)
 {
 	FILE * pfile = NULL;
 	char *token,*str1;
-	char bufLine[30];
+	char bufLine[100];
 	char bufParser[3][20];//Coarse-grained is [3][20]
 	target_ulong buf0,buf1;
 	int i = 0;
@@ -551,7 +551,7 @@ static inline void grin_handle_ret(target_ulong pc)
 	}
 	while(1)
 	{
-		fgets(bufLine,30,pfile);
+		fgets(bufLine,100,pfile);
 		for(i=0,str1=bufLine;i<3;i++,str1=NULL){//Coarse-grained is i<3
 			if(bufLine[0] == '#'){
 				goto nextline;
@@ -583,7 +583,7 @@ static inline void grin_handle_ret(target_ulong pc)
 		fseek(pfile,-1L,1);
 		if(c=='\n'|| c==EOF){
 			if(pc<0x4000000000){
-				printf("RET No data! dest: %lx src: %lx\n",pc,retaddr_of);
+				fprintf("RET No data! dest: %lx src: %lx\n",pc,retaddr_of);
 			}
 			break;
 		}

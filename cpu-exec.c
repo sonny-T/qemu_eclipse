@@ -468,6 +468,9 @@ nextline:
     //fprintf(stderr,"JMP  d: %#lx  s: %#lx icount: %ld\n",
     //												pc,jmpaddr_of,dcount);
 #endif
+	if(dcount<=5){
+		fprintf(stderr,"This code segment is regarded as gadget!\n");
+	}
     dcount = 0;
     jmpto_flag = 0;
 }
@@ -532,6 +535,9 @@ nextline:
 	//fprintf(stderr,"CALL d: %#lx  s: %#lx icount: %ld   beside addr: %#lx\n",
 	//											pc,calladdr_of,dcount,calladdr_next);
 #endif
+	if(dcount<=5){
+		fprintf(stderr,"This code segment is regarded as gadget!\n");
+	}
     dcount = 0;
 	callto_flag = 0;
 }
@@ -599,6 +605,9 @@ nextline:
 	//fprintf(stderr,"RET  d: %#lx  s: %#lx icount: %ld\n",
 	//												pc,retaddr_of,dcount);
 #endif
+	if(dcount<=5){
+		fprintf(stderr,"This code segment is regarded as gadget!\n");
+	}
     dcount = 0;
 	retto_flag = 0;
 }

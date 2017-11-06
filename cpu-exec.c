@@ -457,6 +457,7 @@ static inline void grin_handle_jmp(target_ulong pc)
 			if(pc<0x4000000000){
 				fprintf(stderr,"Program is attttttttttttttttttttacked _(:_l <)_\n");
 				fprintf(stderr,"JMP No data! dest: %lx src: %lx\n",pc,jmpaddr_of);
+				exit(0);
 			}
 			break;
 		}
@@ -469,8 +470,10 @@ nextline:
     //												pc,jmpaddr_of,dcount);
 #endif
 	if(dcount<=5){
-		fprintf(stderr,"Gadget code icount: %d!\n",dcount);
-	    fprintf(stderr,"JMP  d: %#lx  s: %#lx\n",pc,jmpaddr_of);
+		if(pc<0x4000000000||jmpaddr_of<0x4000000000){
+			fprintf(stderr,"Gadget code icount: %d!\n",dcount);
+			fprintf(stderr,"JMP  dest: %#lx  src: %#lx\n",pc,jmpaddr_of);
+		}
 	}
     dcount = 0;
     jmpto_flag = 0;
@@ -525,6 +528,7 @@ static inline  void grin_handle_call(target_ulong pc)
 			if(pc<0x4000000000){
 				fprintf(stderr,"Program is attttttttttttttttttttacked _(:_l <)_\n");
 				fprintf(stderr,"CALL No data! dest: %lx src: %lx\n",pc,calladdr_of);
+				exit(0);
 			}
 			break;
 		}
@@ -537,8 +541,10 @@ nextline:
 	//											pc,calladdr_of,dcount,calladdr_next);
 #endif
 	if(dcount<=5){
-		fprintf(stderr,"Gadget code icount: %d!\n",dcount);
-		fprintf(stderr,"CALL d: %#lx  s: %#lx beside addr: %#lx\n",pc,calladdr_of,calladdr_next);
+		if(pc<0x4000000000||calladdr_of<0x4000000000){
+			fprintf(stderr,"Gadget code icount: %d!\n",dcount);
+			fprintf(stderr,"CALL d: %#lx  s: %#lx beside addr: %#lx\n",pc,calladdr_of,calladdr_next);
+		}
 	}
     dcount = 0;
 	callto_flag = 0;
@@ -608,8 +614,10 @@ nextline:
 	//												pc,retaddr_of,dcount);
 #endif
 	if(dcount<=5){
-		fprintf(stderr,"Gadget code icount: %d!\n",dcount);
-		fprintf(stderr,"RET  d: %#lx  s: %#lx \n",pc,retaddr_of);
+		if(pc<0x4000000000||retaddr_of<0x4000000000){
+			fprintf(stderr,"Gadget code icount: %d!\n",dcount);
+			fprintf(stderr,"RET  d: %#lx  s: %#lx \n",pc,retaddr_of);
+		}
 	}
     dcount = 0;
 	retto_flag = 0;

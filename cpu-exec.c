@@ -469,7 +469,7 @@ nextline:
     //												pc,jmpaddr_of,dcount);
 #endif
 	if(dcount<=5){
-		fprintf(stderr,"This code segment is regarded as gadget!\n");
+		fprintf(stderr,"Gadget code icount: %d!\n",dcount);
 	}
     dcount = 0;
     jmpto_flag = 0;
@@ -536,7 +536,7 @@ nextline:
 	//											pc,calladdr_of,dcount,calladdr_next);
 #endif
 	if(dcount<=5){
-		fprintf(stderr,"This code segment is regarded as gadget!\n");
+		fprintf(stderr,"Gadget code icount: %d!\n",dcount);
 	}
     dcount = 0;
 	callto_flag = 0;
@@ -606,7 +606,7 @@ nextline:
 	//												pc,retaddr_of,dcount);
 #endif
 	if(dcount<=5){
-		fprintf(stderr,"This code segment is regarded as gadget!\n");
+		fprintf(stderr,"Gadget code icount: %d!\n",dcount);
 	}
     dcount = 0;
 	retto_flag = 0;

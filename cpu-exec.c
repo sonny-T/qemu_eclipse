@@ -470,6 +470,7 @@ nextline:
 #endif
 	if(dcount<=5){
 		fprintf(stderr,"Gadget code icount: %d!\n",dcount);
+	    fprintf(stderr,"JMP  d: %#lx  s: %#lx\n",pc,jmpaddr_of);
 	}
     dcount = 0;
     jmpto_flag = 0;
@@ -537,6 +538,7 @@ nextline:
 #endif
 	if(dcount<=5){
 		fprintf(stderr,"Gadget code icount: %d!\n",dcount);
+		fprintf(stderr,"CALL d: %#lx  s: %#lx beside addr: %#lx\n",pc,calladdr_of,calladdr_next);
 	}
     dcount = 0;
 	callto_flag = 0;
@@ -607,6 +609,7 @@ nextline:
 #endif
 	if(dcount<=5){
 		fprintf(stderr,"Gadget code icount: %d!\n",dcount);
+		fprintf(stderr,"RET  d: %#lx  s: %#lx \n",pc,retaddr_of);
 	}
     dcount = 0;
 	retto_flag = 0;

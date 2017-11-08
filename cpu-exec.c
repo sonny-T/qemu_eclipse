@@ -459,7 +459,7 @@ static inline void grin_handle_jmp(target_ulong pc)
 			if(pc<0x4000000000){
 				fprintf(stderr,"Dynamic execute result:\n");
 				fprintf(stderr,"Program is atttttttttacked _(:_l <)_\n");
-				fprintf(stderr,"JMP No data! \n Dest: %lx Src: %lx\n",pc,jmpaddr_of);
+				fprintf(stderr,"JMP No data! \nDest: %lx \nSrc: %lx\n",pc,jmpaddr_of);
 				exit(0);
 			}
 			break;
@@ -473,12 +473,12 @@ nextline:
     //												pc,jmpaddr_of,dcount);
 #endif
 	if(dcount<=5 && jmpaddr_of<0x4000000000){
-		fprintf(stderr,"Gadget code icount: %d!\n",dcount);
-		fprintf(stderr,"JMP\n dest: %#lx \n src: %#lx\n",pc,jmpaddr_of);
+		fprintf(stderr,"\nGadget code icount: %d!\n",dcount);
+		fprintf(stderr,"JMP ID: %d\ndest: %#lx \nsrc: %#lx\n",GadgetLink-1,pc,jmpaddr_of);
 	}
 	/* Judge as gadget chain*/
 	/* Don't consider libc's addr */
-	if(GadgetLink == 4 && jmpaddr_of<0x4000000000){
+	if(GadgetLink == 6 && jmpaddr_of<0x4000000000){
 		fprintf(stderr,"\nFormed a gadget chain!\n");
 		fprintf(stderr,"Program may be atttttttttacked!\n");
 		GadgetLink = 0;
@@ -551,12 +551,12 @@ nextline:
 	//											pc,calladdr_of,dcount,calladdr_next);
 #endif
 	if(dcount<=5 && calladdr_of<0x4000000000){
-		fprintf(stderr,"Gadget code icount: %d!\n",dcount);
-		fprintf(stderr,"CALL\n dest: %#lx \n src: %#lx beside addr: %#lx\n",pc,calladdr_of,calladdr_next);
+		fprintf(stderr,"\nGadget code icount: %d!\n",dcount);
+		fprintf(stderr,"CALL ID: %d\ndest: %#lx \nsrc: %#lx beside addr: %#lx\n",GadgetLink-1,pc,calladdr_of,calladdr_next);
 	}
 	/* Judge as gadget chain*/
 	/* Don't consider libc's addr */
-	if(GadgetLink == 4 && calladdr_of<0x4000000000){
+	if(GadgetLink == 6 && calladdr_of<0x4000000000){
 		fprintf(stderr,"\nFormed a gadget chain!\n");
 		fprintf(stderr,"Program may be atttttttttacked!\n");
 		GadgetLink = 0;
@@ -631,12 +631,12 @@ nextline:
 	//												pc,retaddr_of,dcount);
 #endif
 	if(dcount<=5 && retaddr_of<0x4000000000){
-		fprintf(stderr,"Gadget code icount: %d!\n",dcount);
-		fprintf(stderr,"RET\n dest: %#lx \n src: %#lx \n",pc,retaddr_of);
+		fprintf(stderr,"\nGadget code icount: %d!\n",dcount);
+		fprintf(stderr,"RET ID: %d\n dest: %#lx \n src: %#lx \n",GadgetLink-1,pc,retaddr_of);
 	}
 	/* Judge as gadget chain*/
 	/* Don't consider libc's addr */
-	if(GadgetLink == 4 && retaddr_of<0x4000000000){
+	if(GadgetLink == 6 && retaddr_of<0x4000000000){
 		fprintf(stderr,"\nFormed a gadget chain!\n");
 		fprintf(stderr,"Program may be atttttttttacked!\n");
 		GadgetLink = 0;

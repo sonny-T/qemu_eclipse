@@ -416,8 +416,9 @@ static inline void grin_handle_jmp(target_ulong pc)
 	int i = 0;
 	char c;
 
-	if((pfile=fopen(path_buff,"r"))==NULL){
+	if((pfile=fopen(jpath_buff,"r"))==NULL){
 		printf("Read file failed!\n");
+		printf("** File path should less than 100 bytes.\n** File path doesn't exist.\n");
 		exit(0);
 	}
 	while(1)
@@ -499,8 +500,9 @@ static inline  void grin_handle_call(target_ulong pc)
 	int i = 0;
 	char c;
 
-	if((pfile=fopen(path_buff,"r"))==NULL){
+	if((pfile=fopen(cpath_buff,"r"))==NULL){
 		printf("Read file failed!\n");
+		printf("** File path should less than 100 bytes.\n** File path doesn't exist.\n");
 		exit(0);
 	}
 	while(1)
@@ -577,8 +579,9 @@ static inline void grin_handle_ret(target_ulong pc)
 	int i = 0;
 	char c;
 
-	if((pfile=fopen(path_buff,"r"))==NULL){
+	if((pfile=fopen(rpath_buff,"r"))==NULL){
 		printf("Read file failed!\n");
+		printf("** File path should less than 100 bytes.\n** File path doesn't exist.\n");
 		exit(0);
 	}
 	while(1)

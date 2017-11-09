@@ -58,7 +58,9 @@ int grin_shadowstack; /*** GRIN -ss command options, SHADOW_STACK module ***/
 int grin_tra_shadowstack; /*** GRIN -tss command options, TRASHADOW_STACK module ***/
 int grin_prar;  /* Protected return address register mechanism*/
 
-char path_buff[100];/* GRIN -M command options,exist overflow risk*/
+char jpath_buff[100];/* GRIN -M jmp command options,exist overflow risk*/
+char cpath_buff[100];/* GRIN -M call command options,exist overflow risk*/
+char rpath_buff[100];/* GRIN -M ret command options,exist overflow risk*/
 
 #define EXCP_DUMP(env, fmt, ...)                                        \
 do {                                                                    \
@@ -4048,9 +4050,17 @@ static void handle_arg_monitor(const char *arg)
 
 /* GRIN command line options
  * GRIN -fpath command options */
-static void handle_arg_CFI_file_path(const char *arg)
+static void handle_jmp_CFI_file_path(const char *arg)
 {
-	strcpy(path_buff,arg);
+	strncpy(jpath_buff,arg,100);
+}
+static void handle_call_CFI_file_path(const char *arg)
+{
+	strncpy(cpath_buff,arg,100);
+}
+static void handle_ret_CFI_file_path(const char *arg)
+{
+	strncpy(rpath_buff,arg,100);
 }
 
 static void handle_arg_watch(const char *arg)
@@ -4128,8 +4138,12 @@ static const struct qemu_argument arg_table[] = {
 
 	{"M",    "",     true, handle_arg_monitor,
 	 "instruction",    "monitor instruction and output information"},
-	{"fpath",    "",     true, handle_arg_CFI_file_path,
-	"path",    "set CFG file path"},
+	{"jpath",    "",     true, handle_jmp_CFI_file_path,
+	"path",    "set jmp CFG file path"},
+	{"cpath",    "",     true, handle_call_CFI_file_path,
+	"path",    "set call CFG file path"},
+	{"rpath",    "",     true, handle_ret_CFI_file_path,
+	"path",    "set ret CFG file path"},
 	{"watch",    "",     true, handle_arg_watch,
 	 "register",    "watch register load/store information" },
 	{"ss",    "",     false, handle_arg_ShadowStack,

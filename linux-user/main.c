@@ -4068,6 +4068,10 @@ static void handle_arg_watch(const char *arg)
 	//if(!strcmp(arg,""))
 
 }
+static void handle_COARSE_CFI_file_path(const char *arg)
+{
+
+}
 
 /*** GRIN -ss command options, SHADOW_STACK module ***/
 static void handle_arg_ShadowStack(const char *arg)
@@ -4144,6 +4148,11 @@ static const struct qemu_argument arg_table[] = {
 	"path",    "set call CFG file path"},
 	{"rpath",    "",     true, handle_ret_CFI_file_path,
 	"path",    "set ret CFG file path"},
+	{"enable-coarse-CFI",    "",     false, handle_COARSE_CFI_file_path,
+	"",    "enable Coarse-grained CFI mechanism"},
+	{"enable-fine-CFI",    "",     false, handle_FINE_CFI_file_path,
+	"",    "enable Fine-grained CFI mechanism"},
+
 	{"watch",    "",     true, handle_arg_watch,
 	 "register",    "watch register load/store information" },
 	{"ss",    "",     false, handle_arg_ShadowStack,

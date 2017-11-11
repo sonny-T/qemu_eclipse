@@ -57,6 +57,8 @@ int grin_ret;	  /* GRIN -M command options, MONITOR RET module */
 int grin_shadowstack; /*** GRIN -ss command options, SHADOW_STACK module ***/
 int grin_tra_shadowstack; /*** GRIN -tss command options, TRASHADOW_STACK module ***/
 int grin_prar;  /* Protected return address register mechanism*/
+int coarsecfi_enabled;
+int finecfi_enabled;
 
 char jpath_buff[100];/* GRIN -M jmp command options,exist overflow risk*/
 char cpath_buff[100];/* GRIN -M call command options,exist overflow risk*/
@@ -4068,9 +4070,13 @@ static void handle_arg_watch(const char *arg)
 	//if(!strcmp(arg,""))
 
 }
-static void handle_COARSE_CFI_file_path(const char *arg)
+static void handle_COARSE_CFI_enable(const char *arg)
 {
-
+	coarsecfi_enabled = 1;
+}
+static void handle_FINE_CFI_enable(const char *arg)
+{
+	finecfi_enabled = 1;
 }
 
 /*** GRIN -ss command options, SHADOW_STACK module ***/
@@ -4148,9 +4154,9 @@ static const struct qemu_argument arg_table[] = {
 	"path",    "set call CFG file path"},
 	{"rpath",    "",     true, handle_ret_CFI_file_path,
 	"path",    "set ret CFG file path"},
-	{"enable-coarse-CFI",    "",     false, handle_COARSE_CFI_file_path,
+	{"enable-coarse-CFI",    "",     false, handle_COARSE_CFI_enable,
 	"",    "enable Coarse-grained CFI mechanism"},
-	{"enable-fine-CFI",    "",     false, handle_FINE_CFI_file_path,
+	{"enable-fine-CFI",    "",     false, handle_FINE_CFI_enable,
 	"",    "enable Fine-grained CFI mechanism"},
 
 	{"watch",    "",     true, handle_arg_watch,

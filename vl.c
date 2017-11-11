@@ -192,6 +192,8 @@ int grin_prar;  /* Protected return address register mechanism*/
 char jpath_buff[100];/* GRIN -M jmp command options,exist overflow risk*/
 char cpath_buff[100];/* GRIN -M call command options,exist overflow risk*/
 char rpath_buff[100];/* GRIN -M ret command options,exist overflow risk*/
+int coarsecfi_enabled;
+int finecfi_enabled;
 
 /* The bytes in qemu_uuid[] are in the order specified by RFC4122, _not_ in the
  * little-endian "wire format" described in the SMBIOS 2.6 specification.

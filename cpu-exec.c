@@ -416,12 +416,15 @@ static inline void grin_handle_jmp(target_ulong pc)
 	int i = 0;
 	char c;
 
-	if((pfile=fopen(jpath_buff,"r"))==NULL){
-		printf("Read file failed!\n");
-		printf("** File path should less than 100 bytes.\n** File path doesn't exist.\n");
-		exit(0);
+	if(coarsecfi_enabled || finecfi_enabled){
+		if((pfile=fopen(jpath_buff,"r"))==NULL){
+			printf("Read file failed!\n");
+			printf("** File path should less than 100 bytes.\n"
+					"** File path doesn't exist.\n");
+			exit(0);
+		}
 	}
-	while(1)
+	while(coarsecfi_enabled || finecfi_enabled)
 	{
 		fgets(bufLine,30,pfile);
 		for(i=0,str1=bufLine;i<2;i++,str1=NULL){
@@ -430,22 +433,26 @@ static inline void grin_handle_jmp(target_ulong pc)
 			}
 			token = strtok(str1,"\t");
 			strcpy(bufParser[i],token);
-			if(token==NULL){break;}
+			//if(token==NULL){break;}
 		}
-		//printf("%s---%s\n",bufParser[0],bufParser[1]);
-		buf0 = strtol(bufParser[0],NULL,16);
-		buf1 = strtol(bufParser[1],NULL,10);//Coarse-grained is 10
-		/* Coarse-grained CFI */
-		if(pc==buf0){
-			//printf("CFG have jmp to function head!\n");
-			break;
-		}
-		if((pc>buf0)&&((jmpaddr_of-buf0)<buf1)&&((pc-buf0)<buf1))
-		{
-			//printf("CFG have jmp to function internal!\n");
-			break;
+		if(coarsecfi_enabled){
+			//printf("%s---%s\n",bufParser[0],bufParser[1]);
+			buf0 = strtol(bufParser[0],NULL,16);
+			buf1 = strtol(bufParser[1],NULL,10);
+			/* Coarse-grained CFI */
+			if(pc==buf0){
+				//printf("CFG have jmp to function head!\n");
+				break;
+			}
+			if((pc>buf0)&&((jmpaddr_of-buf0)<buf1)&&((pc-buf0)<buf1))
+			{/* Judge jmp dest is belong to function-self internal */
+				//printf("CFG have jmp to function internal!\n");
+				break;
+			}
 		}
 		/* Fine-grained CFI */
+//		buf0 = strtol(bufParser[0],NULL,16);
+//		buf1 = strtol(bufParser[1],NULL,16);
 //		if(jmpaddr_of==buf0){
 //			printf("CFG have jmp to function head!\n");
 //			if(pc!=buf1){
@@ -468,22 +475,26 @@ static inline void grin_handle_jmp(target_ulong pc)
 nextline:
 		continue;
 	}
-	fclose(pfile);
-#if !NOSTDERR
-    //fprintf(stderr,"JMP  d: %#lx  s: %#lx icount: %ld\n",
-    //												pc,jmpaddr_of,dcount);
-#endif
-	if(dcount<=5 && jmpaddr_of<0x4000000000){
-		fprintf(stderr,"\nGadget code icount: %d!\n",dcount);
-		fprintf(stderr,"JMP ID: %d\ndest: %#lx \nsrc: %#lx\n",GadgetLink-1,pc,jmpaddr_of);
+	if(coarsecfi_enabled || finecfi_enabled){
+		fclose(pfile);
+		if(dcount<=5 && jmpaddr_of<0x4000000000){
+			fprintf(stderr,"\nGadget code icount: %d!\n",dcount);
+			fprintf(stderr,"JMP ID: %d\ndest: %#lx \nsrc: %#lx\n",GadgetLink-1,pc,jmpaddr_of);
+		}
+		/* Judge as gadget chain*/
+		/* Don't consider libc's addr */
+		if(GadgetLink == 6 && jmpaddr_of<0x4000000000){
+			fprintf(stderr,"\nFormed a gadget chain!\n");
+			fprintf(stderr,"Program may be atttttttttacked!\n");
+			GadgetLink = 0;
+			exit(0);
+		}
 	}
-	/* Judge as gadget chain*/
-	/* Don't consider libc's addr */
-	if(GadgetLink == 6 && jmpaddr_of<0x4000000000){
-		fprintf(stderr,"\nFormed a gadget chain!\n");
-		fprintf(stderr,"Program may be atttttttttacked!\n");
-		GadgetLink = 0;
-		exit(0);
+	else{
+#if !NOSTDERR
+	fprintf(stderr,"JMP  d: %#lx  s: %#lx icount: %ld\n",
+													pc,jmpaddr_of,dcount);
+#endif
 	}
     dcount = 0;
     jmpto_flag = 0;
@@ -499,13 +510,15 @@ static inline  void grin_handle_call(target_ulong pc)
 	target_ulong buf0,buf1;
 	int i = 0;
 	char c;
-
-	if((pfile=fopen(cpath_buff,"r"))==NULL){
-		printf("Read file failed!\n");
-		printf("** File path should less than 100 bytes.\n** File path doesn't exist.\n");
-		exit(0);
+	if(coarsecfi_enabled || finecfi_enabled){
+		if((pfile=fopen(cpath_buff,"r"))==NULL){
+			printf("Read file failed!\n");
+			printf("** File path should less than 100 bytes.\n"
+					"** File path doesn't exist.\n");
+			exit(0);
+		}
 	}
-	while(1)
+	while(coarsecfi_enabled || finecfi_enabled)
 	{
 		fgets(bufLine,30,pfile);
 		for(i=0,str1=bufLine;i<2;i++,str1=NULL){
@@ -514,17 +527,20 @@ static inline  void grin_handle_call(target_ulong pc)
 			}
 			token = strtok(str1,"\t");
 			strcpy(bufParser[i],token);
-			if(token==NULL){break;}
 		}
-		//printf("%s---%s\n",bufParser[0],bufParser[1]);
-		buf0 = strtol(bufParser[0],NULL,16);
-		buf1 = strtol(bufParser[1],NULL,10);//Coarse-grained is 10
-		/* Coarse-grained CFI */
-		if(pc==buf0){
-			//printf("ret return to call next address!\n");
-			break;
+		if(coarsecfi_enabled){
+			//printf("%s---%s\n",bufParser[0],bufParser[1]);
+			buf0 = strtol(bufParser[0],NULL,16);
+			buf1 = strtol(bufParser[1],NULL,10);
+			/* Coarse-grained CFI */
+			if(pc==buf0){
+				//printf("ret return to call next address!\n");
+				break;
+			}
 		}
 		/* Fine-grained CFI */
+//		buf0 = strtol(bufParser[0],NULL,16);
+//		buf1 = strtol(bufParser[1],NULL,16);
 //		if(calladdr_of==buf0){
 //			printf("CFG have call to function head!\n");
 //			if(pc!=buf1){
@@ -547,22 +563,28 @@ static inline  void grin_handle_call(target_ulong pc)
 nextline:
 		continue;
 	}
-	fclose(pfile);
-#if !NOSTDERR
-	//fprintf(stderr,"CALL d: %#lx  s: %#lx icount: %ld   beside addr: %#lx\n",
-	//											pc,calladdr_of,dcount,calladdr_next);
-#endif
-	if(dcount<=5 && calladdr_of<0x4000000000){
-		fprintf(stderr,"\nGadget code icount: %d!\n",dcount);
-		fprintf(stderr,"CALL ID: %d\ndest: %#lx \nsrc: %#lx beside addr: %#lx\n",GadgetLink-1,pc,calladdr_of,calladdr_next);
+
+	if(coarsecfi_enabled || finecfi_enabled){
+		fclose(pfile);
+		if(dcount<=5 && calladdr_of<0x4000000000){
+			fprintf(stderr,"\nGadget code icount: %d!\n",dcount);
+			fprintf(stderr,"CALL ID: %d\ndest: %#lx \nsrc: %#lx beside addr: %#lx\n",
+									GadgetLink-1,pc,calladdr_of,calladdr_next);
+		}
+		/* Judge as gadget chain*/
+		/* Don't consider libc's addr */
+		if(GadgetLink == 6 && calladdr_of<0x4000000000){
+			fprintf(stderr,"\nFormed a gadget chain!\n");
+			fprintf(stderr,"Program may be atttttttttacked!\n");
+			GadgetLink = 0;
+			exit(0);
+		}
 	}
-	/* Judge as gadget chain*/
-	/* Don't consider libc's addr */
-	if(GadgetLink == 6 && calladdr_of<0x4000000000){
-		fprintf(stderr,"\nFormed a gadget chain!\n");
-		fprintf(stderr,"Program may be atttttttttacked!\n");
-		GadgetLink = 0;
-		exit(0);
+	else{
+#if !NOSTDERR
+	fprintf(stderr,"CALL d: %#lx  s: %#lx icount: %ld   beside addr: %#lx\n",
+												pc,calladdr_of,dcount,calladdr_next);
+#endif
 	}
     dcount = 0;
 	callto_flag = 0;
@@ -574,33 +596,37 @@ static inline void grin_handle_ret(target_ulong pc)
 	FILE * pfile = NULL;
 	char *token,*str1;
 	char bufLine[100];
-	char bufParser[3][20];//Coarse-grained is [3][20]
+	char bufParser[2][20];
 	target_ulong buf0,buf1;
 	int i = 0;
 	char c;
 
-	if((pfile=fopen(rpath_buff,"r"))==NULL){
-		printf("Read file failed!\n");
-		printf("** File path should less than 100 bytes.\n** File path doesn't exist.\n");
-		exit(0);
+	if(coarsecfi_enabled || finecfi_enabled){
+		if((pfile=fopen(rpath_buff,"r"))==NULL){
+			printf("Read file failed!\n");
+			printf("** File path should less than 100 bytes."
+					"\n** File path doesn't exist.\n");
+			exit(0);
+		}
 	}
-	while(1)
+	while(coarsecfi_enabled || finecfi_enabled)
 	{
 		fgets(bufLine,100,pfile);
-		for(i=0,str1=bufLine;i<3;i++,str1=NULL){//Coarse-grained is i<3
+		for(i=0,str1=bufLine;i<2;i++,str1=NULL){
 			if(bufLine[0] == '#'){
 				goto nextline;
 			}
 			token = strtok(str1,"\t");
 			strcpy(bufParser[i],token);
-			if(token==NULL){break;}
 		}
-		//printf("%s---%s\n",bufParser[0],bufParser[1]);
-		/* Coarse-grained CFI */
-		buf1 = strtol(bufParser[1],NULL,16);
-		if(pc==buf1){
-			//printf("ret return to call next address!\n");
-			break;
+		if(coarsecfi_enabled){
+			//printf("%s---%s\n",bufParser[0],bufParser[1]);
+			/* Coarse-grained CFI */
+			buf1 = strtol(bufParser[1],NULL,16);
+			if(pc==buf1){
+				//printf("ret return to call next address!\n");
+				break;
+			}
 		}
 		/* Fine-grained CFI */
 //		buf0 = strtol(bufParser[0],NULL,16);
@@ -628,22 +654,27 @@ static inline void grin_handle_ret(target_ulong pc)
 nextline:
 		continue;
 	}
-	fclose(pfile);
-#if !NOSTDERR
-	//fprintf(stderr,"RET  d: %#lx  s: %#lx icount: %ld\n",
-	//												pc,retaddr_of,dcount);
-#endif
-	if(dcount<=5 && retaddr_of<0x4000000000){
-		fprintf(stderr,"\nGadget code icount: %d!\n",dcount);
-		fprintf(stderr,"RET ID: %d\n dest: %#lx \n src: %#lx \n",GadgetLink-1,pc,retaddr_of);
+
+	if(coarsecfi_enabled || finecfi_enabled){
+		fclose(pfile);
+		if(dcount<=5 && retaddr_of<0x4000000000){
+			fprintf(stderr,"\nGadget code icount: %d!\n",dcount);
+			fprintf(stderr,"RET ID: %d\n dest: %#lx \n src: %#lx \n",GadgetLink-1,pc,retaddr_of);
+		}
+		/* Judge as gadget chain*/
+		/* Don't consider libc's addr */
+		if(GadgetLink == 6 && retaddr_of<0x4000000000){
+			fprintf(stderr,"\nFormed a gadget chain!\n");
+			fprintf(stderr,"Program may be atttttttttacked!\n");
+			GadgetLink = 0;
+			exit(0);
+		}
 	}
-	/* Judge as gadget chain*/
-	/* Don't consider libc's addr */
-	if(GadgetLink == 6 && retaddr_of<0x4000000000){
-		fprintf(stderr,"\nFormed a gadget chain!\n");
-		fprintf(stderr,"Program may be atttttttttacked!\n");
-		GadgetLink = 0;
-		exit(0);
+	else{
+#if !NOSTDERR
+	fprintf(stderr,"RET  d: %#lx  s: %#lx icount: %ld\n",
+													pc,retaddr_of,dcount);
+#endif
 	}
     dcount = 0;
 	retto_flag = 0;

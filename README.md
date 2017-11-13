@@ -58,19 +58,19 @@ _-encrypt_
 
 ## Simple test
          
-- qemu help
+qemu help
 
 > _qemu-x86_64 --help_
 
-- Execute a linux process with QEMU
+Execute a linux process with QEMU
 
 > _qemu-x86_64 xxx_
 
-- You can monitor jmp instruction and enable coarse-grained CFI, note you should to append CFG file path with _-jpath_ command 
+You can monitor jmp instruction and enable coarse-grained CFI, note you should to append CFG file path with _-jpath_ command 
 
 > _qemu-x86_64 -M jmp -jpath path -enable-coarse-CFI xxx_
 
-- You can turn on shadow stack mechanism
+You can turn on shadow stack mechanism
 
 > _qemu-x86_64 -ss_
 

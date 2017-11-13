@@ -22,46 +22,69 @@ _qemu-x86_64 [-M instruction] [-j/c/rpath path] [-enable-coarse/fine-CFI] [-ss/t
 
 _-M instruction_
 
-	**monitor jmp/call/ret instruction and output information**
+-**monitor jmp/call/ret instruction and output information**
 
 _-jpath path_
 
-&emsp&emsp **set jmp CFG file path**
+- **set jmp CFG file path**
 
 _-cpath path_
 
-&emsp&emsp **set call CFG file path**
+- **set call CFG file path**
 
 _-rpath path_
 
-&emsp&emsp **set ret CFG file path**
+- **set ret CFG file path**
 
 _-enable-coarse-CFI_
 
-&emsp&emsp **enable Coarse-grained CFI mechanism**
+- **enable Coarse-grained CFI mechanism**
 
 _-enable-fine-CFI_
 
-&emsp&emsp **enable Fine-grained CFI mechanism**
+- **enable Fine-grained CFI mechanism**
 
 _-ss_
 
-&emsp&emsp **set shadow stack mechanism**
+- **set shadow stack mechanism**
 
 _-tss_
 
-&emsp&emsp **set traditional shadow stack mechanism**
+- **set traditional shadow stack mechanism**
 
 _-encrypt_
 
-&emsp&emsp **encrypt return address**
+- **encrypt return address**
 
 ## Simple test
          
-#qemu help
+- qemu help
 
-> qemu-x86_64 --help
-> 
-> #Coarse-Grained CFI test
-> 
->qemu-x86_64 -M jmp -fpath *.call/*.func [elf]
+_qemu-x86_64 --help_
+
+- Execute a linux process with QEMU
+
+_qemu-x86_64 xxx_
+
+- You can monitor jmp instruction and enable coarse-grained CFI, note you should to append CFG file path with _-jpath_ command 
+
+_qemu-x86_64 -M jmp -jpath path -enable-coarse-CFI xxx_
+
+- You can turn on shadow stack mechanism
+
+_qemu-x86_64 -ss_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

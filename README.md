@@ -20,7 +20,41 @@
 
 _qemu-x86_64 [-M instruction] [-j/c/rpath path] [-enable-coarse/fine-CFI] [-ss/tss] [-encrypt]_
 
+_-M instruction_
 
+**monitor jmp/call/ret instruction and output information**
+
+_-jpath path_
+
+**set jmp CFG file path**
+
+_-cpath path_
+
+**set call CFG file path**
+
+_-rpath path_
+
+**set ret CFG file path**
+
+_-enable-coarse-CFI_
+
+**enable Coarse-grained CFI mechanism**
+
+_-enable-fine-CFI_
+
+**enable Fine-grained CFI mechanism**
+
+_-ss_
+
+**set shadow stack mechanism**
+
+_-tss_
+
+**set traditional shadow stack mechanism**
+
+_-encrypt_
+
+**encrypt return address**
 
 ## Simple test
          

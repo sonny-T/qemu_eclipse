@@ -22,7 +22,7 @@ _qemu-x86_64 [-M instruction] [-j/c/rpath path] [-enable-coarse/fine-CFI] [-ss/t
 
 _-M instruction_
 
-&emsp&emsp **monitor jmp/call/ret instruction and output information**
+	**monitor jmp/call/ret instruction and output information**
 
 _-jpath path_
 

@@ -465,9 +465,10 @@ static inline void grin_handle_jmp(target_ulong pc)
 		fseek(pfile,-1L,1);
 		if(c=='\n'|| c==EOF){
 			if(pc<0x4000000000){
-				fprintf(stderr,"Dynamic execute result:\n");
-				fprintf(stderr,"Program is atttttttttacked _(:_l <)_\n");
-				fprintf(stderr,"JMP No data! \nDest: %lx \nSrc: %lx\n",pc,jmpaddr_of);
+				fprintf(stderr,"Dynamic execute result:\n"
+							"Program is atttttttttacked _(:_l <)_\n");
+				fprintf(stderr,"JMP No data! \n"
+						"Dest: %lx \nSrc: %lx\n",pc,jmpaddr_of);
 				exit(0);
 			}
 			break;
@@ -484,8 +485,8 @@ nextline:
 		/* Judge as gadget chain*/
 		/* Don't consider libc's addr */
 		if(GadgetLink == 6 && jmpaddr_of<0x4000000000){
-			fprintf(stderr,"\nFormed a gadget chain!\n");
-			fprintf(stderr,"Program may be atttttttttacked!\n");
+			fprintf(stderr,"\nFormed a gadget chain!\n"
+						"Program may be atttttttttacked!\n");
 			GadgetLink = 0;
 			exit(0);
 		}
@@ -553,8 +554,8 @@ static inline  void grin_handle_call(target_ulong pc)
 		fseek(pfile,-1L,1);
 		if(c=='\n'|| c==EOF){
 			if(pc<0x4000000000){
-				fprintf(stderr,"Dynamic execute result:\n");
-				fprintf(stderr,"Program is atttttttttacked _(:_l <)_\n");
+				fprintf(stderr,"Dynamic execute result:\n"
+						"Program is atttttttttacked _(:_l <)_\n");
 				fprintf(stderr,"CALL No data! \n Dest: %lx Src: %lx\n",pc,calladdr_of);
 				exit(0);
 			}
@@ -644,8 +645,8 @@ static inline void grin_handle_ret(target_ulong pc)
 		fseek(pfile,-1L,1);
 		if(c=='\n'|| c==EOF){
 			if(pc<0x4000000000){
-				fprintf(stderr,"Dynamic execute result:\n");
-				fprintf(stderr,"Program is atttttttttacked _(:_l <)_\n");
+				fprintf(stderr,"Dynamic execute result:\n"
+						"Program is atttttttttacked _(:_l <)_\n");
 				fprintf(stderr,"RET No data! \n Dest: %lx Src: %lx\n",pc,retaddr_of);
 				exit(0);
 			}

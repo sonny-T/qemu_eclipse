@@ -1564,7 +1564,8 @@ static void ram_block_add(RAMBlock *new_block, Error **errp)
                 qemu_mutex_unlock_ramlist();
                 return;
             }
-        } else {
+        }
+        else {
             new_block->host = phys_mem_alloc(new_block->max_length,
                                              &new_block->mr->align);
             if (!new_block->host) {
@@ -1912,7 +1913,7 @@ RAMBlock *qemu_ram_block_from_host(void *ptr, bool round_offset,
         goto found;
     }
 
-    QLIST_FOREACH_RCU(block, &ram_list.blocks, next) {
+    QLIST_FOREACH_RCU(block, &ram_list.blocks, next) {//for((var)=atomic_...
         /* This case append when the block is not mapped. */
         if (block->host == NULL) {
             continue;

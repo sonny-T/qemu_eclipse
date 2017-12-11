@@ -1085,7 +1085,7 @@ int cpu_exec(CPUState *cpu)
      * advance/delay we gain here, we try to fix it next time.
      */
     init_delay_params(&sc, cpu);
-    CPUArchState *env1 = (CPUArchState *)cpu->env_ptr;
+
     for(;;) {
         /* prepare setjmp context for exception handling */
         if (sigsetjmp(cpu->jmp_env, 0) == 0) {
@@ -1099,6 +1099,11 @@ int cpu_exec(CPUState *cpu)
             cpu->tb_flushed = false; /* reset before first TB lookup */
             for(;;)
             {
+//                if(env->eip == 0x400990){
+//                    printf("cr[2] %lx eip %lx\n",(env->cr[2]>>12),env->eip);
+//                    printf("cr[3] %lx\n\n",(env->cr[3]>>12));
+//                }
+
                 cpu_handle_interrupt(cpu, &last_tb);
                 tb = tb_find_fast(cpu, &last_tb, tb_exit);
 

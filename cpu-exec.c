@@ -1100,7 +1100,7 @@ int cpu_exec(CPUState *cpu)
             for(;;)
             {
 //                if(env->eip == 0x400990){
-//                    printf("cr[2] %lx eip %lx\n",(env->cr[2]>>12),env->eip);
+//                    printf("#######eip %lx\n",env->eip);
 //                    printf("cr[3] %lx\n\n",(env->cr[3]>>12));
 //                }
 

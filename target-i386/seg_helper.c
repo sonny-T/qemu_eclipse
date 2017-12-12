@@ -1286,7 +1286,8 @@ void x86_cpu_do_interrupt(CPUState *cs)
 {
     X86CPU *cpu = X86_CPU(cs);
     CPUX86State *env = &cpu->env;
-
+    target_ulong *hva;
+    target_ulong addr = 0x400990;
     /* cr3tmp compared last cr[3] value,if changed,to execute the following code.*/
 //    printf("cr[3] %lx \n",env->cr[3]>>12);
 //    printf("GS selector %lx base %lx\n\n",
@@ -1294,12 +1295,13 @@ void x86_cpu_do_interrupt(CPUState *cs)
 
     if((env->cr[3]>>12)^cr3tmp)
     {
-    	printf(" %lx\n",env->cr[3]>>12);
-    	printf(" %lx\n",env->cr[2]);
-    	printf("EIP %lx\n",env->eip);
+    	if(env->eip==0xffffffff812bbae1){
+    		printf(" %lx\n",env->cr[3]>>12);
+        	printf("EIP %lx\n",env->eip);
+        	hva = get_hva(env, addr);
+        	printf("##hva %lx \n\n",hva);
+    	}
 
-    	printf("GS selector %lx base %lx\n\n",
-    			env->segs[5].selector,env->segs[5].base);
 
     	cr3tmp = env->cr[3]>>12;
     }

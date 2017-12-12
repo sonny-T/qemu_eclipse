@@ -500,16 +500,14 @@ tb_page_addr_t get_page_addr_code(CPUArchState *env1, target_ulong addr)
 
 target_ulong get_hva(CPUArchState *env1, target_ulong addr)
 {
-    int mmu_idx, page_index, pd;
-    target_ulong *p;
-    MemoryRegion *mr;
-    CPUState *cpu = ENV_GET_CPU(env1);
-    CPUIOTLBEntry *iotlbentry;
+    int mmu_idx, page_index;
+    void *p;
 
     page_index = (addr >> TARGET_PAGE_BITS) & (CPU_TLB_SIZE - 1);
     mmu_idx = cpu_mmu_index(env1, true);
 
-    p = (target_ulong *)((uintptr_t)addr + env1->tlb_table[mmu_idx][page_index].addend);
+    p = (void *)((uintptr_t)addr + env1->tlb_table[mmu_idx][page_index].addend);
+    printf("addr %lx\n",p);
     return p;
 }
 

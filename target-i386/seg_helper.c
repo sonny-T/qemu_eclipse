@@ -69,8 +69,6 @@
 #undef MEMSUFFIX
 #endif
 
-target_ulong cr3tmp = 0;
-
 /* return non zero if error */
 static inline int load_segment_ra(CPUX86State *env, uint32_t *e1_ptr,
                                uint32_t *e2_ptr, int selector,
@@ -1286,26 +1284,6 @@ void x86_cpu_do_interrupt(CPUState *cs)
 {
     X86CPU *cpu = X86_CPU(cs);
     CPUX86State *env = &cpu->env;
-    target_ulong *hva;
-    target_ulong addr = 0x400990;
-    /* cr3tmp compared last cr[3] value,if changed,to execute the following code.*/
-//    printf("cr[3] %lx \n",env->cr[3]>>12);
-//    printf("GS selector %lx base %lx\n\n",
-//        			env->segs[1].selector,env->segs[1].base);
-
-    if((env->cr[3]>>12)^cr3tmp)
-    {
-    	if(env->eip==0xffffffff812bbae1){
-    		printf(" %lx\n",env->cr[3]>>12);
-        	printf("EIP %lx\n",env->eip);
-        	hva = get_hva(env, addr);
-        	printf("##hva %lx \n\n",hva);
-    	}
-
-
-    	cr3tmp = env->cr[3]>>12;
-    }
-
 
 #if defined(CONFIG_USER_ONLY)
     /* if user mode only, we simulate a fake exception

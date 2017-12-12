@@ -76,6 +76,9 @@ long RealGadgetLen = 0;
     ShadowStack sstack1;
     bool CPUEXECFlag = 1;
     bool RetNextFlag = 0;
+/* GRIN VMI test*/
+target_ulong cr3tmp = 0;
+int _testbool = 0;
 
 #if !defined(CONFIG_USER_ONLY)
 /* Allow the guest to have a max 3ms advance.
@@ -832,6 +835,10 @@ static inline void cpu_handle_debug_exception(CPUState *cpu)
 
 static inline bool cpu_handle_exception(CPUState *cpu, int *ret)
 {
+    CPUArchState *env = cpu->env_ptr;
+    target_ulong *hva;
+    target_ulong addr = 0x400990;
+
     if (cpu->exception_index >= 0) {
         if (cpu->exception_index >= EXCP_INTERRUPT) {
             /* exit request from the cpu execution loop */
@@ -857,7 +864,30 @@ static inline bool cpu_handle_exception(CPUState *cpu, int *ret)
 #else
             if (replay_exception()) {
                 CPUClass *cc = CPU_GET_CLASS(cpu);
+
+                /* cr3tmp compared last cr[3] value,
+                 * if changed,to execute the following code.*/
+                if((env->cr[3]>>12)^cr3tmp)
+                {
+                	if(env->eip==0x400990)
+                	{
+                		printf(" %lx\n",env->cr[3]>>12);
+                    	printf("EIP %lx\n",env->eip);
+                    	hva = get_hva(env, addr);
+                    	printf("###hva %lx\n",hva);
+
+                    	_testbool = 1;
+                	}
+                	cr3tmp = env->cr[3]>>12;
+                }
+
                 cc->do_interrupt(cpu);
+
+                if(_testbool){
+                	printf("EIP %lx\n\n",env->eip);
+                	_testbool = 0;
+                }
+
                 cpu->exception_index = -1;
             }
             else if (!replay_has_interrupt()) {
@@ -1051,7 +1081,9 @@ int cpu_exec(CPUState *cpu)
     CPUClass *cc = CPU_GET_CLASS(cpu);
     int ret;
     SyncClocks sc;
+
     CPUArchState *env = cpu->env_ptr;
+    target_ulong *hva;
 
 /***  GRIN -ss/-tss command option   ***/
 /*   TRA/SHADOW STACK module function  */
@@ -1099,14 +1131,14 @@ int cpu_exec(CPUState *cpu)
             cpu->tb_flushed = false; /* reset before first TB lookup */
             for(;;)
             {
-//                if(env->eip == 0x400990){
-//                    printf("#######eip %lx\n",env->eip);
-//                    printf("cr[3] %lx\n\n",(env->cr[3]>>12));
-//                }
-
                 cpu_handle_interrupt(cpu, &last_tb);
                 tb = tb_find_fast(cpu, &last_tb, tb_exit);
 
+//                if(tb->pc == 0x400990){
+//                	hva = get_hva(env, env->eip);
+//                	//printf("###hva %lx\n\n",*hva);
+//                }
+//
                 /*temp test ltr*/
                 if(tb->TestFlag)
                 {

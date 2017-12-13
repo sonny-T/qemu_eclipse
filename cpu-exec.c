@@ -1127,9 +1127,11 @@ int cpu_exec(CPUState *cpu)
             	if(_testbool&&(env->eip==0x400990))
             	{
             		printf(" %lx\n",env->cr[3]>>12);
-                	printf("EIP %lx\n",env->eip);
+                	printf("EIP %lx CS selector %lx base %lx\n",
+                			env->eip,env->segs[1].selector,env->segs[1].base);
                 	hva = get_hva(env, env->eip);
                 	printf("@@@hva %lx\n",hva);
+                	printf("entry byte: %x\n\n",*hva);
 
                 	_testbool = 0;
             	}

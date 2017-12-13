@@ -869,25 +869,15 @@ static inline bool cpu_handle_exception(CPUState *cpu, int *ret)
                  * if changed,to execute the following code.*/
                 if((env->cr[3]>>12)^cr3tmp)
                 {
-                	if(env->eip==0x400990)
-                	{
-                		printf(" %lx\n",env->cr[3]>>12);
-                    	printf("EIP %lx\n",env->eip);
-                    	hva = get_hva(env, addr);
-                    	printf("###hva %lx\n",hva);
-
-                    	_testbool = 1;
-                	}
+//                	printf(" %lx\n",env->cr[3]>>12);
+//                    printf("EIP %lx\n",env->eip);
+//                    hva = get_hva(env, addr);
+//                    printf("###hva %lx\n",hva);
+                    _testbool = 1;
                 	cr3tmp = env->cr[3]>>12;
                 }
 
                 cc->do_interrupt(cpu);
-
-                if(_testbool){
-                	printf("EIP %lx\n\n",env->eip);
-                	_testbool = 0;
-                }
-
                 cpu->exception_index = -1;
             }
             else if (!replay_has_interrupt()) {
@@ -1134,11 +1124,16 @@ int cpu_exec(CPUState *cpu)
                 cpu_handle_interrupt(cpu, &last_tb);
                 tb = tb_find_fast(cpu, &last_tb, tb_exit);
 
-//                if(tb->pc == 0x400990){
-//                	hva = get_hva(env, env->eip);
-//                	//printf("###hva %lx\n\n",*hva);
-//                }
-//
+            	if(_testbool&&(env->eip==0x400990))
+            	{
+            		printf(" %lx\n",env->cr[3]>>12);
+                	printf("EIP %lx\n",env->eip);
+                	hva = get_hva(env, env->eip);
+                	printf("@@@hva %lx\n",hva);
+
+                	_testbool = 0;
+            	}
+
                 /*temp test ltr*/
                 if(tb->TestFlag)
                 {

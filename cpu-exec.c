@@ -867,12 +867,11 @@ static inline bool cpu_handle_exception(CPUState *cpu, int *ret)
 
                 /* cr3tmp compared last cr[3] value,
                  * if changed,to execute the following code.*/
-                if((env->cr[3]>>12)^cr3tmp)
-                {
+                if((env->cr[3]>>12)^cr3tmp){
 //                	printf(" %lx\n",env->cr[3]>>12);
 //                    printf("EIP %lx\n",env->eip);
 //                    hva = get_hva(env, addr);
-//                    printf("###hva %lx\n",hva);
+                    printf("Current process Directory ID %lx\n",env->cr[3]>>12);
                     _testbool = 1;
                 	cr3tmp = env->cr[3]>>12;
                 }

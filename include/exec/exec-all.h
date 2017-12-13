@@ -285,7 +285,7 @@ struct TranslationBlock {
     uintptr_t jmp_list_next[2];
     uintptr_t jmp_list_first;
     /*** GRIN -M command options, MONITOR SYSCALL module ***/
-    //int syscall_flag;
+    int SyscallFlag;
     //struct TB_Code *t_code;
 
 #if GADGET

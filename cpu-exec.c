@@ -1141,11 +1141,18 @@ int cpu_exec(CPUState *cpu)
                 {
                 	printf("new task %d\n",tb->TestFlag);
                 }
-
+                dcount += tb->icount;
+            /* GRIN -M command options, MONITOR SYSCALL module */
+                if(grin_syscall){
+                	if(tb->SyscallFlag){
+                		//grin_handle_syscall(tb,cpu);
+                		printf("system call !\n"
+                				"address of syscall tb: %lx\n",tb->pc);
+                	}
+                }
             /* GRIN -M command options, MONITOR JMP module */
         		//Mod67Flag is mod = 3
         		//RMFlag is mod = 0 rm = 5
-                dcount += tb->icount;
                 if(grin_jmp){
                 	//dcount += tb->icount;
 					if(tb->JmpFlagM == 1){
@@ -1175,8 +1182,6 @@ int cpu_exec(CPUState *cpu)
                 	GadgetLink = 0;
                 }
                 GadgetLink = tb->RetFlagM | tb->CallFlagM | tb->JmpFlagM + GadgetLink;
-
-
 #if GADGET
                 RealGadgetLen = RealGadgetLen + tb->icount;
                 if(tb->IndirectFlag == 1)
@@ -1186,12 +1191,6 @@ int cpu_exec(CPUState *cpu)
                 	//printf("######%x\n",tb->IndirectDisas);
                 }
 #endif
-
-                /*** GRIN -M command options, MONITOR SYSCALL module ***/
-                if(grin_syscall){
-                	//grin_handle_syscall(tb,cpu);
-                	printf("hhhhhhgg\n");
-                }
                 cpu_loop_exec_tb(cpu, tb, &last_tb, &tb_exit, &sc);
 
                 /* Try to align the host and virtual clocks

@@ -124,6 +124,8 @@ typedef struct DisasContext {
      	 	 	   1 = means have call instruction,vice versa */
     int have_ret;/* GRIN -M command options, MONITOR RET module
          	 	 	   1 = means have ret instruction,vice versa */
+    int have_syscall;/* GRIN -M command options, MONITOR SYSCALL module
+         	 	 	   1 = means have syscall instruction,vice versa */
 
     /*temp test ltr*/
     int have_test;
@@ -4664,11 +4666,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         b = cpu_ldub_code(env, s->pc) | 0x100;
         s->pc++;
  /*** GRIN -M command options, MONITOR SYSCALL module ***/
-        if(grin_syscall){
-			if(b == 0x105){
-				syscall_insn = 1;
+        if(grin_syscall&&(b == 0x105)){
+        	s->have_syscall = 1;
 				//printf("syscall \n");
-			}
         }
 
         goto reswitch;
@@ -8838,7 +8838,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
 /*** GRIN -M command options, MONITOR SYSCALL module ***/
    // TB_Code *t_code1 = (TB_Code *)malloc(sizeof(TB_Code));
    // tb->t_code = t_code1;
-   //tb->syscall_flag = 0;
+   tb->SyscallFlag = 0;
 
     target_ulong insn_star;
 
@@ -8882,6 +8882,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
     dc->have_jmp = 0; /* GRIN -M command options, MONITOR JMP module */
     dc->have_call = 0; /* GRIN -M command options, MONITOR CALL module */
     dc->have_ret = 0; /* GRIN -M command options, MONITOR RET module */
+    dc->have_syscall = 0; /* GRIN -M command options, MONITOR SYSCALL module */
     dc->pe = (flags >> HF_PE_SHIFT) & 1;
     dc->code32 = (flags >> HF_CS32_SHIFT) & 1;
     dc->ss32 = (flags >> HF_SS32_SHIFT) & 1;
@@ -9003,11 +9004,6 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         if(grin_shadowstack || grin_tra_shadowstack){
         	grin_tcg_handle_stack(pc_ptr,tb);
         }
-/*** GRIN -M command options, MONITOR SYSCALL module ***/
-        if(grin_syscall){
-        	//grin_tcg_handle_syscall(env,insn_star,pc_ptr,tb,num_insns);
-        }
-
 
 #if GADGET
         if(indirect_insn == 1)
@@ -9023,6 +9019,10 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         {
         	tb->TestFlag += dc->have_test;
         	dc->have_test = 0;
+        }
+        /* GRIN -M command options, MONITOR SYSCALL module */
+        if(grin_syscall && dc->have_syscall){
+        	tb->SyscallFlag = dc->have_syscall;
         }
         /* GRIN -M command options, MONITOR RET module */
         if(grin_ret && dc->have_ret){

@@ -867,16 +867,17 @@ static inline bool cpu_handle_exception(CPUState *cpu, int *ret)
 
                 /* cr3tmp compared last cr[3] value,
                  * if changed,to execute the following code.*/
-                if((env->cr[3]>>12)^cr3tmp){
-//                	printf(" %lx\n",env->cr[3]>>12);
-//                    printf("EIP %lx\n",env->eip);
+//                if((env->cr[3]>>12)^cr3tmp){
+                	printf("CR2 %lx\n",env->cr[2]);
+                    printf("ESP %lx\n",env->regs[4]);
 //                    hva = get_hva(env, addr);
                     printf("Current process Directory ID %lx\n",env->cr[3]>>12);
-                    _testbool = 1;
-                	cr3tmp = env->cr[3]>>12;
-                }
+ //                   _testbool = 1;
+ //               	cr3tmp = env->cr[3]>>12;
+ //               }
 
                 cc->do_interrupt(cpu);
+                printf("ESP %lx\n\n",env->regs[4]);
                 cpu->exception_index = -1;
             }
             else if (!replay_has_interrupt()) {

@@ -463,6 +463,24 @@ STEXI
 Set system UUID.
 ETEXI
 
+DEF("ss", 0, QEMU_OPTION_shadowstack,
+    "-ss\n"
+    "                shadow stack\n", QEMU_ARCH_ALL)
+STEXI
+@item -ss
+@findex -ss
+Will set the shadow stack.
+ETEXI
+
+DEF("tss", 0, QEMU_OPTION_tra_shadowstack,
+    "-tss\n"
+    "                traditional shadow stack\n", QEMU_ARCH_ALL)
+STEXI
+@item -tss
+@findex -tss
+Will set the traditional shadow stack.
+ETEXI
+
 STEXI
 @end table
 ETEXI

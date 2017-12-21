@@ -837,7 +837,8 @@ static inline bool cpu_handle_exception(CPUState *cpu, int *ret)
 {
     CPUArchState *env = cpu->env_ptr;
     target_ulong *hva;
-    target_ulong addr = 0x400990;
+    //target_ulong addr;
+    tb_page_addr_t phys_pc;
 
     if (cpu->exception_index >= 0) {
         if (cpu->exception_index >= EXCP_INTERRUPT) {
@@ -867,17 +868,18 @@ static inline bool cpu_handle_exception(CPUState *cpu, int *ret)
 
                 /* cr3tmp compared last cr[3] value,
                  * if changed,to execute the following code.*/
-//                if((env->cr[3]>>12)^cr3tmp){
+                if((env->cr[3]>>12)^cr3tmp){
                 	printf("CR2 %lx\n",env->cr[2]);
-                    printf("ESP %lx\n",env->regs[4]);
-//                    hva = get_hva(env, addr);
+                	//if(env->segs[5].base > 0){
+                    //phys_pc = get_hva(env, env->segs[5].base);
+                    //printf("GS %lx\n",phys_pc);}
                     printf("Current process Directory ID %lx\n",env->cr[3]>>12);
- //                   _testbool = 1;
- //               	cr3tmp = env->cr[3]>>12;
- //               }
+                    _testbool = 1;
+                	cr3tmp = env->cr[3]>>12;
+                }
 
                 cc->do_interrupt(cpu);
-                printf("ESP %lx\n\n",env->regs[4]);
+                //printf("GS %lx\n\n",env->segs[5].base);
                 cpu->exception_index = -1;
             }
             else if (!replay_has_interrupt()) {
@@ -1073,7 +1075,8 @@ int cpu_exec(CPUState *cpu)
     SyncClocks sc;
 
     CPUArchState *env = cpu->env_ptr;
-    target_ulong *hva;
+    target_ulong *hva,*hva1;
+    tb_page_addr_t phys_pc;
 
 /***  GRIN -ss/-tss command option   ***/
 /*   TRA/SHADOW STACK module function  */
@@ -1123,18 +1126,30 @@ int cpu_exec(CPUState *cpu)
             {
                 cpu_handle_interrupt(cpu, &last_tb);
                 tb = tb_find_fast(cpu, &last_tb, tb_exit);
-
-            	if(_testbool&&(env->eip==0x400990))
+            	if(_testbool && (env->segs[5].base > 0))
             	{
             		printf(" %lx\n",env->cr[3]>>12);
-                	printf("EIP %lx CS selector %lx base %lx\n",
-                			env->eip,env->segs[1].selector,env->segs[1].base);
-                	hva = get_hva(env, env->eip);
-                	printf("@@@hva %lx\n",hva);
-                	printf("entry byte: %x\n\n",*hva);
+                	printf("EIP %lx GS selector %lx base %lx\n",
+                			env->eip,env->segs[5].selector,env->segs[5].base);
+                	hva = get_hva(env, env->segs[5].base);
+                	hva1 = get_hva(env, 0xb888);
+                	printf("@@@hva %lx b888 %lx\n",hva,hva1);
+
 
                 	_testbool = 0;
             	}
+
+//            	if(_testbool&&(env->eip==0x400990))
+//            	{
+//            		printf(" %lx\n",env->cr[3]>>12);
+//                	printf("EIP %lx CS selector %lx base %lx\n",
+//                			env->eip,env->segs[1].selector,env->segs[1].base);
+//                	hva = get_hva(env, env->eip);
+//                	printf("@@@hva %lx\n",hva);
+//                	printf("entry byte: %x\n\n",*hva);
+//
+//                	_testbool = 0;
+//            	}
 
                 /*temp test ltr*/
                 if(tb->TestFlag)

@@ -125,13 +125,13 @@ DEF("uuid", HAS_ARG, QEMU_OPTION_uuid,
 "-uuid %08x-%04x-%04x-%04x-%012x\n"
 "                specify machine UUID\n", QEMU_ARCH_ALL)
 
-DEF("ss", 0, QEMU_OPTION_shadowstack,		
-"-ss\n"		
-"                shadow socket\n", QEMU_ARCH_ALL)		
- 		
-DEF("tss", 0, QEMU_OPTION_tra_shadowstack,		
-"-tss\n"		
-"                traditional shadow socket\n", QEMU_ARCH_ALL)		
+DEF("ss", 0, QEMU_OPTION_shadowstack,
+"-ss\n"
+"                shadow stack\n", QEMU_ARCH_ALL)
+
+DEF("tss", 0, QEMU_OPTION_tra_shadowstack,
+"-tss\n"
+"                traditional shadow stack\n", QEMU_ARCH_ALL)
 
 DEFHEADING()
 

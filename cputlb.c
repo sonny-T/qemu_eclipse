@@ -251,7 +251,7 @@ static inline ram_addr_t qemu_ram_addr_from_host_nofail(void *ptr)
     ram_addr = qemu_ram_addr_from_host(ptr);
     if (ram_addr == RAM_ADDR_INVALID) {
         fprintf(stderr, "Bad ram pointer %p\n", ptr);
-        abort();
+        //abort();
     }
     return ram_addr;
 }
@@ -498,7 +498,7 @@ tb_page_addr_t get_page_addr_code(CPUArchState *env1, target_ulong addr)
     return qemu_ram_addr_from_host_nofail(p);
 }
 
-target_ulong get_hva(CPUArchState *env1, target_ulong addr)
+target_ulong * get_hva(CPUArchState *env1, target_ulong addr)
 {
     int mmu_idx, page_index;
     void *p;
@@ -509,6 +509,7 @@ target_ulong get_hva(CPUArchState *env1, target_ulong addr)
     p = (void *)((uintptr_t)addr + env1->tlb_table[mmu_idx][page_index].addend);
     //printf("addr %lx\n",p);
     return p;
+    //return qemu_ram_addr_from_host_nofail(p);
 }
 
 /* Return true if ADDR is present in the victim tlb, and has been copied

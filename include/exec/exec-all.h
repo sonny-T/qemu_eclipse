@@ -453,7 +453,7 @@ static inline void mmap_unlock(void) {}
 tb_page_addr_t get_page_addr_code(CPUArchState *env1, target_ulong addr);
 
 /* test cputlb.c */
-target_ulong get_hva(CPUArchState *env1, target_ulong addr);
+target_ulong * get_hva(CPUArchState *env1, target_ulong addr);
 
 void tlb_reset_dirty(CPUState *cpu, ram_addr_t start1, ram_addr_t length);
 void tlb_set_dirty(CPUState *cpu, target_ulong vaddr);

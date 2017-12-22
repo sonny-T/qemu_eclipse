@@ -1076,7 +1076,7 @@ int cpu_exec(CPUState *cpu)
 
     CPUArchState *env = cpu->env_ptr;
     target_ulong *hva,*thread_info;
-    tb_page_addr_t phys_pc;
+    //tb_page_addr_t phys_pc;
 
 /***  GRIN -ss/-tss command option   ***/
 /*   TRA/SHADOW STACK module function  */

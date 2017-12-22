@@ -501,15 +501,21 @@ tb_page_addr_t get_page_addr_code(CPUArchState *env1, target_ulong addr)
 target_ulong * get_hva(CPUArchState *env1, target_ulong addr)
 {
     int mmu_idx, page_index;
+    target_ulong _p;
     void *p;
 
-    page_index = (addr >> TARGET_PAGE_BITS) & (CPU_TLB_SIZE - 1);
-    mmu_idx = cpu_mmu_index(env1, true);
+	page_index = (addr >> TARGET_PAGE_BITS) & (CPU_TLB_SIZE - 1);
+	mmu_idx = cpu_mmu_index(env1, true);
 
-    p = (void *)((uintptr_t)addr + env1->tlb_table[mmu_idx][page_index].addend);
-    //printf("addr %lx\n",p);
-    return p;
-    //return qemu_ram_addr_from_host_nofail(p);
+	p = (void *)((uintptr_t)addr + env1->tlb_table[mmu_idx][page_index].addend);
+	//printf("addr %lx\n",p);
+	_p = (target_ulong)p;
+	if((_p>0x7f0000000000)&&(_p<0x7fffffffffff)){
+		printf("task byte: %lx\n",*(target_ulong *)p);
+		return p;
+	}
+	return p = 0;
+	//return qemu_ram_addr_from_host_nofail(p);
 }
 
 /* Return true if ADDR is present in the victim tlb, and has been copied

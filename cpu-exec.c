@@ -1075,7 +1075,7 @@ int cpu_exec(CPUState *cpu)
     SyncClocks sc;
 
     CPUArchState *env = cpu->env_ptr;
-    target_ulong *hva,*hva1;
+    target_ulong *hva,*thread_info;
     tb_page_addr_t phys_pc;
 
 /***  GRIN -ss/-tss command option   ***/
@@ -1132,8 +1132,8 @@ int cpu_exec(CPUState *cpu)
                 	printf("EIP %lx GS selector %lx base %lx\n",
                 			env->eip,env->segs[5].selector,env->segs[5].base);
                 	hva = get_hva(env, env->segs[5].base);
-                	hva1 = get_hva(env, 0xb888);
-                	printf("@@@hva %lx b888 %lx\n",hva,hva1);
+                	thread_info = get_hva(env, env->segs[5].base+0xb888+40-((1UL<<12)<<2));
+                	printf("@@@hva %lx thread_info %lx\n",hva,thread_info);
 
 
                 	_testbool = 0;

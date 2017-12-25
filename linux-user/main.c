@@ -4593,7 +4593,7 @@ int main(int argc, char **argv, char **envp)
     env->eip = regs->rip;
     /* PRAR
      * initial encrypt register */
-    env->prt_reg = 0xabababababababab;
+    env->prt_reg = 0xabababababababab&(~0x7fffffffff);
     env->salt_reg = 0x521131416;
 #else
     env->regs[R_EAX] = regs->eax;

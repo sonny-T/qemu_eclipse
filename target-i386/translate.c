@@ -5131,14 +5131,18 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             if(grin_prar){
 				/* Reserved cpu_prt_reg to cpu_T2
 				 * cpu_salt_reg xor cpu_prt_reg */
+				tcg_gen_or_tl(cpu_prt_reg,cpu_prt_reg,cpu_T1);
 				tcg_gen_mov_tl(cpu_T2,cpu_prt_reg);
 				tcg_gen_xor_tl(cpu_prt_reg,cpu_salt_reg,cpu_prt_reg);
 				/* Xor's result mul A assigned to cpu_prt_reg*/
 				tcg_gen_movi_tl(cpu_T3,0x9e3779b97f4a7c15);
 				tcg_gen_mulu2_i64(cpu_prt_reg,cpu_T3,cpu_prt_reg,cpu_T3);
-				/* cpu_prt_reg = cpu_T3 & (~0x7fffffffff(1ffffffff))|(cpu_T0 << 0)&0x7fffffffff(1ffffffff) */
-				tcg_gen_mov_tl(cpu_T3,cpu_prt_reg);
-				tcg_gen_deposit_i64(cpu_prt_reg,cpu_T3,cpu_T1,0,39);
+				///* cpu_prt_reg = cpu_T3 & (~0x7fffffffff(1ffffffff))|(cpu_T0 << 0)&0x7fffffffff(1ffffffff) */
+				//tcg_gen_mov_tl(cpu_T3,cpu_prt_reg);
+				//tcg_gen_deposit_i64(cpu_prt_reg,cpu_T3,cpu_T1,0,39);
+				/* cpu_prt_reg = cpu_prt_reg & (~0x7fffffffff(1ffffffff)) */
+				tcg_gen_movi_tl(cpu_T3,0x7fffffffff);
+				tcg_gen_andc_tl(cpu_prt_reg,cpu_prt_reg,cpu_T3);
 				//test next eip
 				tcg_gen_mov_tl(cpu_tpush_reg,cpu_T2);
 
@@ -6685,9 +6689,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 
         /*** GRIN -encrypt command options, PRAR module ***/
         if(grin_prar){
-			/* cpu_prt_reg -> cpu_T2
+			/* cpu_T0 -> cpu_T2
 			 * cpu_T2 >> 39(32) */
-			tcg_gen_mov_tl(cpu_T2,cpu_prt_reg);
+			tcg_gen_mov_tl(cpu_T2,cpu_T0);
 			tcg_gen_movi_tl(cpu_T4,19);
 			tcg_gen_shr_i64(cpu_T2,cpu_T2,cpu_T4);
 			tcg_gen_shr_i64(cpu_T2,cpu_T2,cpu_T4);
@@ -6695,10 +6699,10 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 			 * cpu_T2 & 0x1 */
 			tcg_gen_movi_tl(cpu_T4,0x1);
 			tcg_gen_and_i64(cpu_T2,cpu_T2,cpu_T4);
-			/* cpu_prt_reg & 0xffffffff
-			 * cpu_prt_reg -> 00400890 or -> 4000400890(7fff00400890) */
+			/* cpu_T0 & 0xffffffff
+			 * cpu_T0 -> 00400890 or -> 4000400890(7fff00400890) */
 			tcg_gen_movi_tl(cpu_T1,0xffffffff);
-			tcg_gen_and_i64(cpu_T1,cpu_prt_reg,cpu_T1);
+			tcg_gen_and_i64(cpu_T1,cpu_T0,cpu_T1);
 			tcg_gen_movi_tl(cpu_T3,0x4000000000);
 			tcg_gen_or_i64(cpu_T3,cpu_T3,cpu_T1);
 			/* cpu_T3 = (Preg TCG_COND_EQ 0x1) ? 40..(7fff..):00400890 */
@@ -6719,8 +6723,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 			tcg_gen_movi_tl(cpu_T2,0xffffffff);
 			tcg_gen_movcond_i64(TCG_COND_EQ,cpu_T3,cpu_T1,cpu_prt_reg,cpu_T3,cpu_T2);
 
-			//cpu_prt_reg = cpu_T0
-			tcg_gen_mov_tl(cpu_prt_reg,cpu_T0);
+			//cpu_prt_reg = cpu_T0 & ~0x7fffffffff
+			tcg_gen_movi_tl(cpu_prt_reg,0x7fffffffff);
+			tcg_gen_andc_tl(cpu_prt_reg,cpu_T0,cpu_prt_reg);
 			gen_op_jmp_v(cpu_T3); //cpu_T0 to eip
         }
         else
@@ -6751,9 +6756,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 
         /*** GRIN -encrypt command options, PRAR module ***/
         if(grin_prar){
-			/* cpu_prt_reg -> cpu_T2
+			/* cpu_T0 -> cpu_T2
 			 * cpu_T2 >> 39(32) */
-			tcg_gen_mov_tl(cpu_T2,cpu_prt_reg);
+			tcg_gen_mov_tl(cpu_T2,cpu_T0);
 			tcg_gen_movi_tl(cpu_T4,19);
 			tcg_gen_shr_i64(cpu_T2,cpu_T2,cpu_T4);
 			tcg_gen_shr_i64(cpu_T2,cpu_T2,cpu_T4);
@@ -6761,13 +6766,13 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 			 * cpu_T2 & 0x1 */
 			tcg_gen_movi_tl(cpu_T4,0x1);
 			tcg_gen_and_i64(cpu_T2,cpu_T2,cpu_T4);
-			/* cpu_prt_reg & 0xffffffff
-			 * cpu_prt_reg -> 00400890 or -> 4000400890(7fff00400890) */
+			/* cpu_T0 & 0xffffffff
+			 * cpu_T0 -> 00400890 or -> 4000400890(7fff00400890) */
 			tcg_gen_movi_tl(cpu_T1,0xffffffff);
-			tcg_gen_and_i64(cpu_T1,cpu_prt_reg,cpu_T1);
+			tcg_gen_and_i64(cpu_T1,cpu_T0,cpu_T1);
 			tcg_gen_movi_tl(cpu_T3,0x4000000000);
 			tcg_gen_or_i64(cpu_T3,cpu_T3,cpu_T1);
-			/* cpu_T3 = (Preg TCG_COND_EQ 0x1) ? 40..(7fff):00400890 */
+			/* cpu_T3 = (T0 TCG_COND_EQ 0x1) ? 40..(7fff):00400890 */
 			tcg_gen_movcond_i64(TCG_COND_EQ,cpu_T3,cpu_T2,cpu_T4,cpu_T3,cpu_T1);
 
 			//checkout
@@ -6785,8 +6790,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 			tcg_gen_movi_tl(cpu_T2,0xffffffff);
 			tcg_gen_movcond_i64(TCG_COND_EQ,cpu_T3,cpu_T1,cpu_prt_reg,cpu_T3,cpu_T2);
 
-			//cpu_prt_reg = cpu_T0
-			tcg_gen_mov_tl(cpu_prt_reg,cpu_T0);
+			//cpu_prt_reg = cpu_T0 & ~0x7fffffffff
+			tcg_gen_movi_tl(cpu_prt_reg,0x7fffffffff);
+			tcg_gen_andc_tl(cpu_prt_reg,cpu_T0,cpu_prt_reg);
 			gen_op_jmp_v(cpu_T3); //cpu_T0 to eip
         }
         else
@@ -6893,14 +6899,18 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             if(grin_prar){
 				/* Reserved cpu_prt_reg to cpu_T2
 				 * cpu_salt_reg xor cpu_prt_reg */
+				tcg_gen_or_tl(cpu_prt_reg,cpu_prt_reg,cpu_T0);
 				tcg_gen_mov_tl(cpu_T2,cpu_prt_reg);
 				tcg_gen_xor_tl(cpu_prt_reg,cpu_salt_reg,cpu_prt_reg);
 				/* Xor's result mul A assigned to cpu_prt_reg*/
 				tcg_gen_movi_tl(cpu_T3,0x9e3779b97f4a7c15);
 				tcg_gen_mulu2_i64(cpu_prt_reg,cpu_T3,cpu_prt_reg,cpu_T3);
-				/* cpu_prt_reg = cpu_T3 & (~0x7fffffffff(1ffffffff))|(cpu_T0 << 0)&0x7fffffffff(1ffffffff) */
-				tcg_gen_mov_tl(cpu_T3,cpu_prt_reg);
-				tcg_gen_deposit_i64(cpu_prt_reg,cpu_T3,cpu_T0,0,39);
+				///* cpu_prt_reg = cpu_T3 & (~0x7fffffffff(1ffffffff))|(cpu_T0 << 0)&0x7fffffffff(1ffffffff) */
+				//tcg_gen_mov_tl(cpu_T3,cpu_prt_reg);
+				//tcg_gen_deposit_i64(cpu_prt_reg,cpu_T3,cpu_T1,0,39);
+				/* cpu_prt_reg = cpu_prt_reg & (~0x7fffffffff(1ffffffff)) */
+				tcg_gen_movi_tl(cpu_T3,0x7fffffffff);
+				tcg_gen_andc_tl(cpu_prt_reg,cpu_prt_reg,cpu_T3);
 				//test next eip
 				tcg_gen_mov_tl(cpu_tpush_reg,cpu_T2);
 

@@ -706,6 +706,7 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     if(grin_prar){
     	if(pc == 0xffffffff){
     		fprintf(stderr,"The program is attacked!\n");
+    		exit(1);
     	}
     }
     /* GRIN -M command options, MONITOR JMP module */

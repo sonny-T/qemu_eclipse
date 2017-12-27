@@ -865,21 +865,27 @@ static inline bool cpu_handle_exception(CPUState *cpu, int *ret)
 #else
             if (replay_exception()) {
                 CPUClass *cc = CPU_GET_CLASS(cpu);
-
                 /* cr3tmp compared last cr[3] value,
                  * if changed,to execute the following code.*/
-                if((env->cr[3]>>12)^cr3tmp){
+//                if((env->cr[3]>>12)^cr3tmp){
                 	//printf("CR2 %lx\n",env->cr[2]);
                     //printf("eip %lx GS %lx\n",env->eip,env->segs[5].base);
                     //hva1 = get_hva(env, env->segs[5].base+0xb888+40-((1UL<<12)<<2));
                     //printf("threadinfo hva %lx\n",hva1);
                     //printf("Current process Directory ID %lx\n\n",env->cr[3]>>12);
-                    _testbool = 1;
-                	cr3tmp = env->cr[3]>>12;
-                }
+//                    _testbool = 1;
+//                	cr3tmp = env->cr[3]>>12;
+//                }
+
+                if(env->cr[3]>0){
+                printf("CR3 %lx\n",env->cr[3]);
+                printf("eip %lx \n",env->eip);
+                printf("ESP %lx GS selector %lx base %lx\n",
+                                			env->regs[4],env->segs[5].selector,env->segs[5].base);
+                printf("EBP %lx \n",env->regs[5]);}
 
                 cc->do_interrupt(cpu);
-                //printf("GS %lx\n\n",env->segs[5].base);
+                printf("after ESP %lx \n",env->regs[4]);
                 cpu->exception_index = -1;
             }
             else if (!replay_has_interrupt()) {
@@ -1129,11 +1135,13 @@ int cpu_exec(CPUState *cpu)
             	if(_testbool && (env->cr[2] > 0x7ff000000000))
             	{
             		printf(" %lx\n",env->cr[3]>>12);
-                	printf("EIP %lx GS selector %lx base %lx\n",
-                			env->eip,env->segs[5].selector,env->segs[5].base);
+                	printf("ESP %lx GS selector %lx base %lx\n",
+                			env->regs[4],env->segs[5].selector,env->segs[5].base);
+                	printf("EBP %lx \n",env->regs[5]);
                 	if(env->segs[5].base>0){
-                	thread_info = get_hva(env, env->segs[5].base+0xb888
-                			+40-((1UL<<12)<<2));
+                	//thread_info = get_hva(env, env->segs[5].base+0xb888
+                			//+40-((1UL<<12)<<2));
+                	thread_info = env->segs[5].base+0xb888+40-((1UL<<12)<<2);
                 	printf("@@@thread_info %lx\n\n",thread_info);
                 	}
                 	else

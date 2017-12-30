@@ -42,6 +42,31 @@ typedef struct SyncClocks {
     int64_t realtime_clock;
 } SyncClocks;
 
+/* test cr3 VMI */
+struct task_struct{
+	volatile long state;
+	void *stack;
+	unsigned long usage_tmp0;
+	unsigned int flags;
+	unsigned int ptrace;
+
+	struct llist_node{
+		struct llist_node *next;
+	}wake_entry;
+	int on_cpu;
+	struct task_struct *last_wakee;
+	unsigned long wakee_flips;
+	unsigned long wakee_flip_decay_ts;
+	int wake_cpu;
+
+	int on_rq;
+	int prio, static_prio, normal_prio;
+	unsigned int rt_priority;
+	const unsigned long sched_class_tmp1;
+	//struct sched_entity se;
+
+}task_struct;
+
 /*** GRIN -M command options, MONITOR SYSCALL module ***/
 //static int PCI = 0;
 //static target_ulong TRACEPC_Buf[TBN];
@@ -865,27 +890,20 @@ static inline bool cpu_handle_exception(CPUState *cpu, int *ret)
 #else
             if (replay_exception()) {
                 CPUClass *cc = CPU_GET_CLASS(cpu);
+                /* test cr3 VMI */
                 /* cr3tmp compared last cr[3] value,
                  * if changed,to execute the following code.*/
-//                if((env->cr[3]>>12)^cr3tmp){
+                if((env->cr[3]>>12)^cr3tmp){
                 	//printf("CR2 %lx\n",env->cr[2]);
                     //printf("eip %lx GS %lx\n",env->eip,env->segs[5].base);
                     //hva1 = get_hva(env, env->segs[5].base+0xb888+40-((1UL<<12)<<2));
                     //printf("threadinfo hva %lx\n",hva1);
                     //printf("Current process Directory ID %lx\n\n",env->cr[3]>>12);
-//                    _testbool = 1;
-//                	cr3tmp = env->cr[3]>>12;
-//                }
-
-                if(env->cr[3]>0){
-                printf("CR3 %lx\n",env->cr[3]);
-                printf("eip %lx \n",env->eip);
-                printf("ESP %lx GS selector %lx base %lx\n",
-                                			env->regs[4],env->segs[5].selector,env->segs[5].base);
-                printf("EBP %lx \n",env->regs[5]);}
+                    _testbool = 1;
+                	cr3tmp = env->cr[3]>>12;
+                }
 
                 cc->do_interrupt(cpu);
-                printf("after ESP %lx \n",env->regs[4]);
                 cpu->exception_index = -1;
             }
             else if (!replay_has_interrupt()) {
@@ -1081,7 +1099,7 @@ int cpu_exec(CPUState *cpu)
     SyncClocks sc;
 
     CPUArchState *env = cpu->env_ptr;
-    target_ulong *hva,*thread_info;
+    target_ulong *hva,*init_task;
     //tb_page_addr_t phys_pc;
 
 /***  GRIN -ss/-tss command option   ***/
@@ -1132,20 +1150,19 @@ int cpu_exec(CPUState *cpu)
             {
                 cpu_handle_interrupt(cpu, &last_tb);
                 tb = tb_find_fast(cpu, &last_tb, tb_exit);
-            	if(_testbool && (env->cr[2] > 0x7ff000000000))
+            	if(_testbool )
             	{
             		printf(" %lx\n",env->cr[3]>>12);
-                	printf("ESP %lx GS selector %lx base %lx\n",
-                			env->regs[4],env->segs[5].selector,env->segs[5].base);
+                	printf("ESP %lx EIP %lx CR2 %lx\n",
+                			env->regs[4],env->eip,env->cr[2]);
                 	printf("EBP %lx \n",env->regs[5]);
-                	if(env->segs[5].base>0){
-                	//thread_info = get_hva(env, env->segs[5].base+0xb888
-                			//+40-((1UL<<12)<<2));
-                	thread_info = env->segs[5].base+0xb888+40-((1UL<<12)<<2);
-                	printf("@@@thread_info %lx\n\n",thread_info);
+                	init_task = get_hva(env, 0xffffffff8181a460);
+                	if(init_task<0x7ffff0000000 && init_task>0x7f0000000000){
+                		printf("%lx\n",init_task);
+                		printf("hva_init_task %lx\n\n",*init_task);
                 	}
                 	else
-                		printf("\n");
+                		printf("@@@init_task %lx\n\n",init_task);
 
                 	_testbool = 0;
             	}

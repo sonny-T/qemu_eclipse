@@ -1156,7 +1156,7 @@ int cpu_exec(CPUState *cpu)
                 	printf("ESP %lx EIP %lx CR2 %lx\n",
                 			env->regs[4],env->eip,env->cr[2]);
                 	printf("EBP %lx \n",env->regs[5]);
-                	init_task = get_hva(env, 0xffffffff8181a460);
+                	init_task = get_hva(env, 0xffffffff8181a468);
                 	if(init_task<0x7ffff0000000 && init_task>0x7f0000000000){
                 		printf("%lx\n",init_task);
                 		printf("hva_init_task %lx\n\n",*init_task);

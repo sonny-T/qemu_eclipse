@@ -1150,7 +1150,7 @@ int cpu_exec(CPUState *cpu)
             {
                 cpu_handle_interrupt(cpu, &last_tb);
                 tb = tb_find_fast(cpu, &last_tb, tb_exit);
-            	if(_testbool )
+            	if(_testbool && (env->cr[2]>0x7fff00000000))
             	{
             		printf(" %lx\n",env->cr[3]>>12);
                 	printf("ESP %lx EIP %lx CR2 %lx\n",

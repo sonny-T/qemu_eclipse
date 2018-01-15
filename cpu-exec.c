@@ -43,29 +43,22 @@ typedef struct SyncClocks {
 } SyncClocks;
 
 /* test cr3 VMI */
+typedef struct{
+	unsigned long pgd;
+}pgd_t;
+struct list_head{
+	struct list_head *next,*prev;
+};
+struct mm_struct{
+	unsigned long mm_nop[8];
+	pgd_t * pgd;
+};
 struct task_struct{
-	volatile long state;
-	void *stack;
-	unsigned long usage_tmp0;
-	unsigned int flags;
-	unsigned int ptrace;
-
-	struct llist_node{
-		struct llist_node *next;
-	}wake_entry;
-	int on_cpu;
-	struct task_struct *last_wakee;
-	unsigned long wakee_flips;
-	unsigned long wakee_flip_decay_ts;
-	int wake_cpu;
-
-	int on_rq;
-	int prio, static_prio, normal_prio;
-	unsigned int rt_priority;
-	const unsigned long sched_class_tmp1;
-	//struct sched_entity se;
-
-}task_struct;
+	unsigned long task_nop[99];
+	struct list_head tasks;
+	unsigned long task_nop1[8];
+	struct mm_struct *mm;
+};
 
 /*** GRIN -M command options, MONITOR SYSCALL module ***/
 //static int PCI = 0;
@@ -1098,10 +1091,14 @@ int cpu_exec(CPUState *cpu)
     int ret;
     SyncClocks sc;
 
+    /* test cr3 VMI */
     CPUArchState *env = cpu->env_ptr;
-    target_ulong *hva,*init_task;
+    target_ulong *hva,*hva1;
     target_ulong tmp;
-    //tb_page_addr_t phys_pc;
+    target_ulong init_task = 0xffffffff8181a460;
+
+    struct task_struct *init_task1;
+    struct mm_struct *mm1;
 
 /***  GRIN -ss/-tss command option   ***/
 /*   TRA/SHADOW STACK module function  */
@@ -1156,14 +1153,16 @@ int cpu_exec(CPUState *cpu)
             		printf(" %lx\n",env->cr[3]>>12);
                 	printf("ESP %lx EIP %lx CR2 %lx\n",
                 			env->regs[4],env->eip,env->cr[2]);
-                	printf("EBP %lx \n",env->regs[5]);
-                	init_task = get_hva(env, 0xffffffff8181a460+0x368);
-                	if(init_task<0x7fffffffffff && init_task>0x7f0000000000){
-                		printf("%lx\n",init_task);
-                		printf("hva_init_task %lx\n\n",*init_task);
+                	/* test cr3 VMI */
+                	//init_task.mm -> 0xffffffff8181a460+0x368
+                	hva = get_hva(env, init_task+0x368);
+                	if(hva<0x7fffffffffff && hva>0x7f0000000000){
+                		mm1 = (struct mm_struct *)hva;
+                		printf("pgd addr %lx\n\n",mm1->pgd);
+
                 	}
                 	else
-                		printf("@@@init_task %lx\n\n",init_task);
+                		printf("@@@init_task %lx\n\n",hva);
 
                 	_testbool = 0;
             	}

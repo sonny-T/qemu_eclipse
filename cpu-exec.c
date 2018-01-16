@@ -1157,8 +1157,17 @@ int cpu_exec(CPUState *cpu)
                 	//init_task.mm -> 0xffffffff8181a460+0x368
                 	hva = get_hva(env, init_task+0x368);
                 	if(hva<0x7fffffffffff && hva>0x7f0000000000){
-                		mm1 = (struct mm_struct *)hva;
-                		printf("pgd addr %lx\n\n",mm1->pgd);
+                		tmp = (*hva);
+                		hva1 = get_hva(env, tmp);
+                		mm1 = (struct mm_struct *)(hva1);
+                		printf("pgd addr %lx\n\n",mm1->mm_nop[0]);
+                		printf("pgd addr %lx\n\n",mm1->mm_nop[1]);
+                		printf("pgd addr %lx\n\n",mm1->mm_nop[2]);
+                		printf("pgd addr %lx\n\n",mm1->mm_nop[3]);
+                		printf("pgd addr %lx\n\n",mm1->mm_nop[4]);
+                		printf("pgd addr %lx\n\n",mm1->mm_nop[5]);
+                		printf("pgd addr %lx\n\n",mm1->mm_nop[6]);
+                		printf("pgd addr %lx\n\n",mm1->mm_nop[7]);
 
                 	}
                 	else

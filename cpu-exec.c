@@ -855,8 +855,7 @@ static inline void cpu_handle_debug_exception(CPUState *cpu)
 static inline bool cpu_handle_exception(CPUState *cpu, int *ret)
 {
     CPUArchState *env = cpu->env_ptr;
-    target_ulong *hva,hva1;
-    //target_ulong addr;
+
 
     if (cpu->exception_index >= 0) {
         if (cpu->exception_index >= EXCP_INTERRUPT) {
@@ -887,11 +886,7 @@ static inline bool cpu_handle_exception(CPUState *cpu, int *ret)
                 /* cr3tmp compared last cr[3] value,
                  * if changed,to execute the following code.*/
                 if((env->cr[3]>>12)^cr3tmp){
-                	//printf("CR2 %lx\n",env->cr[2]);
-                    //printf("eip %lx GS %lx\n",env->eip,env->segs[5].base);
-                    //hva1 = get_hva(env, env->segs[5].base+0xb888+40-((1UL<<12)<<2));
-                    //printf("threadinfo hva %lx\n",hva1);
-                    //printf("Current process Directory ID %lx\n\n",env->cr[3]>>12);
+
                     _testbool = 1;
                 	cr3tmp = env->cr[3]>>12;
                 }
@@ -1093,12 +1088,14 @@ int cpu_exec(CPUState *cpu)
 
     /* test cr3 VMI */
     CPUArchState *env = cpu->env_ptr;
+
     target_ulong *hva,*hva1;
     target_ulong tmp;
     target_ulong init_task = 0xffffffff8181a460;
 
     struct task_struct *init_task1;
     struct mm_struct *mm1;
+    struct list_head *list_head1;
 
 /***  GRIN -ss/-tss command option   ***/
 /*   TRA/SHADOW STACK module function  */
@@ -1154,20 +1151,17 @@ int cpu_exec(CPUState *cpu)
                 	printf("ESP %lx EIP %lx CR2 %lx\n",
                 			env->regs[4],env->eip,env->cr[2]);
                 	/* test cr3 VMI */
-                	//init_task.mm -> 0xffffffff8181a460+0x368
-                	hva = get_hva(env, init_task+0x368);
+                	/* init_task.tasks -> hva(init_task)+0x318
+                	 * init_task.mm	   -> hva(init_task)+0x*/
+
+                	hva = get_hva(env, init_task);
                 	if(hva<0x7fffffffffff && hva>0x7f0000000000){
-                		tmp = (*hva);
-                		hva1 = get_hva(env, tmp);
-                		mm1 = (struct mm_struct *)(hva1);
-                		printf("pgd addr %lx\n\n",mm1->mm_nop[0]);
-                		printf("pgd addr %lx\n\n",mm1->mm_nop[1]);
-                		printf("pgd addr %lx\n\n",mm1->mm_nop[2]);
-                		printf("pgd addr %lx\n\n",mm1->mm_nop[3]);
-                		printf("pgd addr %lx\n\n",mm1->mm_nop[4]);
-                		printf("pgd addr %lx\n\n",mm1->mm_nop[5]);
-                		printf("pgd addr %lx\n\n",mm1->mm_nop[6]);
-                		printf("pgd addr %lx\n\n",mm1->mm_nop[7]);
+                		//init_task1 = (struct task_struct *)hva;
+                		hva1 = hva + 0x318;
+                		//hva1 = get_hva(env, tmp);
+                		//list_head1 = (struct list_head *)(tmp);
+                		printf("next addr %lx\n\n",
+                				*hva1);
 
                 	}
                 	else

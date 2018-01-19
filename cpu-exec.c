@@ -1091,11 +1091,12 @@ int cpu_exec(CPUState *cpu)
 
     target_ulong *hva,*hva1;
     target_ulong tmp;
-    target_ulong init_task = 0xffffffff8181a460;
+    target_ulong init_task = 0xffffffff81e17500;
 
     struct task_struct *init_task1;
     struct mm_struct *mm1;
     struct list_head *list_head1;
+    int i=0;
 
 /***  GRIN -ss/-tss command option   ***/
 /*   TRA/SHADOW STACK module function  */
@@ -1159,11 +1160,11 @@ int cpu_exec(CPUState *cpu)
                 	if(hva<0x7fffffffffff && hva>0x7f0000000000){
                 		init_task1 = (struct task_struct *)hva;
                 		//hva1 = get_hva(env, init_task+0x360);
-                		for(int i=0;i<284;i+=2){
-                		printf("next addr %016lx  %016lx\n",
-                				init_task1->task_nop[i],
-								init_task1->task_nop[i+1]);
-                		}
+                		//for(i=0;i<284;i+=2){
+                		printf("next addr %016lx  %016lx\n\n",
+                				init_task1->task_nop[99],
+								init_task1->task_nop[100]);
+                		//}
                 		//printf("%lx %lx\n\n",hva1,*hva1);
 
                 	}

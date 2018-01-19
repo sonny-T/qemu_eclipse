@@ -54,10 +54,10 @@ struct mm_struct{
 	pgd_t * pgd;
 };
 struct task_struct{
-	unsigned long task_nop[99];
-	struct list_head tasks;
-	unsigned long task_nop1[8];
-	struct mm_struct *mm;
+	volatile unsigned long task_nop[284];
+	//struct list_head tasks;
+	//volatile unsigned long task_nop1[8];
+	//struct mm_struct *mm;
 };
 
 /*** GRIN -M command options, MONITOR SYSCALL module ***/
@@ -1155,13 +1155,15 @@ int cpu_exec(CPUState *cpu)
                 	 * init_task.mm	   -> hva(init_task)+0x*/
 
                 	hva = get_hva(env, init_task);
+                	printf(" %lx\n",hva);
                 	if(hva<0x7fffffffffff && hva>0x7f0000000000){
-                		//init_task1 = (struct task_struct *)hva;
-                		hva1 = hva + 0x318;
-                		//hva1 = get_hva(env, tmp);
-                		//list_head1 = (struct list_head *)(tmp);
-                		printf("next addr %lx\n\n",
-                				*hva1);
+                		init_task1 = (struct task_struct *)hva;
+                		//hva1 = get_hva(env, init_task+0x360);
+                		for(int i=0;i<82;i+=2){
+                		printf("next addr %016lx  %016lx\n",
+                				init_task1->task_nop[i],
+								init_task1->task_nop[i+1]);}
+                		//printf("%lx %lx\n\n",hva1,*hva1);
 
                 	}
                 	else

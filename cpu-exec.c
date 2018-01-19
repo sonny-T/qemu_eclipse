@@ -1159,10 +1159,11 @@ int cpu_exec(CPUState *cpu)
                 	if(hva<0x7fffffffffff && hva>0x7f0000000000){
                 		init_task1 = (struct task_struct *)hva;
                 		//hva1 = get_hva(env, init_task+0x360);
-                		for(int i=0;i<82;i+=2){
+                		for(int i=0;i<284;i+=2){
                 		printf("next addr %016lx  %016lx\n",
                 				init_task1->task_nop[i],
-								init_task1->task_nop[i+1]);}
+								init_task1->task_nop[i+1]);
+                		}
                 		//printf("%lx %lx\n\n",hva1,*hva1);
 
                 	}

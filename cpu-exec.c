@@ -51,13 +51,13 @@ struct list_head{
 };
 struct mm_struct{
 	unsigned long mm_nop[8];
-	pgd_t * pgd;
+	unsigned long pgd;
 };
 struct task_struct{
 	unsigned long task_nop[99];
 	struct list_head tasks;
 	unsigned long task_nop1[8];
-	struct mm_struct *mm;
+	unsigned long mm;
 	unsigned long task_nop2[13];
 	int pid;
 };
@@ -1091,7 +1091,7 @@ int cpu_exec(CPUState *cpu)
     /* test cr3 VMI */
     CPUArchState *env = cpu->env_ptr;
 
-    target_ulong *hva,*hva1;
+    target_ulong *hva,*hva1,*hva2;
     target_ulong tmp;
     target_ulong tasks_prev = 0xffffffff81e17500+0x320;
     target_ulong init_task = 0xffffffff81e17500;
@@ -1148,7 +1148,7 @@ int cpu_exec(CPUState *cpu)
             {
                 cpu_handle_interrupt(cpu, &last_tb);
                 tb = tb_find_fast(cpu, &last_tb, tb_exit);
-            	if(_testbool && (env->cr[2]>0x7fff00000000))
+                if(_testbool && (env->cr[2]>0x7fff00000000))
             	{
             		printf(" %lx\n",env->cr[3]>>12);
                 	printf("ESP %lx EIP %lx CR2 %lx\n",
@@ -1172,28 +1172,22 @@ int cpu_exec(CPUState *cpu)
 						//		init_task1->task_nop[100]);
                 		if(hva1<0x7fffffffffff && hva1>0x7f0000000000){
                 			init_task1 = (struct task_struct *)hva1;
-							printf("%lx \n",hva1);
-							printf("%d \n\n",init_task1->pid);
-                		}
-
+							printf("mm %lx\n",init_task1->mm);
+							if(init_task1->mm >0xff00000000000000){
+							hva2 = get_hva(env, init_task1->mm);
+							if(hva2<0x7fffffffffff && hva2>0x7f0000000000){
+							mm1 = (struct mm_struct *)hva2;
+							printf("pgd %lx\n",hva2);
+							printf("pgd %lx\n\n",mm1->pgd);
+							}
+							}
+							}
                 	}
                 	else
                 		printf("@@@init_task %lx\n\n",hva);
 
                 	_testbool = 0;
             	}
-
-//            	if(_testbool&&(env->eip==0x400990))
-//            	{
-//            		printf(" %lx\n",env->cr[3]>>12);
-//                	printf("EIP %lx CS selector %lx base %lx\n",
-//                			env->eip,env->segs[1].selector,env->segs[1].base);
-//                	hva = get_hva(env, env->eip);
-//                	printf("@@@hva %lx\n",hva);
-//                	printf("entry byte: %x\n\n",*hva);
-//
-//                	_testbool = 0;
-//            	}
 
                 /*temp test ltr*/
                 if(tb->TestFlag)

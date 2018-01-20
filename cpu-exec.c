@@ -54,10 +54,12 @@ struct mm_struct{
 	pgd_t * pgd;
 };
 struct task_struct{
-	volatile unsigned long task_nop[284];
-	//struct list_head tasks;
-	//volatile unsigned long task_nop1[8];
-	//struct mm_struct *mm;
+	unsigned long task_nop[99];
+	struct list_head tasks;
+	unsigned long task_nop1[8];
+	struct mm_struct *mm;
+	unsigned long task_nop2[13];
+	int pid;
 };
 
 /*** GRIN -M command options, MONITOR SYSCALL module ***/
@@ -882,15 +884,15 @@ static inline bool cpu_handle_exception(CPUState *cpu, int *ret)
 #else
             if (replay_exception()) {
                 CPUClass *cc = CPU_GET_CLASS(cpu);
+                rcu_read_lock();
                 /* test cr3 VMI */
                 /* cr3tmp compared last cr[3] value,
                  * if changed,to execute the following code.*/
                 if((env->cr[3]>>12)^cr3tmp){
-
                     _testbool = 1;
                 	cr3tmp = env->cr[3]>>12;
                 }
-
+                rcu_read_unlock();
                 cc->do_interrupt(cpu);
                 cpu->exception_index = -1;
             }
@@ -1091,12 +1093,12 @@ int cpu_exec(CPUState *cpu)
 
     target_ulong *hva,*hva1;
     target_ulong tmp;
+    target_ulong tasks_prev = 0xffffffff81e17500+0x320;
     target_ulong init_task = 0xffffffff81e17500;
 
     struct task_struct *init_task1;
     struct mm_struct *mm1;
     struct list_head *list_head1;
-    int i=0;
 
 /***  GRIN -ss/-tss command option   ***/
 /*   TRA/SHADOW STACK module function  */
@@ -1153,19 +1155,26 @@ int cpu_exec(CPUState *cpu)
                 			env->regs[4],env->eip,env->cr[2]);
                 	/* test cr3 VMI */
                 	/* init_task.tasks -> hva(init_task)+0x318
-                	 * init_task.mm	   -> hva(init_task)+0x*/
+                	 * init_task.mm	   -> hva(init_task)+0x
+                	 * next 0x318 prev 0x320*/
 
-                	hva = get_hva(env, init_task);
+                	hva = get_hva(env, tasks_prev);
                 	printf(" %lx\n",hva);
                 	if(hva<0x7fffffffffff && hva>0x7f0000000000){
-                		init_task1 = (struct task_struct *)hva;
-                		//hva1 = get_hva(env, init_task+0x360);
-                		//for(i=0;i<284;i+=2){
-                		printf("next addr %016lx  %016lx\n\n",
-                				init_task1->task_nop[99],
-								init_task1->task_nop[100]);
-                		//}
-                		//printf("%lx %lx\n\n",hva1,*hva1);
+                		/* next */
+                		tmp = *hva;
+                		tmp = tmp - 0x318;
+                		/* task_struct */
+                		hva1 = get_hva(env, tmp);
+
+                		//printf("next addr %016lx  %016lx\n\n",
+                		//		init_task1->task_nop[99],
+						//		init_task1->task_nop[100]);
+                		if(hva1<0x7fffffffffff && hva1>0x7f0000000000){
+                			init_task1 = (struct task_struct *)hva1;
+							printf("%lx \n",hva1);
+							printf("%d \n\n",init_task1->pid);
+                		}
 
                 	}
                 	else

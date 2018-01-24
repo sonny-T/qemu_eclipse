@@ -8756,7 +8756,7 @@ void tcg_x86_init(void)
     }
 
     /*** GRIN -encrypt command options, PRAR module ***/
- //   if(grin_prar){
+    if(grin_prar){
     /* allocate prt_reg and salt_reg*/
     cpu_prt_reg = tcg_global_mem_new(cpu_env,
     									offsetof(CPUX86State,prt_reg),"prt_reg");
@@ -8764,7 +8764,7 @@ void tcg_x86_init(void)
     									offsetof(CPUX86State,salt_reg),"salt_reg");
     cpu_tpush_reg = tcg_global_mem_new(cpu_env,
     									offsetof(CPUX86State,tpush_reg),"tpush_reg");
-//	}
+	}
 
     for (i = 0; i < 6; ++i) {
         cpu_seg_base[i]

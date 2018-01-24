@@ -721,14 +721,6 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
        always be the same before a given translated block
        is executed. */
     cpu_get_tb_cpu_state(env, &pc, &cs_base, &flags);
-
-    /*** GRIN -encrypt command options, PRAR module ***/
-    if(grin_prar){
-    	if(pc == 0xffffffff){
-    		fprintf(stderr,"The program is attacked!\n");
-    		exit(1);
-    	}
-    }
     /* GRIN -M command options, MONITOR JMP module */
     if (grin_jmp && jmpto_flag){
     	grin_handle_jmp(pc);
@@ -741,6 +733,13 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     /* GRIN -M command options, MONITOR RET module */
     if (grin_ret && retto_flag){
     	grin_handle_ret(pc);
+    }
+    /*** GRIN -encrypt command options, PRAR module ***/
+    if(grin_prar){
+    	if(pc == 0xffffffff){
+    		fprintf(stderr,"The program is attacked!\n");
+    		exit(1);
+    	}
     }
 
     /***  GRIN -tss command options  ***/

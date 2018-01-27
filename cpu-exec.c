@@ -87,6 +87,7 @@ static int GadgetLink = 0;
 
 /* GRIN -M command options */
 long dcount = 0;
+long itotal = 0;
 
 #if GADGET
 long RealGadgetLen = 0;
@@ -1194,6 +1195,7 @@ int cpu_exec(CPUState *cpu)
                 	printf("new task %d\n",tb->TestFlag);
                 }
                 dcount += tb->icount;
+                itotal += tb->icount;
             /* GRIN -M command options, MONITOR SYSCALL module */
                 if(grin_syscall){
                 	if(tb->SyscallFlag){

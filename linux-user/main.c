@@ -463,6 +463,7 @@ void cpu_loop(CPUX86State *env)
         }
         process_pending_signals(env);
     }
+
 }
 #endif
 
@@ -4922,7 +4923,8 @@ int main(int argc, char **argv, char **envp)
     }
     trace_init_vcpu_events();
     cpu_loop(env);
-
+    printf("The total number of instructions executed:\n"
+    		"total: %ld\n",itotal);
     /* never exits */
     return 0;
 }

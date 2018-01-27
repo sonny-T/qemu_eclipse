@@ -485,11 +485,14 @@ extern int grin_prar;  /* Protected return address register mechanism*/
 extern int grin_call;//GRIN -M command options, MONITOR CALL module
 extern int grin_ret;//GRIN -M command options, MONITOR RET module
 
+extern int coarsecfi_enabled;
+extern int finecfi_enabled;
 extern char jpath_buff[100];
 extern char cpath_buff[100];
 extern char rpath_buff[100];
-extern int coarsecfi_enabled;
-extern int finecfi_enabled;
+
+extern long itotal;//GRAIN calculate all number of instruction
+
 
 /* cpu-exec.c, accessed with atomic_mb_read/atomic_mb_set */
 extern CPUState *tcg_current_cpu;

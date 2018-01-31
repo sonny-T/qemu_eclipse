@@ -226,6 +226,16 @@ static inline void cpu_exec_end(CPUState *cpu)
     }
     exclusive_idle();
     pthread_mutex_unlock(&exclusive_lock);
+    if(grin_jmp||grin_call||grin_ret){
+		if(itotal>0x7fffffffffffffff){
+			printf("Clean number of instructions:"
+							"total: %ld\n",itotal);
+			itotal = 0;
+		}
+		else
+			printf("The total number of instructions executed:"
+					"total: %ld\n",itotal);
+    }
 }
 
 void cpu_list_lock(void)
@@ -4923,8 +4933,6 @@ int main(int argc, char **argv, char **envp)
     }
     trace_init_vcpu_events();
     cpu_loop(env);
-    printf("The total number of instructions executed:\n"
-    		"total: %ld\n",itotal);
     /* never exits */
     return 0;
 }

@@ -87,7 +87,7 @@ static int GadgetLink = 0;
 
 /* GRIN -M command options */
 long dcount = 0;
-long itotal = 0;
+unsigned long itotal = 0;
 
 #if GADGET
 long RealGadgetLen = 0;
@@ -1246,7 +1246,6 @@ int cpu_exec(CPUState *cpu)
                 }
 #endif
                 cpu_loop_exec_tb(cpu, tb, &last_tb, &tb_exit, &sc);
-
                 /* Try to align the host and virtual clocks
                    if the guest is in advance */
                 align_clocks(&sc, cpu);

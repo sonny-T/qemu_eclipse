@@ -4623,7 +4623,6 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     case 0x9d6:
     	/*temp test ltr*/
     	s->have_test = 1;
-    	printf("it is testing \n");
 //    	//testing data
 //    	tcg_gen_movi_tl(cpu_prt_reg,0xfffffffff400890);
 //    	tcg_gen_movi_tl(cpu_T0,0xfffffffff400890);

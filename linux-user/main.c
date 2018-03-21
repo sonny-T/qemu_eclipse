@@ -227,8 +227,8 @@ static inline void cpu_exec_end(CPUState *cpu)
     exclusive_idle();
     pthread_mutex_unlock(&exclusive_lock);
     if(grin_jmp||grin_call||grin_ret){
-		if(itotal>0x7fffffffffffffff){
-			printf("Clean number of instructions:"
+		if(itotal>0x7effffffffffffff){
+			printf("The total number of instructions before clean:"
 							"total: %ld\n",itotal);
 			itotal = 0;
 		}

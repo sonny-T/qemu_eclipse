@@ -808,7 +808,8 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     if(grin_shadowstack || grin_tra_shadowstack){
 		if(tb->CALLFlag == 1){
 			ShadowStackPush(tb->next_insn);
-			//printf("Push stack****************************** %lx  next pc %lx\n",tb->next_insn,env->tpush_reg);
+			//printf("Push stack****************************** %lx  next pc %lx\n"
+			//		,tb->next_insn,env->tpush_reg);
 		}
 	  	if(tb->RETFlag == 1){
 	  		RetNextFlag = 1;

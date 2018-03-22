@@ -226,15 +226,22 @@ static inline void cpu_exec_end(CPUState *cpu)
     }
     exclusive_idle();
     pthread_mutex_unlock(&exclusive_lock);
-    if(grin_jmp||grin_call||grin_ret){
-		if(itotal>0x7effffffffffffff){
-			printf("The total number of instructions before clean:"
-							"total: %ld\n",itotal);
-			itotal = 0;
-		}
-		else
-			printf("The total number of instructions executed:"
-					"total: %ld\n",itotal);
+//    if(grin_jmp){
+//    	printf("The total number of instructions executed:"
+//					"total: %ld\n",itotal);
+//    	itotal = 0;
+//    }
+    if(grin_jmp){
+		printf("The total number of jmp: %ld\n",jmp_total);
+    	jmp_total = 0;
+    }
+    if(grin_call){
+		printf("The total number of call: %ld\n",call_total);
+    	call_total = 0;
+    }
+    if(grin_ret){
+		printf("The total number of ret: %ld\n",ret_total);
+    	ret_total = 0;
     }
 }
 

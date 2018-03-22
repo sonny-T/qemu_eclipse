@@ -88,6 +88,9 @@ static int GadgetLink = 0;
 /* GRIN -M command options */
 long dcount = 0;
 unsigned long itotal = 0;
+unsigned long jmp_total = 0;
+unsigned long call_total = 0;
+unsigned long ret_total = 0;
 
 #if GADGET
 long RealGadgetLen = 0;
@@ -1197,6 +1200,11 @@ int cpu_exec(CPUState *cpu)
                 }
                 dcount += tb->icount;
                 itotal += tb->icount;
+        		if(grin_jmp&&(itotal>0x7fffffffffffffff)){
+        			printf("The total number of instructions before clean:"
+        							"total: %ld\n",itotal);
+        			itotal = 0;
+        		}
             /* GRIN -M command options, MONITOR SYSCALL module */
                 if(grin_syscall){
                 	if(tb->SyscallFlag){
@@ -1213,6 +1221,11 @@ int cpu_exec(CPUState *cpu)
 					if(tb->JmpFlagM == 1){
 						jmpto_flag = 1;
 						jmpaddr_of = tb->jmp_addr;
+						jmp_total += 1;
+		        		if(jmp_total>0x7fffffffffffffff){
+		        			printf("jmp overflow: %ld\n",jmp_total);
+		        			jmp_total = 0;
+		        		}
 					}
                 }
 
@@ -1223,6 +1236,11 @@ int cpu_exec(CPUState *cpu)
                 		callto_flag = 1;
                 		calladdr_of = tb->call_addr;
                 		calladdr_next = tb->callnext_addr;
+                		call_total += 1;
+		        		if(call_total>0x7fffffffffffffff){
+		        			printf("call overflow: %ld\n",call_total);
+		        			call_total = 0;
+		        		}
                 	}
                 }
                 /* GRIN -M command options, MONITOR RET module */
@@ -1231,6 +1249,11 @@ int cpu_exec(CPUState *cpu)
                 	if(tb->RetFlagM == 1){
                 		retto_flag = 1;
                     	retaddr_of = tb->ret_addr;
+                    	ret_total += 1;
+		        		if(ret_total>0x7fffffffffffffff){
+		        			printf("ret overflow: %ld\n",ret_total);
+		        			ret_total = 0;
+		        		}
                     }
                 }
                 if(!(tb->RetFlagM||tb->CallFlagM||tb->JmpFlagM)){

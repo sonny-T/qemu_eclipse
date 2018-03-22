@@ -492,6 +492,9 @@ extern char cpath_buff[100];
 extern char rpath_buff[100];
 
 extern unsigned long itotal;//GRAIN calculate all number of instruction
+extern unsigned long jmp_total;//GRAIN calculate all number of jmp
+extern unsigned long call_total;//GRAIN calculate all number of call
+extern unsigned long ret_total;//GRAIN calculate all number of ret
 
 
 /* cpu-exec.c, accessed with atomic_mb_read/atomic_mb_set */

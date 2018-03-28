@@ -6870,6 +6870,10 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 #if PREVENT_UNINTEND
         	PREVENTFlag = 1;
 #endif
+        	/*** GRIN -M command options, MONITOR direct CALL module ***/
+        	if(grin_call){
+				s->have_call = 1;
+        	}
             if (dflag != MO_16) {
                 tval = (int32_t)insn_get(env, s, MO_32);
             } else {

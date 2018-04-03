@@ -313,6 +313,11 @@ struct TranslationBlock {
     int CALLFlag;
     target_ulong next_insn;
     int RETFlag;
+
+    /* GRIN -M command options,MONITOR BRANCH JCC module */
+    int SetccFlag;
+    int ccFlag;
+
     /*temp test ltr*/
     int TestFlag;
 };
@@ -484,6 +489,7 @@ extern int grin_jmp;//GRIN -M command options, MONITOR JMP module
 extern int grin_prar;  /* Protected return address register mechanism*/
 extern int grin_call;//GRIN -M command options, MONITOR CALL module
 extern int grin_ret;//GRIN -M command options, MONITOR RET module
+extern int grin_cc; // GRIN -M command options,MONITOR BRANCH JCC module
 
 extern int coarsecfi_enabled;
 extern int finecfi_enabled;

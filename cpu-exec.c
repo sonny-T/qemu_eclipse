@@ -1270,6 +1270,14 @@ int cpu_exec(CPUState *cpu)
                 }
 #endif
                 cpu_loop_exec_tb(cpu, tb, &last_tb, &tb_exit, &sc);
+
+                if(grin_cc)
+                {
+                	if(tb->ccFlag){
+                		printf("operation number %d\n",tb->SetccFlag);
+                		printf("t0 %lx  t1 %lx\n",env->cc_t0,env->cc_t1);
+                	}
+                }
                 /* Try to align the host and virtual clocks
                    if the guest is in advance */
                 align_clocks(&sc, cpu);

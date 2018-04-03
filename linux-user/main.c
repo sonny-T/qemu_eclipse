@@ -59,6 +59,7 @@ int grin_tra_shadowstack; /*** GRIN -tss command options, TRASHADOW_STACK module
 int grin_prar;  /* Protected return address register mechanism*/
 int coarsecfi_enabled;
 int finecfi_enabled;
+int grin_cc; /* GRIN -M command options,MONITOR BRANCH JCC module */
 
 char jpath_buff[100];/* GRIN -M jmp command options,exist overflow risk*/
 char cpath_buff[100];/* GRIN -M call command options,exist overflow risk*/
@@ -4059,6 +4060,9 @@ static void handle_arg_monitor(const char *arg)
 	}
 	else if(!strcmp(arg,"ret")){
 		grin_ret = 1;
+	}
+	else if(!strcmp(arg,"cc")){
+		grin_cc = 1;
 	}
 	else
 	{

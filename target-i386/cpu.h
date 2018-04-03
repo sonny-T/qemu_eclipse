@@ -964,6 +964,10 @@ typedef struct CPUX86State {
     target_ulong prt_reg;
     target_ulong salt_reg; /* as salt hash. To store a random, each process
     						is called that random will be change */
+    //Record argument condition of branch jump
+    target_ulong cc_t0;
+    target_ulong cc_t1;
+
     //PRAR test register
     target_ulong tpush_reg;
 

@@ -88,6 +88,10 @@ static TCGv cpu_prt_reg;
 static TCGv cpu_salt_reg;
 static TCGv cpu_tpush_reg;
 
+/* Record branch condition reg*/
+static TCGv cpu_cc_t0;
+static TCGv cpu_cc_t1;
+
 /* local temps */
 static TCGv cpu_T0, cpu_T1;
 /* PRAR */
@@ -127,6 +131,10 @@ typedef struct DisasContext {
     int have_syscall;/* GRIN -M command options, MONITOR SYSCALL module
          	 	 	   1 = means have syscall instruction,vice versa */
 
+    int have_cc;/* GRIN -M command options, MONITOR JCC module
+         	 	 	   1 = means have jcc instruction,vice versa */
+    int have_setcc;/* GRIN -M command options, MONITOR set cc operation module
+         	 	 	   1 = means have this action,vice versa */
     /*temp test ltr*/
     int have_test;
 
@@ -1291,6 +1299,12 @@ static void gen_op(DisasContext *s1, int op, TCGMemOp ot, int d)
         gen_op_mov_v_reg(ot, cpu_T0, d);
     } else {
         gen_op_ld_v(s1, ot, cpu_T0, cpu_A0);
+    }
+    /* GRIN -M command options,MONITOR BRANCH JCC module */
+    if(grin_cc){
+    	s1->have_setcc += 1;
+    	tcg_gen_mov_tl(cpu_cc_t0,cpu_T0);
+    	tcg_gen_mov_tl(cpu_cc_t1,cpu_T1);
     }
     switch(op) {
     case OP_ADCL:
@@ -6994,6 +7008,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         }
         gen_bnd_jmp(s);
         gen_jcc(s, b, tval, next_eip);
+        if(grin_cc){
+        	s->have_cc = 1;
+        }
         break;
 
     case 0x190 ... 0x19f: /* setcc Gv */
@@ -8752,6 +8769,13 @@ void tcg_x86_init(void)
     cpu_cc_src2 = tcg_global_mem_new(cpu_env, offsetof(CPUX86State, cc_src2),
                                      "cc_src2");
 
+    if(grin_cc){
+    	cpu_cc_t0 = tcg_global_mem_new(cpu_env, offsetof(CPUX86State, cc_t0),
+                "cc_t0");
+    	cpu_cc_t1 = tcg_global_mem_new(cpu_env, offsetof(CPUX86State, cc_t1),
+                "cc_t1");
+    }
+
     for (i = 0; i < CPU_NB_REGS; ++i) {
         cpu_regs[i] = tcg_global_mem_new(cpu_env,
                                          offsetof(CPUX86State, regs[i]),
@@ -8881,6 +8905,10 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
     tb->next_insn = 0;
     tb->RETFlag = 0;
 
+    /* GRIN -M command options,MONITOR BRANCH JCC module */
+    tb->SetccFlag = 0;
+    tb->ccFlag = 0;
+
     /*temp test ltr*/
     tb->TestFlag = 0;
 
@@ -8892,6 +8920,8 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
     /*temp test ltr*/
     dc->have_test = 0;
 
+    dc->have_cc = 0; /* GRIN -M command options, MONITOR JCC module */
+    dc->have_setcc = 0; /* GRIN -M command options, MONITOR set cc operation module */
     dc->have_jmp = 0; /* GRIN -M command options, MONITOR JMP module */
     dc->have_call = 0; /* GRIN -M command options, MONITOR CALL module */
     dc->have_ret = 0; /* GRIN -M command options, MONITOR RET module */
@@ -9052,6 +9082,15 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         if(grin_jmp && dc->have_jmp){
         	tb->JmpFlagM = dc->have_jmp;
         	tb->jmp_addr = dc->pc_start;
+    	}
+        /* GRIN -M command options,MONITOR BRANCH JCC module */
+        if(grin_cc){
+        	if(dc->have_setcc){
+        		tb->SetccFlag = dc->have_setcc;
+        	}
+        	if(dc->have_cc){
+        		tb->ccFlag = dc->have_cc;
+        	}
     	}
         /* stop translation if indicated */
         if (dc->is_jmp)

@@ -1273,8 +1273,11 @@ int cpu_exec(CPUState *cpu)
 
                 if(grin_cc)
                 {
-                	if(tb->ccFlag){
-                		printf("operation number %d\n",tb->SetccFlag);
+//                	if(tb->pc == 0x400644){
+//                		printf("t%d\n",tb->ccFlag);
+//                	}
+                	if(tb->ccFlag&&(tb->pc<0x4000000000)){
+                		printf("operation number %d %lx\n",tb->SetccFlag,tb->pc);
                 		printf("t0 %lx  t1 %lx\n",env->cc_t0,env->cc_t1);
                 	}
                 }

@@ -1372,6 +1372,12 @@ static void gen_inc(DisasContext *s1, TCGMemOp ot, int d, int c)
     } else {
         gen_op_ld_v(s1, ot, cpu_T0, cpu_A0);
     }
+    /* GRIN -M command options,MONITOR BRANCH JCC module */
+    if(grin_cc){
+    	s1->have_setcc += 1;
+    	tcg_gen_mov_tl(cpu_cc_t0,cpu_T0);
+    	tcg_gen_movi_tl(cpu_cc_t1,0xffff);
+    }
     gen_compute_eflags_c(s1, cpu_cc_src);
     if (c > 0) {
         tcg_gen_addi_tl(cpu_T0, cpu_T0, 1);
@@ -4887,6 +4893,12 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         case 0: /* test */
             val = insn_get(env, s, ot);
             tcg_gen_movi_tl(cpu_T1, val);
+            /* GRIN -M command options,MONITOR BRANCH JCC module */
+            if(grin_cc){
+            	s->have_setcc += 1;
+            	tcg_gen_mov_tl(cpu_cc_t0,cpu_T0);
+            	tcg_gen_mov_tl(cpu_cc_t1,cpu_T1);
+            }
             gen_op_testl_T0_T1_cc();
             set_cc_op(s, CC_OP_LOGICB + ot);
             break;
@@ -4899,6 +4911,12 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             }
             break;
         case 3: /* neg */
+            /* GRIN -M command options,MONITOR BRANCH JCC module */
+            if(grin_cc){
+            	s->have_setcc += 1;
+            	tcg_gen_mov_tl(cpu_cc_t0,cpu_T0);
+            	tcg_gen_movi_tl(cpu_cc_t1,0xffff);
+            }
             tcg_gen_neg_tl(cpu_T0, cpu_T0);
             if (mod != 3) {
                 gen_op_st_v(s, ot, cpu_T0, cpu_A0);
@@ -4948,6 +4966,12 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
                 break;
 #ifdef TARGET_X86_64
             case MO_64:
+                /* GRIN -M command options,MONITOR BRANCH JCC module */
+                if(grin_cc){
+                	s->have_setcc += 1;
+                	tcg_gen_mov_tl(cpu_cc_t0,cpu_T0);
+                	tcg_gen_mov_tl(cpu_cc_t1,cpu_regs[R_EAX]);
+                }
                 tcg_gen_mulu2_i64(cpu_regs[R_EAX], cpu_regs[R_EDX],
                                   cpu_T0, cpu_regs[R_EAX]);
                 tcg_gen_mov_tl(cpu_cc_dst, cpu_regs[R_EAX]);
@@ -5001,6 +5025,12 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
                 break;
 #ifdef TARGET_X86_64
             case MO_64:
+                /* GRIN -M command options,MONITOR BRANCH JCC module */
+                if(grin_cc){
+                	s->have_setcc += 1;
+                	tcg_gen_mov_tl(cpu_cc_t0,cpu_T0);
+                	tcg_gen_mov_tl(cpu_cc_t1,cpu_regs[R_EAX]);
+                }
                 tcg_gen_muls2_i64(cpu_regs[R_EAX], cpu_regs[R_EDX],
                                   cpu_T0, cpu_regs[R_EAX]);
                 tcg_gen_mov_tl(cpu_cc_dst, cpu_regs[R_EAX]);
@@ -5285,6 +5315,12 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 
         gen_ldst_modrm(env, s, modrm, ot, OR_TMP0, 0);
         gen_op_mov_v_reg(ot, cpu_T1, reg);
+        /* GRIN -M command options,MONITOR BRANCH JCC module */
+        if(grin_cc){
+        	s->have_setcc += 1;
+        	tcg_gen_mov_tl(cpu_cc_t0,cpu_T0);
+        	tcg_gen_mov_tl(cpu_cc_t1,cpu_T1);
+        }
         gen_op_testl_T0_T1_cc();
         set_cc_op(s, CC_OP_LOGICB + ot);
         break;
@@ -5296,6 +5332,13 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 
         gen_op_mov_v_reg(ot, cpu_T0, OR_EAX);
         tcg_gen_movi_tl(cpu_T1, val);
+        /* GRIN -M command options,MONITOR BRANCH JCC module */
+        if(grin_cc){
+        	s->have_setcc += 1;
+        	tcg_gen_mov_tl(cpu_cc_t0,cpu_T0);
+        	tcg_gen_mov_tl(cpu_cc_t1,cpu_T1);
+        }
+
         gen_op_testl_T0_T1_cc();
         set_cc_op(s, CC_OP_LOGICB + ot);
         break;
@@ -5368,6 +5411,12 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         } else {
             gen_op_mov_v_reg(ot, cpu_T1, reg);
         }
+        /* GRIN -M command options,MONITOR BRANCH JCC module */
+        if(grin_cc){
+        	s->have_setcc += 1;
+        	tcg_gen_mov_tl(cpu_cc_t0,cpu_T0);
+        	tcg_gen_mov_tl(cpu_cc_t1,cpu_T1);
+        }
         switch (ot) {
 #ifdef TARGET_X86_64
         case MO_64:
@@ -5411,6 +5460,12 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             rm = (modrm & 7) | REX_B(s);
             gen_op_mov_v_reg(ot, cpu_T0, reg);
             gen_op_mov_v_reg(ot, cpu_T1, rm);
+            /* GRIN -M command options,MONITOR BRANCH JCC module */
+            if(grin_cc){
+            	s->have_setcc += 1;
+            	tcg_gen_mov_tl(cpu_cc_t0,cpu_T0);
+            	tcg_gen_mov_tl(cpu_cc_t1,cpu_T1);
+            }
             tcg_gen_add_tl(cpu_T0, cpu_T0, cpu_T1);
             gen_op_mov_reg_v(ot, reg, cpu_T1);
             gen_op_mov_reg_v(ot, rm, cpu_T0);
@@ -5418,6 +5473,12 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             gen_lea_modrm(env, s, modrm);
             gen_op_mov_v_reg(ot, cpu_T0, reg);
             gen_op_ld_v(s, ot, cpu_T1, cpu_A0);
+            /* GRIN -M command options,MONITOR BRANCH JCC module */
+            if(grin_cc){
+            	s->have_setcc += 1;
+            	tcg_gen_mov_tl(cpu_cc_t0,cpu_T0);
+            	tcg_gen_mov_tl(cpu_cc_t1,cpu_T1);
+            }
             tcg_gen_add_tl(cpu_T0, cpu_T0, cpu_T1);
             gen_op_st_v(s, ot, cpu_T0, cpu_A0);
             gen_op_mov_reg_v(ot, reg, cpu_T1);
@@ -5430,6 +5491,13 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         {
             TCGLabel *label1, *label2;
             TCGv t0, t1, t2, a0;
+
+            /* GRIN -M command options,MONITOR BRANCH JCC module */
+            if(grin_cc){
+            	s->have_setcc += 1;
+            	tcg_gen_movi_tl(cpu_cc_t0,0xffff);
+            	tcg_gen_movi_tl(cpu_cc_t1,0xffff);
+            }
 
             ot = mo_b_d(b, dflag);
             modrm = cpu_ldub_code(env, s->pc++);
@@ -5448,6 +5516,12 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
                 tcg_gen_mov_tl(a0, cpu_A0);
                 gen_op_ld_v(s, ot, t0, a0);
                 rm = 0; /* avoid warning */
+            }
+            /* GRIN -M command options,MONITOR BRANCH JCC module */
+            if(grin_cc){
+            	s->have_setcc += 1;
+            	tcg_gen_mov_tl(cpu_cc_t0,t0);
+            	tcg_gen_mov_tl(cpu_cc_t1,t1);
             }
             label1 = gen_new_label();
             tcg_gen_mov_tl(t2, cpu_regs[R_EAX]);

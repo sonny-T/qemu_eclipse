@@ -7,10 +7,6 @@ bool syscall_insn = 0;
 bool indirect_insn = 0;
 
 
-bool call_insn = 0;
-bool ret_insn = 0;
-
-
 int PREVENTFlag = 0;
 int ENTERFlag = 0;
 

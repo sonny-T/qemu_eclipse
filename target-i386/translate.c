@@ -131,6 +131,11 @@ typedef struct DisasContext {
     int have_syscall;/* GRIN -M command options, MONITOR SYSCALL module
          	 	 	   1 = means have syscall instruction,vice versa */
 
+    int have_stackcall;/* GRIN -ss/-tss command options, TRA/SHADOW STACK module
+     	 	 	   1 = means have call instruction,vice versa */
+    int have_stackret;/* GRIN -ss/-tss command options, TRA/SHADOW STACK module
+         	 	 	   1 = means have ret instruction,vice versa */
+
     int have_cc;/* GRIN -M command options, MONITOR JCC module
          	 	 	   1 = means have jcc instruction,vice versa */
     int have_setcc;/* GRIN -M command options, MONITOR set cc operation module
@@ -5159,12 +5164,13 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 
             next_eip = s->pc - s->cs_base;
 
-      //*** GRIN -ss/-tss command options, TRA/SHADOW STACK module ***//
-            call_insn = 1;
+           /* GRIN -ss/-tss command options, TRA/SHADOW STACK module */
             if(grin_shadowstack){
+            	s->have_stackcall = 1;
             	tcg_gen_movi_tl(cpu_T1, 0);
             }
             else if(grin_tra_shadowstack){
+            	s->have_stackcall = 1;
             	tcg_gen_movi_tl(cpu_T1, next_eip);
             }
             else
@@ -6765,8 +6771,10 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     	if(grin_ret){
     		s->have_ret = 1;
     	}
-//*** GRIN -ss/-tss command options, TRA/SHADOW STACK ***//
-    	ret_insn = 1;
+    	/* GRIN -ss/-tss command options, TRA/SHADOW STACK */
+    	if(grin_shadowstack||grin_tra_shadowstack){
+    		s->have_stackret = 1;
+    	}
 
         val = cpu_ldsw_code(env, s->pc);
         s->pc += 2;
@@ -6834,8 +6842,10 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     	if(grin_ret){
     		s->have_ret = 1;
     	}
-//*** GRIN -ss/-tss command options, TRA/SHADOW STACK ***//
-    	ret_insn = 1;
+    	/* GRIN -ss/-tss command options, TRA/SHADOW STACK */
+    	if(grin_shadowstack||grin_tra_shadowstack){
+    		s->have_stackret = 1;
+    	}
 
         ot = gen_pop_T0(s);
         gen_pop_update(s, ot);
@@ -6976,11 +6986,12 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
                 tval &= 0xffffffff;
             }
       //*** GRIN -ss/-tss command options, TRA/SHADOW STACK module ***//
-            call_insn = 1;
             if(grin_shadowstack){
+            	s->have_stackcall = 1;
             	tcg_gen_movi_tl(cpu_T0, 0);
             }
             else if(grin_tra_shadowstack){
+            	s->have_stackcall = 1;
             	tcg_gen_movi_tl(cpu_T0, next_eip);
             }
             else
@@ -8919,18 +8930,15 @@ void tcg_x86_init(void)
 	free(p);
 }  */
 
-static inline void grin_tcg_handle_stack(target_ulong pc_ptr,TranslationBlock *tb)
+static inline void grin_tcg_handle_stack(target_ulong pc_ptr,DisasContext *s,TranslationBlock *tb)
 {
-    if(call_insn)
+    if(s->have_stackcall)
     {
     	tb->CALLFlag = 1;
     	tb->next_insn = pc_ptr;
-    	call_insn = 0;
     }
-
-    else if(ret_insn){
+    else if(s->have_stackret){
     	tb->RETFlag = 1;
-    	ret_insn = 0;
     }
 }
 /* generate intermediate code for basic block 'tb'.  */
@@ -8994,6 +9002,8 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
     /*temp test ltr*/
     dc->have_test = 0;
 
+    dc->have_stackcall = 0;/* GRIN -ss/-tss command options, TRA/SHADOW STACK module */
+    dc->have_stackret = 0;/* GRIN -ss/-tss command options, TRA/SHADOW STACK module */
     dc->have_cc = 0; /* GRIN -M command options, MONITOR JCC module */
     dc->have_setcc = 0; /* GRIN -M command options, MONITOR set cc operation module */
     dc->have_jmp = 0; /* GRIN -M command options, MONITOR JMP module */
@@ -9119,7 +9129,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
 
 /*** GRIN -ss/-tss command options, TRA/SHADOW STACK module ***/
         if(grin_shadowstack || grin_tra_shadowstack){
-        	grin_tcg_handle_stack(pc_ptr,tb);
+        	grin_tcg_handle_stack(pc_ptr,dc,tb);
         }
 
 #if GADGET

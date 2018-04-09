@@ -97,8 +97,8 @@ long RealGadgetLen = 0;
 #endif
 
 /*** GRIN TRA/SHADOW STACK module function ***/
-    ShadowStack sstack1;
-    bool RetNextFlag = 0;
+ShadowStack sstack1;
+
 /* GRIN VMI test*/
 target_ulong cr3tmp = 0;
 int _testbool = 0;
@@ -204,6 +204,11 @@ static inline tcg_target_ulong cpu_tb_exec(CPUState *cpu, TranslationBlock *itb)
     int tb_exit;
     uint8_t *tb_ptr = itb->tc_ptr;
 
+    /*  GRIN -tss command options
+     *   TRA STACK module function */
+    X86CPU *tmpcpu = X86_CPU(cpu);
+    target_ulong pc_var;
+
     qemu_log_mask_and_addr(CPU_LOG_EXEC, itb->pc,
                            "Trace %p [" TARGET_FMT_lx "] %s\n",
                            itb->tc_ptr, itb->pc, lookup_symbol(itb->pc));
@@ -250,25 +255,6 @@ static inline tcg_target_ulong cpu_tb_exec(CPUState *cpu, TranslationBlock *itb)
             assert(cc->set_pc);
             cc->set_pc(cpu, last_tb->pc);
         }
-        /**************************************/
-
-    /***  GRIN -ss command options  ***/
-    /*   SHADOW STACK module function */
-//        if(grin_shadowstack){
-//    		if(RetNextFlag)
-//    		{
-//    			if(pc != 0){
-//    #if !NOSTDERR
-//    				fprintf(stderr,"attacked!\n");
-//    #endif
-//    			}
-//    			pc = ShadowStackPop();
-//    			//printf("Pop stack---------------------------- %lx\n",pc);
-//    		}
-//    		RetNextFlag = 0;
-//        }
-
-        /***************************************/
     }
     if (tb_exit == TB_EXIT_REQUESTED) {
         /* We were asked to stop executing TBs (probably a pending
@@ -277,6 +263,29 @@ static inline tcg_target_ulong cpu_tb_exec(CPUState *cpu, TranslationBlock *itb)
         cpu->tcg_exit_req = 0;
     }
 
+    /*  GRIN -tss command options
+     *   TRA STACK module function */
+    if(grin_tra_shadowstack && itb->RETFlag){
+    	pc_var = ShadowStackPop()-itb->cs_base;;
+    	//printf("Pop stack---------------------------- %lx\n",pc_var);
+		if(tmpcpu->env.eip != pc_var){
+#if !NOSTDERR
+			fprintf(stderr,"TSS p: %#lx  s: %#lx\n"
+					,tmpcpu->env.eip,pc_var);
+#endif
+		}
+    }
+		/*  GRIN -ss command options
+		 *   SHADOW STACK module function */
+    if(grin_shadowstack && itb->RETFlag){
+    	if(tmpcpu->env.eip != 0){
+#if !NOSTDERR
+    		fprintf(stderr,"attacked!\n");
+#endif
+    	}
+    	tmpcpu->env.eip = ShadowStackPop();
+    		//printf("Pop stack---------------------------- %lx\n",tmpcpu->env.eip);
+        }
     return ret;
 }
 
@@ -737,11 +746,6 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     target_ulong cs_base, pc;
     uint32_t flags;
 
-    /***  GRIN -tss command options  ***/
-    /*   TRA STACK module function     */
-    target_ulong pc_var;
-
-
     /* we record a subset of the CPU state. It will
        always be the same before a given translated block
        is executed. */
@@ -767,24 +771,6 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     	}
     }
 
-
-    /*  GRIN -tss command options
-     *   TRA STACK module function */
-    if(grin_tra_shadowstack && RetNextFlag){
-    //if(grin_tra_shadowstack && tb->RETFlag){
-    	//pc_var = ShadowStackPop() ;//- itb->cs_base;
-		//tempcpu->env.eip = ShadowStackPop() - tb->cs_base;
-		//printf("Pop stack---------------------------- %lx\n",ShadowStackPop());
-    	//env->eip = ShadowStackPop();
-		if(pc != ShadowStackPop()){
-#if !NOSTDERR
-		//fprintf(stderr,"TSS p: %#lx  s: %#lx\n",pc,ShadowStackPop());
-#endif
-		}
-		RetNextFlag = 0;
-    }
-
-
     tb_lock();
     tb = cpu->tb_jmp_cache[tb_jmp_cache_hash_func(pc)];
     if (unlikely(!tb || tb->pc != pc || tb->cs_base != cs_base ||
@@ -809,7 +795,7 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
 #endif
     /* See if we can patch the calling TB. */
     if (*last_tb && !qemu_loglevel_mask(CPU_LOG_TB_NOCHAIN)) {
-    		tb_add_jump(*last_tb, tb_exit, tb);
+    		//tb_add_jump(*last_tb, tb_exit, tb);
     }
     tb_unlock();
 
@@ -821,9 +807,6 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
 			//printf("Push stack****************************** %lx  next pc %lx\n"
 			//		,tb->next_insn,env->tpush_reg);
 		}
-	  	if(tb->RETFlag == 1){
-	  		RetNextFlag = 1;
-	  	}
     }
 
     return tb;

@@ -96,7 +96,7 @@ unsigned long ret_total = 0;
 long RealGadgetLen = 0;
 #endif
 
-/*** GRIN TRA/SHADOW STACK module function ***/
+/* GRIN TRA/SHADOW STACK module function */
 ShadowStack sstack1;
 
 /* GRIN VMI test*/
@@ -204,8 +204,8 @@ static inline tcg_target_ulong cpu_tb_exec(CPUState *cpu, TranslationBlock *itb)
     int tb_exit;
     uint8_t *tb_ptr = itb->tc_ptr;
 
-    /*  GRIN -tss command options
-     *   TRA STACK module function */
+    /*  GRIN -ss/-tss command options
+     *  TRA/SHADOW STACK module */
     X86CPU *tmpcpu = X86_CPU(cpu);
     target_ulong pc_var;
 
@@ -264,7 +264,7 @@ static inline tcg_target_ulong cpu_tb_exec(CPUState *cpu, TranslationBlock *itb)
     }
 
     /*  GRIN -tss command options
-     *   TRA STACK module function */
+     *  TRA STACK module function */
     if(grin_tra_shadowstack && itb->RETFlag){
     	pc_var = ShadowStackPop()-itb->cs_base;;
     	//printf("Pop stack---------------------------- %lx\n",pc_var);
@@ -275,16 +275,16 @@ static inline tcg_target_ulong cpu_tb_exec(CPUState *cpu, TranslationBlock *itb)
 #endif
 		}
     }
-		/*  GRIN -ss command options
-		 *   SHADOW STACK module function */
+	/*  GRIN -ss command options
+	 *  SHADOW STACK module */
     if(grin_shadowstack && itb->RETFlag){
     	if(tmpcpu->env.eip != 0){
 #if !NOSTDERR
-    		fprintf(stderr,"attacked!\n");
+    		fprintf(stderr,"Program is attacked!\n");
 #endif
     	}
     	tmpcpu->env.eip = ShadowStackPop();
-    		//printf("Pop stack---------------------------- %lx\n",tmpcpu->env.eip);
+    	//printf("Pop stack---------------------------- %lx\n",tmpcpu->env.eip);
         }
     return ret;
 }
@@ -413,7 +413,7 @@ found:
     return tb;
 }
 
-/***    GRIN TRA/SHADOW STACK function module     ***/
+/* GRIN TRA/SHADOW STACK module funciton */
 void ShadowStackInit(void)
 {
     ShadowStack *ss;
@@ -798,9 +798,8 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     		//tb_add_jump(*last_tb, tb_exit, tb);
     }
     tb_unlock();
-
-/*** GRIN -ss/-tss command options ***/
-/*  TRA/SHADOW STACK module function */
+    /* GRIN -ss/-tss command options
+     * TRA/SHADOW STACK module function */
     if(grin_shadowstack || grin_tra_shadowstack){
 		if(tb->CALLFlag == 1){
 			ShadowStackPush(tb->next_insn);

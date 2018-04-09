@@ -6771,7 +6771,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     	if(grin_ret){
     		s->have_ret = 1;
     	}
-    	/* GRIN -ss/-tss command options, TRA/SHADOW STACK */
+    	/* GRIN -ss/-tss command options, TRA/SHADOW module */
     	if(grin_shadowstack||grin_tra_shadowstack){
     		s->have_stackret = 1;
     	}
@@ -6842,7 +6842,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     	if(grin_ret){
     		s->have_ret = 1;
     	}
-    	/* GRIN -ss/-tss command options, TRA/SHADOW STACK */
+    	/* GRIN -ss/-tss command options, TRA/SHADOW module */
     	if(grin_shadowstack||grin_tra_shadowstack){
     		s->have_stackret = 1;
     	}
@@ -8937,7 +8937,7 @@ static inline void grin_tcg_handle_stack(target_ulong pc_ptr,DisasContext *s,Tra
     	tb->CALLFlag = 1;
     	tb->next_insn = pc_ptr;
     }
-    else if(s->have_stackret){
+    if(s->have_stackret){
     	tb->RETFlag = 1;
     }
 }

@@ -98,7 +98,6 @@ long RealGadgetLen = 0;
 
 /*** GRIN TRA/SHADOW STACK module function ***/
     ShadowStack sstack1;
-    bool CPUEXECFlag = 1;
     bool RetNextFlag = 0;
 /* GRIN VMI test*/
 target_ulong cr3tmp = 0;
@@ -243,12 +242,33 @@ static inline tcg_target_ulong cpu_tb_exec(CPUState *cpu, TranslationBlock *itb)
                                TARGET_FMT_lx "] %s\n",
                                last_tb->tc_ptr, last_tb->pc,
                                lookup_symbol(last_tb->pc));
+
         if (cc->synchronize_from_tb) {
             cc->synchronize_from_tb(cpu, last_tb);
-        } else {
+        }
+        else {
             assert(cc->set_pc);
             cc->set_pc(cpu, last_tb->pc);
         }
+        /**************************************/
+
+    /***  GRIN -ss command options  ***/
+    /*   SHADOW STACK module function */
+//        if(grin_shadowstack){
+//    		if(RetNextFlag)
+//    		{
+//    			if(pc != 0){
+//    #if !NOSTDERR
+//    				fprintf(stderr,"attacked!\n");
+//    #endif
+//    			}
+//    			pc = ShadowStackPop();
+//    			//printf("Pop stack---------------------------- %lx\n",pc);
+//    		}
+//    		RetNextFlag = 0;
+//        }
+
+        /***************************************/
     }
     if (tb_exit == TB_EXIT_REQUESTED) {
         /* We were asked to stop executing TBs (probably a pending
@@ -256,6 +276,7 @@ static inline tcg_target_ulong cpu_tb_exec(CPUState *cpu, TranslationBlock *itb)
          */
         cpu->tcg_exit_req = 0;
     }
+
     return ret;
 }
 
@@ -746,33 +767,19 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
     	}
     }
 
-    /***  GRIN -tss command options  ***/
-    /*   TRA STACK module function */
-    if(grin_tra_shadowstack){
-		if(RetNextFlag){
-			pc_var = ShadowStackPop();
-			//printf("Pop stack---------------------------- %lx\n",pc_var);
-			if(pc != pc_var){
-#if !NOSTDERR
-				fprintf(stderr,"TSS p: %#lx  s: %#lx\n",pc,pc_var);
-#endif
-			}
-		}
-		RetNextFlag = 0;
-    }
 
-/***  GRIN -ss command options  ***/
-/*   SHADOW STACK module function */
-    if(grin_shadowstack){
-		if(RetNextFlag)
-		{
-			if(pc != 0){
+    /*  GRIN -tss command options
+     *   TRA STACK module function */
+    if(grin_tra_shadowstack && RetNextFlag){
+    //if(grin_tra_shadowstack && tb->RETFlag){
+    	//pc_var = ShadowStackPop() ;//- itb->cs_base;
+		//tempcpu->env.eip = ShadowStackPop() - tb->cs_base;
+		//printf("Pop stack---------------------------- %lx\n",ShadowStackPop());
+    	//env->eip = ShadowStackPop();
+		if(pc != ShadowStackPop()){
 #if !NOSTDERR
-				fprintf(stderr,"attacked!\n");
+		//fprintf(stderr,"TSS p: %#lx  s: %#lx\n",pc,ShadowStackPop());
 #endif
-			}
-			pc = ShadowStackPop();
-			//printf("Pop stack---------------------------- %lx\n",pc);
 		}
 		RetNextFlag = 0;
     }
@@ -802,7 +809,7 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
 #endif
     /* See if we can patch the calling TB. */
     if (*last_tb && !qemu_loglevel_mask(CPU_LOG_TB_NOCHAIN)) {
-    		//tb_add_jump(*last_tb, tb_exit, tb);
+    		tb_add_jump(*last_tb, tb_exit, tb);
     }
     tb_unlock();
 
@@ -1103,16 +1110,6 @@ int cpu_exec(CPUState *cpu)
     struct task_struct *init_task1;
     struct mm_struct *mm1;
     struct list_head *list_head1;
-
-/***  GRIN -ss/-tss command option   ***/
-/*   TRA/SHADOW STACK module function  */
-    if(grin_shadowstack || grin_tra_shadowstack){
-		if(CPUEXECFlag)
-		{
-		ShadowStackInit();
-		CPUEXECFlag = 0;
-		}
-    }
 
     /* replay_interrupt may need current_cpu */
     current_cpu = cpu;

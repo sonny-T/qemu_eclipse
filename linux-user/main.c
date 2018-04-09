@@ -325,6 +325,12 @@ void cpu_loop(CPUX86State *env)
     abi_ulong ret;
     target_siginfo_t info;
 
+    /*  GRIN -ss/-tss command option
+     *  TRA/SHADOW STACK module function  */
+    if(grin_shadowstack || grin_tra_shadowstack){
+        ShadowStackInit();
+    }
+
     for(;;) {
         cpu_exec_start(cs);
         trapnr = cpu_exec(cs);

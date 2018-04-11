@@ -9001,7 +9001,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
 
     /*temp test ltr*/
     dc->have_test = 0;
-
+    /* is have jmp/call/ret judgment of disassemble tb */
     dc->have_stackcall = 0;/* GRIN -ss/-tss command options, TRA/SHADOW STACK module */
     dc->have_stackret = 0;/* GRIN -ss/-tss command options, TRA/SHADOW STACK module */
     dc->have_cc = 0; /* GRIN -M command options, MONITOR JCC module */

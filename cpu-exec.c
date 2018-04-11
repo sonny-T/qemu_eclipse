@@ -66,19 +66,6 @@ struct task_struct{
 //static int PCI = 0;
 //static target_ulong TRACEPC_Buf[TBN];
 
-/*** GRIN -M command options, MONITOR JMP module ***/
-bool jmpto_flag = 0;
-static target_ulong jmpaddr_of = 0;
-
-/*** GRIN -M command options, MONITOR CALL module ***/
-bool callto_flag = 0;
-static target_ulong calladdr_of = 0;
-static target_ulong calladdr_next = 0;
-
-/*** GRIN -M command options, MONITOR RET module ***/
-bool retto_flag = 0;
-static target_ulong retaddr_of = 0;
-
 static int GadgetLink = 0;
 
 /************************************************/
@@ -195,6 +182,282 @@ static void init_delay_params(SyncClocks *sc, const CPUState *cpu)
 }
 #endif /* CONFIG USER ONLY */
 
+
+/* GRIN function module
+ * MONITOR JMP module */
+static inline void grin_handle_jmp(target_ulong pc,target_ulong jmpaddr_of)
+{
+	FILE * pfile = NULL;
+	char *token,*str1;
+	char bufLine[30];
+	char bufParser[2][20];
+	target_ulong buf0,buf1;
+	int i = 0;
+	char c;
+
+	if(coarsecfi_enabled || finecfi_enabled){
+		if((pfile=fopen(jpath_buff,"r"))==NULL){
+			printf("Read file failed!\n");
+			printf("** File path should less than 100 bytes.\n"
+					"** File path doesn't exist.\n");
+			exit(0);
+		}
+	}
+	while(coarsecfi_enabled || finecfi_enabled)
+	{
+		fgets(bufLine,30,pfile);
+		for(i=0,str1=bufLine;i<2;i++,str1=NULL){
+			if(bufLine[0] == '#'){
+				goto nextline;
+			}
+			token = strtok(str1,"\t");
+			strcpy(bufParser[i],token);
+			//if(token==NULL){break;}
+		}
+		if(coarsecfi_enabled){
+			//printf("%s---%s\n",bufParser[0],bufParser[1]);
+			buf0 = strtol(bufParser[0],NULL,16);
+			buf1 = strtol(bufParser[1],NULL,10);
+			/* Coarse-grained CFI */
+			if(pc==buf0){
+				//printf("CFG have jmp to function head!\n");
+				break;
+			}
+			if((pc>buf0)&&((jmpaddr_of-buf0)<buf1)&&((pc-buf0)<buf1))
+			{/* Judge jmp dest is belong to function-self internal */
+				//printf("CFG have jmp to function internal!\n");
+				break;
+			}
+		}
+		/* Fine-grained CFI */
+//		buf0 = strtol(bufParser[0],NULL,16);
+//		buf1 = strtol(bufParser[1],NULL,16);
+//		if(jmpaddr_of==buf0){
+//			printf("CFG have jmp to function head!\n");
+//			if(pc!=buf1){
+//				printf("JMP data wrong! dest: %lx s-target: %lx\n"
+//						,pc,buf1);
+//			}
+//			break;
+//		}
+		c = getc(pfile);
+		fseek(pfile,-1L,1);
+		if(c=='\n'|| c==EOF){
+			if(pc<0x4000000000){
+				fprintf(stderr,"Dynamic execute result:\n"
+							"Program is atttttttttacked _(:_l <)_\n");
+				fprintf(stderr,"JMP No data! \n"
+						"Dest: %lx \nSrc: %lx\n",pc,jmpaddr_of);
+				exit(0);
+			}
+			break;
+		}
+nextline:
+		continue;
+	}
+	if(coarsecfi_enabled || finecfi_enabled){
+		fclose(pfile);
+		if(dcount<=5 && jmpaddr_of<0x4000000000){
+			fprintf(stderr,"\nGadget code icount: %d!\n",dcount);
+			fprintf(stderr,"JMP ID: %d\ndest: %#lx \nsrc: %#lx\n",GadgetLink-1,pc,jmpaddr_of);
+		}
+		/* Judge as gadget chain*/
+		/* Don't consider libc's addr */
+		if(GadgetLink == 6 && jmpaddr_of<0x4000000000){
+			fprintf(stderr,"\nFormed a gadget chain!\n"
+						"Program may be atttttttttacked!\n");
+			GadgetLink = 0;
+			exit(0);
+		}
+	}
+	else{
+#if !NOSTDERR
+	fprintf(stderr,"JMP  d: %#lx  s: %#lx icount: %ld\n",
+													pc,jmpaddr_of,dcount);
+#endif
+	}
+    dcount = 0;
+}
+/* GRIN function module
+ * MONITOR CALL module */
+static inline  void grin_handle_call(target_ulong pc,
+		target_ulong calladdr_of,target_ulong calladdr_next)
+{
+	FILE * pfile = NULL;
+	char *token,*str1;
+	char bufLine[100];
+	char bufParser[2][20];
+	target_ulong buf0,buf1;
+	int i = 0;
+	char c;
+	if(coarsecfi_enabled || finecfi_enabled){
+		if((pfile=fopen(cpath_buff,"r"))==NULL){
+			printf("Read file failed!\n");
+			printf("** File path should less than 100 bytes.\n"
+					"** File path doesn't exist.\n");
+			exit(0);
+		}
+	}
+	while(coarsecfi_enabled || finecfi_enabled)
+	{
+		fgets(bufLine,30,pfile);
+		for(i=0,str1=bufLine;i<2;i++,str1=NULL){
+			if(bufLine[0] == '#'){
+				goto nextline;
+			}
+			token = strtok(str1,"\t");
+			strcpy(bufParser[i],token);
+		}
+		if(coarsecfi_enabled){
+			//printf("%s---%s\n",bufParser[0],bufParser[1]);
+			buf0 = strtol(bufParser[0],NULL,16);
+			buf1 = strtol(bufParser[1],NULL,10);
+			/* Coarse-grained CFI */
+			if(pc==buf0){
+				//printf("ret return to call next address!\n");
+				break;
+			}
+		}
+		/* Fine-grained CFI */
+//		buf0 = strtol(bufParser[0],NULL,16);
+//		buf1 = strtol(bufParser[1],NULL,16);
+//		if(calladdr_of==buf0){
+//			printf("CFG have call to function head!\n");
+//			if(pc!=buf1){
+//				printf("call data wrong! dest: %lx s-target: %lx src: %lx\n"
+//						,pc,buf1,calladdr_of);
+//			}
+//			break;
+//		}
+		c = getc(pfile);
+		fseek(pfile,-1L,1);
+		if(c=='\n'|| c==EOF){
+			if(pc<0x4000000000){
+				fprintf(stderr,"Dynamic execute result:\n"
+						"Program is atttttttttacked _(:_l <)_\n");
+				fprintf(stderr,"CALL No data! \n Dest: %lx Src: %lx\n",pc,calladdr_of);
+				exit(0);
+			}
+			break;
+		}
+nextline:
+		continue;
+	}
+
+	if(coarsecfi_enabled || finecfi_enabled){
+		fclose(pfile);
+		if(dcount<=5 && calladdr_of<0x4000000000){
+			fprintf(stderr,"\nGadget code icount: %d!\n",dcount);
+			fprintf(stderr,"CALL ID: %d\ndest: %#lx \nsrc: %#lx beside addr: %#lx\n",
+									GadgetLink-1,pc,calladdr_of,calladdr_next);
+		}
+		/* Judge as gadget chain*/
+		/* Don't consider libc's addr */
+		if(GadgetLink == 6 && calladdr_of<0x4000000000){
+			fprintf(stderr,"\nFormed a gadget chain!\n");
+			fprintf(stderr,"Program may be atttttttttacked!\n");
+			GadgetLink = 0;
+			exit(0);
+		}
+	}
+	else{
+#if !NOSTDERR
+	fprintf(stderr,"CALL d: %#lx  s: %#lx icount: %ld   beside addr: %#lx\n",
+												pc,calladdr_of,dcount,calladdr_next);
+#endif
+	}
+    dcount = 0;
+}
+/* GRIN function module
+ * MONITOR RET module */
+static inline void grin_handle_ret(target_ulong pc,target_ulong retaddr_of)
+{
+	FILE * pfile = NULL;
+	char *token,*str1;
+	char bufLine[100];
+	char bufParser[2][20];
+	target_ulong buf0,buf1;
+	int i = 0;
+	char c;
+
+	if(coarsecfi_enabled || finecfi_enabled){
+		if((pfile=fopen(rpath_buff,"r"))==NULL){
+			printf("Read file failed!\n");
+			printf("** File path should less than 100 bytes."
+					"\n** File path doesn't exist.\n");
+			exit(0);
+		}
+	}
+	while(coarsecfi_enabled || finecfi_enabled)
+	{
+		fgets(bufLine,100,pfile);
+		for(i=0,str1=bufLine;i<2;i++,str1=NULL){
+			if(bufLine[0] == '#'){
+				goto nextline;
+			}
+			token = strtok(str1,"\t");
+			strcpy(bufParser[i],token);
+		}
+		if(coarsecfi_enabled){
+			//printf("%s---%s\n",bufParser[0],bufParser[1]);
+			/* Coarse-grained CFI */
+			buf1 = strtol(bufParser[1],NULL,16);
+			if(pc==buf1){
+				//printf("ret return to call next address!\n");
+				break;
+			}
+		}
+		/* Fine-grained CFI */
+//		buf0 = strtol(bufParser[0],NULL,16);
+//		buf1 = strtol(bufParser[1],NULL,16);
+//		if(retaddr_of==buf0){
+//			printf("CFG have ret to function head! src: %lx\n"
+//					,retaddr_of);
+//			if(pc!=buf1){
+//				printf("ret data wrong! dest: %lx s-target: %lx src: %lx\n"
+//						,pc,buf1,retaddr_of);
+//			}
+//			break;
+//		}
+		c = getc(pfile);
+		fseek(pfile,-1L,1);
+		if(c=='\n'|| c==EOF){
+			if(pc<0x4000000000){
+				fprintf(stderr,"Dynamic execute result:\n"
+						"Program is atttttttttacked _(:_l <)_\n");
+				fprintf(stderr,"RET No data! \n Dest: %lx Src: %lx\n",pc,retaddr_of);
+				exit(0);
+			}
+			break;
+		}
+nextline:
+		continue;
+	}
+
+	if(coarsecfi_enabled || finecfi_enabled){
+		fclose(pfile);
+		if(dcount<=5 && retaddr_of<0x4000000000){
+			fprintf(stderr,"\nGadget code icount: %d!\n",dcount);
+			fprintf(stderr,"RET ID: %d\n dest: %#lx \n src: %#lx \n",GadgetLink-1,pc,retaddr_of);
+		}
+		/* Judge as gadget chain*/
+		/* Don't consider libc's addr */
+		if(GadgetLink == 6 && retaddr_of<0x4000000000){
+			fprintf(stderr,"\nFormed a gadget chain!\n");
+			fprintf(stderr,"Program may be atttttttttacked!\n");
+			GadgetLink = 0;
+			exit(0);
+		}
+	}
+	else{
+#if !NOSTDERR
+	fprintf(stderr,"RET  d: %#lx  s: %#lx icount: %ld\n",
+													pc,retaddr_of,dcount);
+#endif
+	}
+    dcount = 0;
+}
+
 /* Execute a TB, and fix up the CPU state afterwards if necessary */
 static inline tcg_target_ulong cpu_tb_exec(CPUState *cpu, TranslationBlock *itb)
 {
@@ -205,7 +468,8 @@ static inline tcg_target_ulong cpu_tb_exec(CPUState *cpu, TranslationBlock *itb)
     uint8_t *tb_ptr = itb->tc_ptr;
 
     /*  GRIN -ss/-tss command options
-     *  TRA/SHADOW STACK module */
+     *  TRA/SHADOW STACK module
+     *  GRIN -M command options, MONITOR variable module */
     X86CPU *tmpcpu = X86_CPU(cpu);
     target_ulong pc_var;
 
@@ -286,6 +550,47 @@ static inline tcg_target_ulong cpu_tb_exec(CPUState *cpu, TranslationBlock *itb)
     	tmpcpu->env.eip = ShadowStackPop();
     	//printf("Pop stack---------------------------- %lx\n",tmpcpu->env.eip);
         }
+
+    /* GRIN -M command options, MONITOR JMP module */
+		//Mod67Flag is mod = 3
+		//RMFlag is mod = 0 rm = 5
+        if(grin_jmp){
+        	//dcount += tb->icount;
+			if(itb->JmpFlagM == 1){
+				jmp_total += 1;
+        		if(jmp_total>0x7fffffffffffffff){
+        			printf("jmp overflow: %ld\n",jmp_total);
+        			jmp_total = 0;
+        		}
+        		grin_handle_jmp(tmpcpu->env.eip,itb->jmp_addr);
+			}
+        }
+
+    /* GRIN -M command options, MONITOR CALL module */
+        if (grin_call){
+        	//dcount += tb->icount;
+        	if(itb->CallFlagM == 1){
+        		call_total += 1;
+        		if(call_total>0x7fffffffffffffff){
+        			printf("call overflow: %ld\n",call_total);
+        			call_total = 0;
+        		}
+        		grin_handle_call(tmpcpu->env.eip,itb->call_addr,itb->callnext_addr);
+        	}
+        }
+        /* GRIN -M command options, MONITOR RET module */
+        if (grin_ret){
+        	//dcount += tb->icount;
+        	if(itb->RetFlagM == 1){
+            	ret_total += 1;
+        		if(ret_total>0x7fffffffffffffff){
+        			printf("ret overflow: %ld\n",ret_total);
+        			ret_total = 0;
+        		}
+        		grin_handle_ret(tmpcpu->env.eip,itb->ret_addr);
+            }
+        }
+
     return ret;
 }
 
@@ -461,282 +766,6 @@ void ShadowStackPush(target_ulong x)
 }
 /*********** end module ***********/
 
-/* GRIN function module
- * MONITOR JMP module */
-static inline void grin_handle_jmp(target_ulong pc)
-{
-	FILE * pfile = NULL;
-	char *token,*str1;
-	char bufLine[30];
-	char bufParser[2][20];
-	target_ulong buf0,buf1;
-	int i = 0;
-	char c;
-
-	if(coarsecfi_enabled || finecfi_enabled){
-		if((pfile=fopen(jpath_buff,"r"))==NULL){
-			printf("Read file failed!\n");
-			printf("** File path should less than 100 bytes.\n"
-					"** File path doesn't exist.\n");
-			exit(0);
-		}
-	}
-	while(coarsecfi_enabled || finecfi_enabled)
-	{
-		fgets(bufLine,30,pfile);
-		for(i=0,str1=bufLine;i<2;i++,str1=NULL){
-			if(bufLine[0] == '#'){
-				goto nextline;
-			}
-			token = strtok(str1,"\t");
-			strcpy(bufParser[i],token);
-			//if(token==NULL){break;}
-		}
-		if(coarsecfi_enabled){
-			//printf("%s---%s\n",bufParser[0],bufParser[1]);
-			buf0 = strtol(bufParser[0],NULL,16);
-			buf1 = strtol(bufParser[1],NULL,10);
-			/* Coarse-grained CFI */
-			if(pc==buf0){
-				//printf("CFG have jmp to function head!\n");
-				break;
-			}
-			if((pc>buf0)&&((jmpaddr_of-buf0)<buf1)&&((pc-buf0)<buf1))
-			{/* Judge jmp dest is belong to function-self internal */
-				//printf("CFG have jmp to function internal!\n");
-				break;
-			}
-		}
-		/* Fine-grained CFI */
-//		buf0 = strtol(bufParser[0],NULL,16);
-//		buf1 = strtol(bufParser[1],NULL,16);
-//		if(jmpaddr_of==buf0){
-//			printf("CFG have jmp to function head!\n");
-//			if(pc!=buf1){
-//				printf("JMP data wrong! dest: %lx s-target: %lx\n"
-//						,pc,buf1);
-//			}
-//			break;
-//		}
-		c = getc(pfile);
-		fseek(pfile,-1L,1);
-		if(c=='\n'|| c==EOF){
-			if(pc<0x4000000000){
-				fprintf(stderr,"Dynamic execute result:\n"
-							"Program is atttttttttacked _(:_l <)_\n");
-				fprintf(stderr,"JMP No data! \n"
-						"Dest: %lx \nSrc: %lx\n",pc,jmpaddr_of);
-				exit(0);
-			}
-			break;
-		}
-nextline:
-		continue;
-	}
-	if(coarsecfi_enabled || finecfi_enabled){
-		fclose(pfile);
-		if(dcount<=5 && jmpaddr_of<0x4000000000){
-			fprintf(stderr,"\nGadget code icount: %d!\n",dcount);
-			fprintf(stderr,"JMP ID: %d\ndest: %#lx \nsrc: %#lx\n",GadgetLink-1,pc,jmpaddr_of);
-		}
-		/* Judge as gadget chain*/
-		/* Don't consider libc's addr */
-		if(GadgetLink == 6 && jmpaddr_of<0x4000000000){
-			fprintf(stderr,"\nFormed a gadget chain!\n"
-						"Program may be atttttttttacked!\n");
-			GadgetLink = 0;
-			exit(0);
-		}
-	}
-	else{
-#if !NOSTDERR
-	fprintf(stderr,"JMP  d: %#lx  s: %#lx icount: %ld\n",
-													pc,jmpaddr_of,dcount);
-#endif
-	}
-    dcount = 0;
-    jmpto_flag = 0;
-}
-/* GRIN function module
- * MONITOR CALL module */
-static inline  void grin_handle_call(target_ulong pc)
-{
-	FILE * pfile = NULL;
-	char *token,*str1;
-	char bufLine[100];
-	char bufParser[2][20];
-	target_ulong buf0,buf1;
-	int i = 0;
-	char c;
-	if(coarsecfi_enabled || finecfi_enabled){
-		if((pfile=fopen(cpath_buff,"r"))==NULL){
-			printf("Read file failed!\n");
-			printf("** File path should less than 100 bytes.\n"
-					"** File path doesn't exist.\n");
-			exit(0);
-		}
-	}
-	while(coarsecfi_enabled || finecfi_enabled)
-	{
-		fgets(bufLine,30,pfile);
-		for(i=0,str1=bufLine;i<2;i++,str1=NULL){
-			if(bufLine[0] == '#'){
-				goto nextline;
-			}
-			token = strtok(str1,"\t");
-			strcpy(bufParser[i],token);
-		}
-		if(coarsecfi_enabled){
-			//printf("%s---%s\n",bufParser[0],bufParser[1]);
-			buf0 = strtol(bufParser[0],NULL,16);
-			buf1 = strtol(bufParser[1],NULL,10);
-			/* Coarse-grained CFI */
-			if(pc==buf0){
-				//printf("ret return to call next address!\n");
-				break;
-			}
-		}
-		/* Fine-grained CFI */
-//		buf0 = strtol(bufParser[0],NULL,16);
-//		buf1 = strtol(bufParser[1],NULL,16);
-//		if(calladdr_of==buf0){
-//			printf("CFG have call to function head!\n");
-//			if(pc!=buf1){
-//				printf("call data wrong! dest: %lx s-target: %lx src: %lx\n"
-//						,pc,buf1,calladdr_of);
-//			}
-//			break;
-//		}
-		c = getc(pfile);
-		fseek(pfile,-1L,1);
-		if(c=='\n'|| c==EOF){
-			if(pc<0x4000000000){
-				fprintf(stderr,"Dynamic execute result:\n"
-						"Program is atttttttttacked _(:_l <)_\n");
-				fprintf(stderr,"CALL No data! \n Dest: %lx Src: %lx\n",pc,calladdr_of);
-				exit(0);
-			}
-			break;
-		}
-nextline:
-		continue;
-	}
-
-	if(coarsecfi_enabled || finecfi_enabled){
-		fclose(pfile);
-		if(dcount<=5 && calladdr_of<0x4000000000){
-			fprintf(stderr,"\nGadget code icount: %d!\n",dcount);
-			fprintf(stderr,"CALL ID: %d\ndest: %#lx \nsrc: %#lx beside addr: %#lx\n",
-									GadgetLink-1,pc,calladdr_of,calladdr_next);
-		}
-		/* Judge as gadget chain*/
-		/* Don't consider libc's addr */
-		if(GadgetLink == 6 && calladdr_of<0x4000000000){
-			fprintf(stderr,"\nFormed a gadget chain!\n");
-			fprintf(stderr,"Program may be atttttttttacked!\n");
-			GadgetLink = 0;
-			exit(0);
-		}
-	}
-	else{
-#if !NOSTDERR
-	fprintf(stderr,"CALL d: %#lx  s: %#lx icount: %ld   beside addr: %#lx\n",
-												pc,calladdr_of,dcount,calladdr_next);
-#endif
-	}
-    dcount = 0;
-	callto_flag = 0;
-}
-/* GRIN function module
- * MONITOR RET module */
-static inline void grin_handle_ret(target_ulong pc)
-{
-	FILE * pfile = NULL;
-	char *token,*str1;
-	char bufLine[100];
-	char bufParser[2][20];
-	target_ulong buf0,buf1;
-	int i = 0;
-	char c;
-
-	if(coarsecfi_enabled || finecfi_enabled){
-		if((pfile=fopen(rpath_buff,"r"))==NULL){
-			printf("Read file failed!\n");
-			printf("** File path should less than 100 bytes."
-					"\n** File path doesn't exist.\n");
-			exit(0);
-		}
-	}
-	while(coarsecfi_enabled || finecfi_enabled)
-	{
-		fgets(bufLine,100,pfile);
-		for(i=0,str1=bufLine;i<2;i++,str1=NULL){
-			if(bufLine[0] == '#'){
-				goto nextline;
-			}
-			token = strtok(str1,"\t");
-			strcpy(bufParser[i],token);
-		}
-		if(coarsecfi_enabled){
-			//printf("%s---%s\n",bufParser[0],bufParser[1]);
-			/* Coarse-grained CFI */
-			buf1 = strtol(bufParser[1],NULL,16);
-			if(pc==buf1){
-				//printf("ret return to call next address!\n");
-				break;
-			}
-		}
-		/* Fine-grained CFI */
-//		buf0 = strtol(bufParser[0],NULL,16);
-//		buf1 = strtol(bufParser[1],NULL,16);
-//		if(retaddr_of==buf0){
-//			printf("CFG have ret to function head! src: %lx\n"
-//					,retaddr_of);
-//			if(pc!=buf1){
-//				printf("ret data wrong! dest: %lx s-target: %lx src: %lx\n"
-//						,pc,buf1,retaddr_of);
-//			}
-//			break;
-//		}
-		c = getc(pfile);
-		fseek(pfile,-1L,1);
-		if(c=='\n'|| c==EOF){
-			if(pc<0x4000000000){
-				fprintf(stderr,"Dynamic execute result:\n"
-						"Program is atttttttttacked _(:_l <)_\n");
-				fprintf(stderr,"RET No data! \n Dest: %lx Src: %lx\n",pc,retaddr_of);
-				exit(0);
-			}
-			break;
-		}
-nextline:
-		continue;
-	}
-
-	if(coarsecfi_enabled || finecfi_enabled){
-		fclose(pfile);
-		if(dcount<=5 && retaddr_of<0x4000000000){
-			fprintf(stderr,"\nGadget code icount: %d!\n",dcount);
-			fprintf(stderr,"RET ID: %d\n dest: %#lx \n src: %#lx \n",GadgetLink-1,pc,retaddr_of);
-		}
-		/* Judge as gadget chain*/
-		/* Don't consider libc's addr */
-		if(GadgetLink == 6 && retaddr_of<0x4000000000){
-			fprintf(stderr,"\nFormed a gadget chain!\n");
-			fprintf(stderr,"Program may be atttttttttacked!\n");
-			GadgetLink = 0;
-			exit(0);
-		}
-	}
-	else{
-#if !NOSTDERR
-	fprintf(stderr,"RET  d: %#lx  s: %#lx icount: %ld\n",
-													pc,retaddr_of,dcount);
-#endif
-	}
-    dcount = 0;
-	retto_flag = 0;
-}
 static inline TranslationBlock *tb_find_fast(CPUState *cpu,
                                              TranslationBlock **last_tb,
                                              int tb_exit)
@@ -750,19 +779,7 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
        always be the same before a given translated block
        is executed. */
     cpu_get_tb_cpu_state(env, &pc, &cs_base, &flags);
-    /* GRIN -M command options, MONITOR JMP module */
-    if (grin_jmp && jmpto_flag){
-    	grin_handle_jmp(pc);
-    }
 
-    /* GRIN -M command options, MONITOR CALL module */
-    if (grin_call && callto_flag){
-    	grin_handle_call(pc);
-    }
-    /* GRIN -M command options, MONITOR RET module */
-    if (grin_ret && retto_flag){
-    	grin_handle_ret(pc);
-    }
     /*** GRIN -encrypt command options, PRAR module ***/
     if(grin_prar){
     	if(pc == 0xffffffff){
@@ -1192,49 +1209,7 @@ int cpu_exec(CPUState *cpu)
                 				"address of syscall tb: %lx\n",tb->pc);
                 	}
                 }
-            /* GRIN -M command options, MONITOR JMP module */
-        		//Mod67Flag is mod = 3
-        		//RMFlag is mod = 0 rm = 5
-                if(grin_jmp){
-                	//dcount += tb->icount;
-					if(tb->JmpFlagM == 1){
-						jmpto_flag = 1;
-						jmpaddr_of = tb->jmp_addr;
-						jmp_total += 1;
-		        		if(jmp_total>0x7fffffffffffffff){
-		        			printf("jmp overflow: %ld\n",jmp_total);
-		        			jmp_total = 0;
-		        		}
-					}
-                }
 
-            /* GRIN -M command options, MONITOR CALL module */
-                if (grin_call){
-                	//dcount += tb->icount;
-                	if(tb->CallFlagM == 1){
-                		callto_flag = 1;
-                		calladdr_of = tb->call_addr;
-                		calladdr_next = tb->callnext_addr;
-                		call_total += 1;
-		        		if(call_total>0x7fffffffffffffff){
-		        			printf("call overflow: %ld\n",call_total);
-		        			call_total = 0;
-		        		}
-                	}
-                }
-                /* GRIN -M command options, MONITOR RET module */
-                if (grin_ret){
-                	//dcount += tb->icount;
-                	if(tb->RetFlagM == 1){
-                		retto_flag = 1;
-                    	retaddr_of = tb->ret_addr;
-                    	ret_total += 1;
-		        		if(ret_total>0x7fffffffffffffff){
-		        			printf("ret overflow: %ld\n",ret_total);
-		        			ret_total = 0;
-		        		}
-                    }
-                }
                 if(!(tb->RetFlagM||tb->CallFlagM||tb->JmpFlagM)){
                 	GadgetLink = 0;
                 }

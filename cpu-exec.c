@@ -439,7 +439,7 @@ nextline:
 	}
 
 	if(coarsecfi_enabled || finecfi_enabled){
-		fclose(pfile);
+		//fclose(pfile);
 		if(dcount<=5 && retaddr_of<0x4000000000){
 			fprintf(stderr,"\nGadget code icount: %d!\n",dcount);
 			fprintf(stderr,"RET ID: %d\n dest: %#lx \n src: %#lx \n",GadgetLink-1,pc,retaddr_of);
@@ -448,7 +448,7 @@ nextline:
 			GadgetLink = 0;
 		/* Judge as gadget chain*/
 		/* Don't consider libc's addr */
-		if(GadgetLink == 6 && retaddr_of<0x4000000000){
+		if(GadgetLink == 7 && retaddr_of<0x4000000000){
 			fprintf(stderr,"\nFormed a gadget chain!\n");
 			fprintf(stderr,"Program may be atttttttttacked!\n");
 			GadgetLink = 0;
@@ -1217,10 +1217,11 @@ int cpu_exec(CPUState *cpu)
                 }
 
                 if(!(tb->RetFlagM||tb->CallFlagM||tb->JmpFlagM)){
-                	if(dcount>5){
-                		GadgetLink = 0;}
+                	if(dcount>=5){
+                		GadgetLink = 0;
+                	}
                 }
-                GadgetLink = tb->RetFlagM | tb->CallFlagM | tb->JmpFlagM + GadgetLink;
+                GadgetLink = (tb->RetFlagM || tb->CallFlagM || tb->JmpFlagM) + GadgetLink;
 #if GADGET
                 RealGadgetLen = RealGadgetLen + tb->icount;
                 if(tb->IndirectFlag == 1)

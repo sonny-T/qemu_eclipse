@@ -261,6 +261,8 @@ nextline:
 			fprintf(stderr,"\nGadget code icount: %d!\n",dcount);
 			fprintf(stderr,"JMP ID: %d\ndest: %#lx \nsrc: %#lx\n",GadgetLink-1,pc,jmpaddr_of);
 		}
+		else
+			GadgetLink = 0;
 		/* Judge as gadget chain*/
 		/* Don't consider libc's addr */
 		if(GadgetLink == 6 && jmpaddr_of<0x4000000000){
@@ -351,6 +353,8 @@ nextline:
 			fprintf(stderr,"CALL ID: %d\ndest: %#lx \nsrc: %#lx beside addr: %#lx\n",
 									GadgetLink-1,pc,calladdr_of,calladdr_next);
 		}
+		else
+			GadgetLink = 0;
 		/* Judge as gadget chain*/
 		/* Don't consider libc's addr */
 		if(GadgetLink == 6 && calladdr_of<0x4000000000){
@@ -440,6 +444,8 @@ nextline:
 			fprintf(stderr,"\nGadget code icount: %d!\n",dcount);
 			fprintf(stderr,"RET ID: %d\n dest: %#lx \n src: %#lx \n",GadgetLink-1,pc,retaddr_of);
 		}
+		else
+			GadgetLink = 0;
 		/* Judge as gadget chain*/
 		/* Don't consider libc's addr */
 		if(GadgetLink == 6 && retaddr_of<0x4000000000){
@@ -1211,7 +1217,8 @@ int cpu_exec(CPUState *cpu)
                 }
 
                 if(!(tb->RetFlagM||tb->CallFlagM||tb->JmpFlagM)){
-                	GadgetLink = 0;
+                	if(dcount>5){
+                		GadgetLink = 0;}
                 }
                 GadgetLink = tb->RetFlagM | tb->CallFlagM | tb->JmpFlagM + GadgetLink;
 #if GADGET

@@ -4175,7 +4175,7 @@ static const struct qemu_argument arg_table[] = {
      "",           "display version information and exit"},
 
 	{"M",    "",     true, handle_arg_monitor,
-	 "instruction",    "monitor instruction and output information"},
+	 "instruction[call,jmp,ret,cc,syscall,libfunc]",    "monitor instruction and output information"},
 	{"jpath",    "",     true, handle_jmp_CFI_file_path,
 	"path",    "set jmp CFG file path"},
 	{"cpath",    "",     true, handle_call_CFI_file_path,

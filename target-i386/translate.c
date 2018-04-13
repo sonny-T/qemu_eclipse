@@ -5248,7 +5248,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 #endif
 
         	/*** GRIN -M command options, MONITOR JMP module ***/
-        	if(grin_jmp){
+        	if(grin_jmp||grin_libfunc){
 				s->have_jmp = 1;
 //				if(mod == 3) //mod = 3
 //				{
@@ -5274,7 +5274,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 #endif
 
         	/*** GRIN -M command options, MONITOR JMP module ***/
-        	if(grin_jmp){
+        	if(grin_jmp||grin_libfunc){
         		s->have_jmp = 1;
 //				if(mod == 3)
 //				{
@@ -9163,7 +9163,7 @@ void gen_intermediate_code(CPUX86State *env, TranslationBlock *tb)
         	tb->callnext_addr = pc_ptr;
         }
         /* GRIN -M command options, MONITOR JMP module */
-        if(grin_jmp && dc->have_jmp){
+        if((grin_jmp||grin_libfunc) && dc->have_jmp){
         	tb->JmpFlagM = dc->have_jmp;
         	tb->jmp_addr = dc->pc_start;
     	}

@@ -60,6 +60,7 @@ int grin_prar;  /* Protected return address register mechanism*/
 int coarsecfi_enabled;
 int finecfi_enabled;
 int grin_cc; /* GRIN -M command options,MONITOR BRANCH JCC module */
+int grin_libfunc; /*GRIN -M command options, MONITIR Libc module*/
 
 char jpath_buff[100];/* GRIN -M jmp command options,exist overflow risk*/
 char cpath_buff[100];/* GRIN -M call command options,exist overflow risk*/
@@ -4069,6 +4070,9 @@ static void handle_arg_monitor(const char *arg)
 	}
 	else if(!strcmp(arg,"cc")){
 		grin_cc = 1;
+	}
+	else if(!strcmp(arg,"libfunc")){
+		grin_libfunc = 1;
 	}
 	else
 	{

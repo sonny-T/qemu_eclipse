@@ -476,7 +476,6 @@ static inline tcg_target_ulong cpu_tb_exec(CPUState *cpu, TranslationBlock *itb)
     /*  GRIN -ss/-tss command options
      *  TRA/SHADOW STACK module
      *  GRIN -M command options, MONITOR variable module */
-    X86CPU *tmpcpu = X86_CPU(cpu);
     target_ulong pc_var;
 
     qemu_log_mask_and_addr(CPU_LOG_EXEC, itb->pc,
@@ -538,23 +537,23 @@ static inline tcg_target_ulong cpu_tb_exec(CPUState *cpu, TranslationBlock *itb)
     if(grin_tra_shadowstack && itb->RETFlag){
     	pc_var = ShadowStackPop()-itb->cs_base;;
     	//printf("Pop stack---------------------------- %lx\n",pc_var);
-		if(tmpcpu->env.eip != pc_var){
+		if(env->eip != pc_var){
 #if !NOSTDERR
 			fprintf(stderr,"TSS p: %#lx  s: %#lx\n"
-					,tmpcpu->env.eip,pc_var);
+					,env->eip,pc_var);
 #endif
 		}
     }
 	/*  GRIN -ss command options
 	 *  SHADOW STACK module */
     if(grin_shadowstack && itb->RETFlag){
-    	if(tmpcpu->env.eip != 0){
+    	if(env->eip != 0){
 #if !NOSTDERR
     		fprintf(stderr,"Program is attacked!\n");
 #endif
     	}
-    	tmpcpu->env.eip = ShadowStackPop();
-    	//printf("Pop stack---------------------------- %lx\n",tmpcpu->env.eip);
+    	env->eip = ShadowStackPop();
+    	//printf("Pop stack---------------------------- %lx\n",env->eip);
         }
 
     /* GRIN -M command options, MONITOR JMP module */
@@ -568,7 +567,7 @@ static inline tcg_target_ulong cpu_tb_exec(CPUState *cpu, TranslationBlock *itb)
         			printf("jmp overflow: %ld\n",jmp_total);
         			jmp_total = 0;
         		}
-        		grin_handle_jmp(tmpcpu->env.eip,itb->jmp_addr);
+        		grin_handle_jmp(env->eip,itb->jmp_addr);
 			}
         }
 
@@ -581,7 +580,7 @@ static inline tcg_target_ulong cpu_tb_exec(CPUState *cpu, TranslationBlock *itb)
         			printf("call overflow: %ld\n",call_total);
         			call_total = 0;
         		}
-        		grin_handle_call(tmpcpu->env.eip,itb->call_addr,itb->callnext_addr);
+        		grin_handle_call(env->eip,itb->call_addr,itb->callnext_addr);
         	}
         }
         /* GRIN -M command options, MONITOR RET module */
@@ -593,8 +592,15 @@ static inline tcg_target_ulong cpu_tb_exec(CPUState *cpu, TranslationBlock *itb)
         			printf("ret overflow: %ld\n",ret_total);
         			ret_total = 0;
         		}
-        		grin_handle_ret(tmpcpu->env.eip,itb->ret_addr);
+        		grin_handle_ret(env->eip,itb->ret_addr);
             }
+        }
+        if(grin_libfunc&&itb->JmpFlagM){
+        	if((env->eip>0x4000000000)&&(itb->jmp_addr<0x4000000000)){
+        			printf("caller: %lx  callee: %lx\n",itb->jmp_addr,env->eip);
+        			printf("callee argement: %lx %lx %lx %lx\n",
+        					env->regs[6],env->regs[7],env->regs[1],env->regs[2]);
+        	}
         }
 
     return ret;

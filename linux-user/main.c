@@ -233,6 +233,7 @@ static inline void cpu_exec_end(CPUState *cpu)
 //					"total: %ld\n",itotal);
 //    	itotal = 0;
 //    }
+#if !NOSTDERR
     if(grin_jmp){
 		printf("The total number of jmp: %ld\n",jmp_total);
     	jmp_total = 0;
@@ -245,6 +246,7 @@ static inline void cpu_exec_end(CPUState *cpu)
 		printf("The total number of ret: %ld\n",ret_total);
     	ret_total = 0;
     }
+#endif
 }
 
 void cpu_list_lock(void)

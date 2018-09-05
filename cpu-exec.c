@@ -246,7 +246,7 @@ static inline void grin_handle_jmp(target_ulong pc,target_ulong jmpaddr_of)
 			if(pc<0x4000000000){
 				fprintf(stderr,"Dynamic execute result:\n"
 							"Program is atttttttttacked _(:_l <)_\n");
-				fprintf(stderr,"JMP No data! \n"
+				fprintf(stderr,"JMP, No match data in CFG! \n"
 						"Dest: %lx \nSrc: %lx\n",pc,jmpaddr_of);
 				exit(0);
 			}
@@ -337,7 +337,7 @@ static inline  void grin_handle_call(target_ulong pc,
 			if(pc<0x4000000000){
 				fprintf(stderr,"Dynamic execute result:\n"
 						"Program is atttttttttacked _(:_l <)_\n");
-				fprintf(stderr,"CALL No data! \n Dest: %lx Src: %lx\n",pc,calladdr_of);
+				fprintf(stderr,"CALL, No match data in CFG! \n Dest: %lx Src: %lx\n",pc,calladdr_of);
 				exit(0);
 			}
 			break;
@@ -429,7 +429,7 @@ static inline void grin_handle_ret(target_ulong pc,target_ulong retaddr_of)
 			if(pc<0x4000000000){
 				fprintf(stderr,"Dynamic execute result:\n"
 						"Program is atttttttttacked _(:_l <)_\n");
-				fprintf(stderr,"RET No data! \n Dest: %lx Src: %lx\n",pc,retaddr_of);
+				fprintf(stderr,"RET, No match data in CFG! \n Dest: %lx Src: %lx\n",pc,retaddr_of);
 				exit(0);
 			}
 			break;

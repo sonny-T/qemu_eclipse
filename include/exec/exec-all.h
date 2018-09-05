@@ -446,7 +446,7 @@ static inline tb_page_addr_t get_page_addr_code(CPUArchState *env1, target_ulong
 }
 
 /* test for qemu-x86_64 cputlb.c */
-target_ulong inline get_hva(CPUArchState *env1, target_ulong addr)
+static inline target_ulong get_hva(CPUArchState *env1, target_ulong addr)
 {
 	return addr;
 }

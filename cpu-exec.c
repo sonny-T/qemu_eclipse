@@ -85,6 +85,7 @@ long RealGadgetLen = 0;
 
 /* GRIN TRA/SHADOW STACK module function */
 ShadowStack sstack1;
+int tsscount = 0;
 
 /* GRIN VMI test*/
 target_ulong cr3tmp = 0;
@@ -543,6 +544,9 @@ static inline tcg_target_ulong cpu_tb_exec(CPUState *cpu, TranslationBlock *itb)
 					,env->eip,pc_var);
 #endif
 		}
+       	tsscount--;
+	fprintf(stderr,"Pop %d\n",tsscount);
+
     }
 	/*  GRIN -ss command options
 	 *  SHADOW STACK module */
@@ -834,6 +838,9 @@ static inline TranslationBlock *tb_find_fast(CPUState *cpu,
 			ShadowStackPush(tb->next_insn);
 			//printf("Push stack****************************** %lx  next pc %lx\n"
 			//		,tb->next_insn,env->tpush_reg);
+			tsscount++;
+
+			fprintf(stderr,"Push %d\n",tsscount);
 		}
     }
 
